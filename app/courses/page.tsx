@@ -79,6 +79,9 @@ export default function Courses() {
   // Course Filter States
   const [courseFilter, setCourseFilter] = useState<'all' | 'published' | 'draft'>('all');
   
+  // View Mode State
+  const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
+  
   // Basic Course Info
   const [courseBasicInfo, setCourseBasicInfo] = useState({
     title: '',
@@ -91,6 +94,32 @@ export default function Courses() {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Handle Escape key press to close course details
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && showCourseDetails) {
+        setShowCourseDetails(false);
+        setSelectedCourseForView(null);
+        setExpandedChapters(new Set());
+      }
+    };
+
+    if (showCourseDetails) {
+      document.addEventListener('keydown', handleEscapeKey);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [showCourseDetails]);
+
+  // Function to close course details
+  const closeCourseDetails = () => {
+    setShowCourseDetails(false);
+    setSelectedCourseForView(null);
+    setExpandedChapters(new Set());
+  };
 
   // Navigation Steps
   const steps = [
@@ -895,6 +924,61 @@ export default function Courses() {
                                                 />
                                               </div>
                                             </div>
+                                            
+                                            {/* زر إضافة سؤال جديد أسفل كل سؤال */}
+                                            <div className="add-question-after-container">
+                                              <button
+                                                onClick={() => {
+                                                  const newQuestion: MCQQuestion = {
+                                                    id: Date.now().toString(),
+                                                    question: '',
+                                                    options: [
+                                                      { id: Date.now().toString() + '1', text: '', isCorrect: false },
+                                                      { id: Date.now().toString() + '2', text: '', isCorrect: false },
+                                                      { id: Date.now().toString() + '3', text: '', isCorrect: false },
+                                                      { id: Date.now().toString() + '4', text: '', isCorrect: false }
+                                                    ],
+                                                    difficulty: 'medium',
+                                                    order: questionIndex + 2
+                                                  };
+                                                  
+                                                  const updatedCourses = courses.map(course => {
+                                                    if (course.id === currentCourse?.id) {
+                                                      const updatedChapters = [...course.chapters];
+                                                      const updatedLessons = [...chapter.lessons];
+                                                      const currentQuestions = lesson.mcqBank?.questions || [];
+                                                      
+                                                      // إدراج السؤال الجديد بعد السؤال الحالي
+                                                      const updatedQuestions = [
+                                                        ...currentQuestions.slice(0, questionIndex + 1),
+                                                        newQuestion,
+                                                        ...currentQuestions.slice(questionIndex + 1).map(q => ({
+                                                          ...q,
+                                                          order: q.order + 1
+                                                        }))
+                                                      ];
+                                                      
+                                                      updatedLessons[lessonIndex] = {
+                                                        ...lesson,
+                                                        mcqBank: {
+                                                          ...lesson.mcqBank!,
+                                                          questions: updatedQuestions,
+                                                          totalQuestions: updatedQuestions.length
+                                                        }
+                                                      };
+                                                      updatedChapters[chapterIndex] = { ...chapter, lessons: updatedLessons };
+                                                      return { ...course, chapters: updatedChapters };
+                                                    }
+                                                    return course;
+                                                  });
+                                                  setCourses(updatedCourses);
+                                                }}
+                                                className="add-question-after-btn"
+                                              >
+                                                <span className="add-question-icon">➕</span>
+                                                <span className="add-question-text">إضافة سؤال جديد</span>
+                                              </button>
+                                            </div>
                                           </div>
                                         ))}
                                       </div>
@@ -1240,80 +1324,178 @@ export default function Courses() {
                      courseFilter === 'published' ? `الكورسات المنشورة (${filteredCourses.length})` :
                      `الكورسات المسودة (${filteredCourses.length})`}
                   </h2>
+                  
+                  {/* أزرار تغيير طريقة العرض */}
+                  <div className="view-mode-controls">
+                    <button
+                      onClick={() => setViewMode('cards')}
+                      className={`view-mode-btn ${viewMode === 'cards' ? 'active' : ''}`}
+                      title="عرض البطاقات"
+                    >
+                      <span className="view-mode-icon">⊞</span>
+                      <span className="view-mode-text">بطاقات</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`view-mode-btn ${viewMode === 'list' ? 'active' : ''}`}
+                      title="عرض القائمة"
+                    >
+                      <span className="view-mode-icon">☰</span>
+                      <span className="view-mode-text">قائمة</span>
+                    </button>
+                  </div>
                 </div>
-                <div className="courses-grid">
-                  {filteredCourses.map((course) => (
-                    <div key={course.id} className="course-card-wrapper">
-                      <div className="course-card-background"></div>
-                      
-                      <div className="course-card">
-                        <div className="course-card-content">
-                          <div className="course-image">
-                            {course.coverImage ? (
-                              <img src={URL.createObjectURL(course.coverImage)} alt={course.title} style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'var(--border-radius-md)'}} />
-                            ) : (
-                              <span>📚</span>
-                            )}
-                          </div>
-                          
-                          <div className="course-body">
-                            <div className="course-header">
-                              <h3 className="course-title">{course.title}</h3>
-                              <div className="course-status-badge">
-                                <span className="status-text">
-                                  {course.status === 'draft' ? 'مسودة' : 'منشور'}
-                                </span>
-                              </div>
+                
+                {/* عرض الكورسات حسب طريقة العرض المختارة */}
+                {viewMode === 'cards' ? (
+                  <div className="courses-grid">
+                    {filteredCourses.map((course) => (
+                      <div key={course.id} className="course-card-wrapper">
+                        <div className="course-card-background"></div>
+                        
+                        <div className="course-card">
+                          <div className="course-card-content">
+                            <div className="course-image">
+                              {course.coverImage ? (
+                                <img src={URL.createObjectURL(course.coverImage)} alt={course.title} style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'var(--border-radius-md)'}} />
+                              ) : (
+                                <span>📚</span>
+                              )}
                             </div>
                             
-                            <div className="course-content">
-                              <p className="course-description">{course.description}</p>
-                              
-                              <div className="course-meta">
-                                <div className="course-price">
-                                  <span className="price-text">
-                                    {course.isFree ? 'مجاني' : `${course.price} ريال`}
+                            <div className="course-body">
+                              <div className="course-header">
+                                <h3 className="course-title">{course.title}</h3>
+                                <div className="course-status-badge">
+                                  <span className="status-text">
+                                    {course.status === 'draft' ? 'مسودة' : 'منشور'}
                                   </span>
                                 </div>
-                                <div className="course-chapters">
-                                  <span className="chapters-text">{course.chapters.length} فصل</span>
+                              </div>
+                              
+                              <div className="course-content">
+                                <p className="course-description">{course.description}</p>
+                                
+                                <div className="course-meta">
+                                  <div className="course-price">
+                                    <span className="price-text">
+                                      {course.isFree ? 'مجاني' : `${course.price} ريال`}
+                                    </span>
+                                  </div>
+                                  <div className="course-chapters">
+                                    <span className="chapters-text">{course.chapters.length} فصل</span>
+                                  </div>
+                                </div>
+                                
+                                <div className="course-date">
+                                  <span className="date-text">
+                                    {isClient ? course.createdAt.toLocaleDateString('ar-SA') : course.createdAt.toISOString().split('T')[0]}
+                                  </span>
                                 </div>
                               </div>
                               
-                              <div className="course-date">
-                                <span className="date-text">
-                                  {isClient ? course.createdAt.toLocaleDateString('ar-SA') : course.createdAt.toISOString().split('T')[0]}
-                                </span>
+                              <div className="course-actions">
+                                <button 
+                                  onClick={() => {
+                                    setSelectedCourseId(course.id);
+                                    setCurrentStep('content-management');
+                                    setShowCreateCourse(true);
+                                  }}
+                                  className="course-edit-button"
+                                >
+                                  تحرير المحتوى
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    setSelectedCourseForView(course.id);
+                                    setShowCourseDetails(true);
+                                  }}
+                                  className="course-content-button"
+                                >
+                                  عرض
+                                </button>
                               </div>
-                            </div>
-                            
-                            <div className="course-actions">
-                              <button 
-                                onClick={() => {
-                                  setSelectedCourseId(course.id);
-                                  setCurrentStep('content-management');
-                                  setShowCreateCourse(true);
-                                }}
-                                className="course-edit-button"
-                              >
-                                تحرير المحتوى
-                              </button>
-                              <button 
-                                onClick={() => {
-                                  setSelectedCourseForView(course.id);
-                                  setShowCourseDetails(true);
-                                }}
-                                className="course-content-button"
-                              >
-                                عرض
-                              </button>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="courses-list-view">
+                    {filteredCourses.map((course, index) => (
+                      <div key={course.id} className="course-list-item">
+                        <div className="course-list-number">
+                          <span className="list-number">{index + 1}</span>
+                        </div>
+                        
+                        <div className="course-list-image">
+                          {course.coverImage ? (
+                            <img src={URL.createObjectURL(course.coverImage)} alt={course.title} className="list-course-image" />
+                          ) : (
+                            <div className="list-course-placeholder">📚</div>
+                          )}
+                        </div>
+                        
+                        <div className="course-list-content">
+                          <div className="course-list-header">
+                            <h3 className="course-list-title">{course.title}</h3>
+                            <div className="course-list-status">
+                              <span className={`status-badge ${course.status}`}>
+                                {course.status === 'draft' ? 'مسودة' : 'منشور'}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <p className="course-list-description">{course.description}</p>
+                          
+                          <div className="course-list-meta">
+                            <div className="meta-item">
+                              <span className="meta-label">السعر:</span>
+                              <span className="meta-value">
+                                {course.isFree ? 'مجاني' : `${course.price} ريال`}
+                              </span>
+                            </div>
+                            <div className="meta-item">
+                              <span className="meta-label">الفصول:</span>
+                              <span className="meta-value">{course.chapters.length} فصل</span>
+                            </div>
+                            <div className="meta-item">
+                              <span className="meta-label">تاريخ الإنشاء:</span>
+                              <span className="meta-value">
+                                {isClient ? course.createdAt.toLocaleDateString('ar-SA') : course.createdAt.toISOString().split('T')[0]}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="course-list-actions">
+                          <button 
+                            onClick={() => {
+                              setSelectedCourseId(course.id);
+                              setCurrentStep('content-management');
+                              setShowCreateCourse(true);
+                            }}
+                            className="list-edit-btn"
+                          >
+                            
+                            تحرير
+                          </button>
+                          <button 
+                            onClick={() => {
+                              setSelectedCourseForView(course.id);
+                              setShowCourseDetails(true);
+                            }}
+                            className="list-view-btn"
+                          >
+                            
+                            عرض
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1335,47 +1517,97 @@ export default function Courses() {
           };
           
           return (
-            <div className="course-details-overlay">
+            <div 
+              className="course-details-overlay"
+              onClick={(e) => {
+                // Close if clicking on the overlay background (not the container)
+                if (e.target === e.currentTarget) {
+                  closeCourseDetails();
+                }
+              }}
+            >
               <div className="course-details-container">
                 <div className="course-details-header">
                   <div className="course-details-title-section">
+                    <div className="course-header-top">
+                      <div className="course-category-badge">
+                        <span className="category-text">كورس تعليمي</span>
+                      </div>
+                      <div className="course-status-badge">
+                        <span className={`status-indicator ${courseToView.status === 'published' ? 'published' : 'draft'}`}></span>
+                        <span className="status-text">{courseToView.status === 'published' ? 'منشور' : 'مسودة'}</span>
+                      </div>
+                    </div>
                     <h2 className="course-details-title">
                       
                       {courseToView.title}
                     </h2>
                     <p className="course-details-description">{courseToView.description}</p>
+                    <div className="course-meta-info">
+                      <div className="meta-item">
+                        
+                        <span className="meta-label">تاريخ الإنشاء:</span>
+                        <span className="meta-value">
+                          {isClient ? courseToView.createdAt.toLocaleDateString('ar-SA') : courseToView.createdAt.toISOString().split('T')[0]}
+                        </span>
+                      </div>
+                      
+                      <div className="meta-item">
+                        
+                        <span className="meta-label">السعر:</span>
+                        <span className="meta-value price-highlight">
+                          {courseToView.isFree ? 'مجاني' : `${courseToView.price} ريال سعودي`}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                   <button 
-                    onClick={() => {
-                      setShowCourseDetails(false);
-                      setSelectedCourseForView(null);
-                      setExpandedChapters(new Set());
-                    }}
+                    onClick={closeCourseDetails}
                     className="course-details-close-btn"
+                    title="إغلاق (Esc)"
                   >
-                    ✕
+                    <span className="close-icon">✕</span>
                   </button>
                 </div>
                 
                 <div className="course-details-content">
                   <div className="course-details-info">
                     <div className="course-info-stats">
-                      <div className="course-stat">
-                        <span className="stat-text">{courseToView.chapters.length} فصل</span>
+                      <div className="course-stat chapters-stat">
+                        
+                        <div className="stat-content">
+                          <span className="stat-number">{courseToView.chapters.length}</span>
+                          <span className="stat-label">فصل</span>
+                        </div>
                       </div>
-                      <div className="course-stat">
-                        <span className="stat-text">{courseToView.isFree ? 'مجاني' : `${courseToView.price} ريال`}</span>
+                      <div className="course-stat lessons-stat">
+                       
+                        <div className="stat-content">
+                          <span className="stat-number">
+                            {courseToView.chapters.reduce((total, chapter) => total + chapter.lessons.length, 0)}
+                          </span>
+                          <span className="stat-label">درس</span>
+                        </div>
                       </div>
-                      <div className="course-stat">
-                        <span className="stat-text">{courseToView.status === 'draft' ? 'مسودة' : 'منشور'}</span>
-                      </div>
+                      
+                      
                     </div>
+                    
+                   
                   </div>
                   
                   <div className="chapters-details-list">
-                    <h3 className="chapters-details-title">
-                      فصول الكورس
-                    </h3>
+                    <div className="chapters-header">
+                      <h3 className="chapters-details-title">
+                        <span className="chapters-icon">📚</span>
+                        فصول الكورس
+                      </h3>
+                      <div className="chapters-progress">
+                        <span className="progress-text">
+                          {courseToView.chapters.reduce((total, chapter) => total + chapter.lessons.length, 0)} درس إجمالي
+                        </span>
+                      </div>
+                    </div>
                     
                     {courseToView.chapters.length === 0 ? (
                       <div className="no-chapters-message">
@@ -1387,15 +1619,26 @@ export default function Courses() {
                         {courseToView.chapters.map((chapter, chapterIndex) => (
                           <div key={chapter.id} className="chapter-accordion-item">
                             <div 
-                              className="chapter-accordion-header"
+                              className={`chapter-accordion-header ${expandedChapters.has(chapter.id) ? 'expanded' : ''}`}
                               onClick={() => toggleChapter(chapter.id)}
                             >
                               <div className="chapter-accordion-title">
-                                <span className="chapter-number">الفصل {chapterIndex + 1}</span>
-                                <h4 className="chapter-title">{chapter.title || 'فصل بدون عنوان'}</h4>
+                                <div className="chapter-info">
+                                  <span className="chapter-number">الفصل {chapterIndex + 1}</span>
+                                  <h4 className="chapter-title">{chapter.title || 'فصل بدون عنوان'}</h4>
+                                </div>
+                                <div className="chapter-meta">
+                                  <span className="chapter-lessons-count">
+                                    <span className="lessons-icon">📝</span>
+                                    {chapter.lessons.length} درس
+                                  </span>
+                                  <span className="chapter-duration">
+                                    <span className="duration-icon">⏱️</span>
+                                    {chapter.lessons.length * 15} دقيقة
+                                  </span>
+                                </div>
                               </div>
                               <div className="chapter-accordion-controls">
-                                <span className="lessons-count">{chapter.lessons.length} درس</span>
                                 <span className={`accordion-arrow ${expandedChapters.has(chapter.id) ? 'expanded' : ''}`}>
                                   ▼
                                 </span>
@@ -1417,11 +1660,29 @@ export default function Courses() {
                                   <div className="lessons-details-list">
                                     {chapter.lessons.map((lesson, lessonIndex) => (
                                       <div key={lesson.id} className="lesson-details-item">
-                                        <div className="lesson-details-header">
-                                          <div className="lesson-details-info">
-                                            <div className="lesson-number-title">
-                                              <span className="lesson-number">الدرس {lessonIndex + 1}</span>
-                                              <h5 className="lesson-title">{lesson.title || 'درس بدون عنوان'}</h5>
+                                        <div className="lesson-number">
+                                          <span className="lesson-index">{lessonIndex + 1}</span>
+                                        </div>
+                                        <div className="lesson-content">
+                                          <div className="lesson-details-header">
+                                            <div className="lesson-details-info">
+                                              <div className="lesson-number-title">
+                                                <h5 className="lesson-title">{lesson.title || 'درس بدون عنوان'}</h5>
+                                              </div>
+                                              <div className="lesson-meta">
+                                                <span className="lesson-duration">
+                                                  <span className="duration-icon">⏰</span>
+                                                  15 دقيقة
+                                                </span>
+                                                <span className="lesson-type">
+                                                  <span className="type-icon">🎥</span>
+                                                  فيديو
+                                                </span>
+                                                <div className="lesson-status">
+                                                  <span className="status-icon">✅</span>
+                                                  <span className="status-text">متاح</span>
+                                                </div>
+                                              </div>
                                             </div>
                                             <div className="lesson-details-badges">
                                               {lesson.videoFile && (
@@ -1438,6 +1699,11 @@ export default function Courses() {
                                               )}
                                             </div>
                                           </div>
+                                        </div>
+                                        <div className="lesson-actions">
+                                          <button className="lesson-play-btn">
+                                            <span className="play-icon">▶️</span>
+                                          </button>
                                         </div>
                                       </div>
                                     ))}
