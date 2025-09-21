@@ -24,7 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
       href: '/',
       label: 'الرئيسية',
       icon: (
-        <svg className="nav-icon" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
           <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
         </svg>
       )
@@ -33,8 +33,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
       href: '/students',
       label: 'الطلاب',
       icon: (
-        <svg className="nav-icon" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.54 8H16c-.8 0-1.54.37-2 1l-3 4v2h2l2.54-3.4L16.5 18H20z"/>
+        <svg className="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.54 8H16c-.8 0-1.54.37-2.01.99L12 11l2.01 2.01c.47.62 1.21.99 2.01.99h2.5V22h2zM12.5 11.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5S11 9.17 11 10s.67 1.5 1.5 1.5zM5.5 6c1.11 0 2-.89 2-2s-.89-2-2-2-2 .89-2 2 .89 2 2 2zm1.5 2h-3C2.67 8 2 8.67 2 10v3h1.5v9h3v-9H8v-3c0-1.33-.67-2-1.5-2z"/>
         </svg>
       )
     },
@@ -42,8 +42,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
       href: '/courses',
       label: 'الدورات',
       icon: (
-        <svg className="nav-icon" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+        <svg className="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6L23 9l-11-6zM18.82 9L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/>
         </svg>
       )
     },
@@ -51,7 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
       href: '/reports',
       label: 'التقارير',
       icon: (
-        <svg className="nav-icon" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
           <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
         </svg>
       )
@@ -69,7 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
         className="md:hidden fixed top-4 right-4 z-50 bg-[#029CBE] text-white p-2 rounded-lg shadow-lg"
         onClick={toggleMobileSidebar}
       >
-        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
           <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
         </svg>
       </button>

@@ -26,10 +26,10 @@
 
 /* الحاوي الرئيسي */
 .courses-container {
-  min-height: calc(100vh - 56px);
+  /* min-height: calc(100vh - 56px);
   transform: scale(0.8);
-  transform-origin: top right;
-  width: 125%;
+  transform-origin: top right; */
+  width: 97%;
   position: relative;
   overflow-x: hidden;
 }
@@ -181,17 +181,155 @@
 }
 
 .hero-visual {
-  display: none;
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Add gap between circle and view mode controls */
 }
 
-@media (min-width: 1024px) {
-  .hero-visual {
-    display: block;
-  }
+/* Hero Actions Row */
+.hero-actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* Hero Create Section */
+.hero-create-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Hero Close Button */
+.hero-close-btn {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-close-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  transform: translateY(-1px);
+}
+
+.hero-close-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.hero-close-btn:hover svg {
+  transform: rotate(90deg);
+}
+
+/* View Controls Styles */
+.view-controls {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.view-mode-selector {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem;
+  border-radius: 1rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.view-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.view-mode-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.view-mode-btn.active {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(20px);
+}
+
+.view-mode-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  transition: transform 0.3s ease;
+}
+
+.view-mode-btn:hover .view-mode-icon {
+  transform: scale(1.1);
+}
+
+.view-mode-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Close Button Styles */
+.close-creation-btn {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  z-index: 10;
+}
+
+.close-creation-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.close-creation-btn svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.close-creation-btn:hover svg {
+  transform: rotate(90deg);
 }
 
 .hero-circle {
-  width: 8rem;
+  width: 120px;
   height: 8rem;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
@@ -201,6 +339,13 @@
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   font-size: 4rem;
+}
+
+.hero-gif {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 /* قسم التصفية */
@@ -300,13 +445,12 @@
 
 /* نموذج الإضافة */
 .add-form {
-  background: var(--white-transparent);
-  backdrop-filter: blur(10px);
-  border-radius: var(--border-radius-xl);
-  box-shadow: var(--shadow-heavy);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   padding: 2rem;
   margin-bottom: 2.4rem;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 2px solid #e2e8f0;
   animation: slideInFromTop 0.5s ease-out;
 }
 
@@ -322,29 +466,33 @@
 }
 
 .add-form-title {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #1a202c;
   margin-bottom: 1.6rem;
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f1f5f9;
 }
 
 .add-form-title-icon {
-  font-size: 2rem;
+  font-size: 1.5rem;
+  color: #028BAB;
 }
 
 .add-form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.6rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
 }
 
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 8px;
 }
 
 .form-field.full-width {
@@ -352,42 +500,43 @@
 }
 
 .form-label {
-  font-size: 1.1rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 0.75rem;
+  color: #374151;
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 6px;
 }
 
 .form-label-icon {
-  font-size: 1.25rem;
+  font-size: 1rem;
+  color: #028BAB;
 }
 
 .form-input {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 12px 16px;
   border: 2px solid #e5e7eb;
-  border-radius: var(--border-radius-md);
+  border-radius: 8px;
   font-size: 1rem;
   transition: all 0.3s ease;
-  background: #f9fafb;
+  background: white;
 }
 
 .form-input:hover {
-  background: white;
+  border-color: #d1d5db;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: var(--primary-blue);
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  border-color: #028BAB;
+  box-shadow: 0 0 0 3px rgba(2, 139, 171, 0.1);
   background: white;
 }
 
 .form-textarea {
-  resize: none;
+  resize: vertical;
   min-height: 120px;
 }
 
@@ -400,72 +549,79 @@
   background: #f9fafb;
   transition: all 0.3s ease;
   cursor: pointer;
+  padding: 16px;
+  text-align: center;
+  border-radius: 8px;
 }
 
 .file-input:hover {
-  background: #dbeafe;
-  border-color: var(--primary-blue);
+  background: #eff6ff;
+  border-color: #028BAB;
 }
 
 .file-input.pdf-input:hover {
-  background: #dbeafe;
+  background: #eff6ff;
+  border-color: #028BAB;
 }
 
 .file-input.video-input:hover {
-  background: #e9d5ff;
+  background: #faf5ff;
+  border-color: #8b5cf6;
 }
 
 .file-status {
-  margin-top: 0.6rem;
-  padding: 0.6rem;
-  background: #d1fae5;
-  border: 1px solid #a7f3d0;
-  border-radius: var(--border-radius-sm);
+  margin-top: 12px;
+  padding: 12px;
+  background: #ecfdf5;
+  border: 1px solid #d1fae5;
+  border-radius: 8px;
 }
 
 .file-status-text {
-  font-size: 0.7rem;
+  font-size: 0.875rem;
   color: #065f46;
   font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 8px;
 }
 
 .file-status-icon {
-  font-size: 0.88rem;
+  font-size: 1rem;
 }
 
 .submit-button-container {
-  margin-top: 2rem;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 2px solid #f1f5f9;
   display: flex;
   justify-content: center;
 }
 
 .submit-button {
-  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-purple) 100%);
+  background: linear-gradient(135deg, #028BAB 0%, #0289A9 100%);
   color: white;
-  padding: 0.8rem 2rem;
-  border-radius: var(--border-radius-md);
-  font-weight: 700;
-  font-size: 0.88rem;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(2, 139, 171, 0.3);
 }
 
 .submit-button:hover {
-  background: linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%);
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 15px 35px rgba(37, 99, 235, 0.4);
+  background: linear-gradient(135deg, #01647b 0%, #01647b 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(2, 139, 171, 0.4);
 }
 
 .submit-button-icon {
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
 /* أنماط صور الدروس */
@@ -544,7 +700,7 @@
   padding: 0.6rem 0.8rem;
   border: none;
   border-radius: 8px;
-  font-size: 0.72rem;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -592,7 +748,7 @@
 /* شبكة الكورسات */
 .courses-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.6rem;
 }
 
@@ -601,7 +757,7 @@
   backdrop-filter: blur(10px);
   border-radius: var(--border-radius-xl);
   box-shadow: var(--shadow-medium);
-  padding: 1.6rem;
+  padding: 2rem;
   border: 1px solid rgba(255, 255, 255, 0.5);
   position: relative;
   overflow: hidden;
@@ -610,6 +766,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 500px;
 }
 
 .course-card:hover {
@@ -640,16 +797,17 @@
 
 .course-image {
   width: 100%;
-  height: 160px;
+  height: 180px; /* Fixed height for consistency */
   object-fit: cover;
   border-radius: var(--border-radius-md);
-  margin-bottom: 1.2rem;
+  margin-bottom: 1.5rem;
   background: #f3f4f6;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
   font-size: 2.4rem;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 .course-body {
@@ -662,7 +820,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 1.2rem;
+  margin-bottom: 1.5rem;
 }
 
 .course-title-section {
@@ -687,7 +845,7 @@
 }
 
 .course-title {
-  font-size: 1rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: var(--text-primary);
   transition: color 0.3s ease;
@@ -699,26 +857,27 @@
 }
 
 .course-date {
-  font-size: 0.7rem;
+  font-size: 1.2rem;
   color: var(--text-secondary);
   background: #f3f4f6;
-  padding: 0.4rem 0.6rem;
+  padding: 0.5rem 0.8rem;
   border-radius: var(--border-radius-sm);
+  font-weight: 500;
 }
 
 .course-category {
-  margin-bottom: 0.8rem;
+  margin-bottom: 1.2rem;
 }
 
 .category-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: linear-gradient(135deg, var(--light-blue) 0%, var(--light-purple) 100%);
-  color: var(--primary-blue);
+  background: #028BAB;
+  color: white;
   padding: 0.4rem 0.8rem;
   border-radius: var(--border-radius-lg);
-  font-size: 0.7rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
@@ -728,9 +887,9 @@
 
 .course-description {
   color: var(--text-secondary);
-  margin-bottom: 1.2rem;
-  line-height: 1.6;
-  font-size: 0.76rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.7;
+  font-size: 1.2rem;
 }
 
 .course-files {
@@ -756,7 +915,7 @@
 }
 
 .file-section-title {
-  font-size: 0.7rem;
+  font-size: 1rem;
   font-weight: 700;
   margin-bottom: 0.6rem;
   display: flex;
@@ -773,31 +932,50 @@
 }
 
 .file-section-icon {
-  font-size: 0.88rem;
+  font-size: 1rem;
 }
 
 .course-actions {
   margin-top: 1.2rem;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
+  gap: 0.8rem;
 }
 
-.view-details-button {
-  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-purple) 100%);
-  color: white;
-  padding: 0.6rem 1.2rem;
+.course-action-button {
+  flex: none;
+  min-width: 120px;
+  padding: 0.8rem 1.2rem;
   border-radius: var(--border-radius-md);
   font-weight: 600;
+  font-size: 1rem;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
 }
 
-.view-details-button:hover {
-  background: linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%);
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+.view-course-button {
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-purple) 100%);
+  color: white;
+}
+
+.view-course-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.edit-course-button {
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-purple) 100%);
+  color: white;
+}
+
+.edit-course-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
 }
 
 /* حالة عدم وجود كورسات */
@@ -898,6 +1076,18 @@
 }
 
 /* التجاوب مع الشاشات المختلفة */
+@media (max-width: 1200px) {
+  .courses-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .courses-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .courses-content {
     padding: 1rem;
@@ -992,6 +1182,127 @@
   }
 }
 
+/* أنماط عرض القائمة للكورسات */
+.courses-list-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.course-list-item {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  transition: all 0.3s ease;
+}
+
+.course-list-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.course-list-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-purple) 100%);
+  color: white;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-left: 1rem;
+  flex-shrink: 0;
+}
+
+.course-list-image {
+  width: 80px; /* Fixed width for consistency */
+  height: 80px; /* Fixed height for consistency */
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  margin-left: 1rem;
+  flex-shrink: 0;
+}
+
+.list-course-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.list-course-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  font-size: 1.5rem;
+}
+
+.course-list-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.course-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.course-list-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.course-list-status .status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.course-list-status .status-badge.draft {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.course-list-status .status-badge.published {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.course-list-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.course-list-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.course-list-actions .course-action-button {
+  flex: none;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+}
+
 /* تحسينات إضافية لبنك الأسئلة */
 .lesson-mcq-section {
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
@@ -1073,8 +1384,11 @@
 
 .mcq-question-number-text {
   font-weight: 600;
+  background: #028BAB;
   color: white;
   font-size: 1.1rem;
+  padding: 4px 8px;
+  border-radius: 8px;
 }
 
 .mcq-question-actions {
