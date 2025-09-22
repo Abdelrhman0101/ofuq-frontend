@@ -1,9 +1,9 @@
 /* Lesson Question Manager Styles */
 .lesson-question-manager {
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  border-radius: 20px;
-  padding: 2rem;
-  margin: 1.5rem 0;
+  border-radius: 16px;
+  padding: 1.6rem;
+  margin: 1.2rem 0;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
@@ -14,23 +14,23 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
+  margin-bottom: 1.6rem;
+  padding-bottom: 0.8rem;
   border-bottom: 2px solid rgba(59, 130, 246, 0.1);
 }
 
 .question-manager-title {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 1.5rem;
+  gap: 0.6rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #1e293b;
   margin: 0;
 }
 
 .question-icon {
-  font-size: 1.75rem;
+  font-size: 1.4rem;
   background: linear-gradient(135deg, #3b82f6, #1d4ed8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -40,21 +40,32 @@
 .add-question-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  background: linear-gradient(135deg, #10b981, #059669);
+  gap: 0.4rem;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 12px;
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.7rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
 }
 
 .add-question-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+}
+
+.add-question-btn:active {
+  transform: translateY(0);
+}
+
+.add-question-btn .plus-icon {
+  font-size: 0.8rem;
+  font-weight: bold;
 }
 
 /* Empty State */
@@ -112,18 +123,25 @@
 
 /* Question Card */
 .question-card {
-  background: linear-gradient(135deg, #ffffff, #f8fafc);
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin-bottom: 1.2rem;
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
 }
 
 .question-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.question-card.editing {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .question-card-header {
@@ -175,35 +193,31 @@
 
 /* Question Content */
 .question-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  margin-bottom: 1.2rem;
 }
 
 .question-text {
-  font-size: 1.2rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: #1e293b;
+  margin-bottom: 0.8rem;
   line-height: 1.6;
-  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-  padding: 1rem 1.5rem;
-  border-radius: 12px;
-  border-left: 4px solid #3b82f6;
 }
 
 .question-options {
-  display: grid;
-  gap: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
 }
 
 .question-option {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.5rem;
+  gap: 0.6rem;
+  padding: 0.6rem 0.8rem;
   background: linear-gradient(135deg, #ffffff, #f8fafc);
   border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 8px;
   transition: all 0.3s ease;
   cursor: pointer;
 }
@@ -222,14 +236,14 @@
 .option-letter {
   background: linear-gradient(135deg, #3b82f6, #1d4ed8);
   color: white;
-  width: 2rem;
-  height: 2rem;
+  width: 1.6rem;
+  height: 1.6rem;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.6rem;
   flex-shrink: 0;
 }
 
@@ -241,6 +255,7 @@
   flex: 1;
   font-weight: 500;
   color: #374151;
+  font-size: 0.7rem;
 }
 
 .correct-indicator {
@@ -344,11 +359,49 @@
 
 /* Question Editor */
 .question-editor {
-  background: linear-gradient(135deg, #ffffff, #f8fafc);
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 1.2rem;
+  border: 2px solid #e2e8f0;
+  margin-bottom: 1.2rem;
+}
+
+.editor-section {
+  margin-bottom: 1.2rem;
+}
+
+.editor-section:last-child {
+  margin-bottom: 0;
+}
+
+.editor-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.4rem;
+}
+
+.editor-input {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.editor-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.editor-textarea {
+  min-height: 80px;
+  resize: vertical;
+  font-family: inherit;
 }
 
 .editor-header {
@@ -539,17 +592,189 @@
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
+/* Options Editor */
+.options-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.option-editor {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem;
+  background: rgba(248, 250, 252, 0.8);
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.option-editor input[type="text"] {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 0.7rem;
+}
+
+.option-editor input[type="radio"] {
+  margin-right: 0.4rem;
+}
+
+.correct-indicator {
+  font-size: 0.6rem;
+  color: #059669;
+  font-weight: 600;
+}
+
+/* Action Buttons */
+.question-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+  background: #e2e8f0;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-1px);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .lesson-question-manager {
-    padding: 1rem;
-    margin: 1rem 0;
+    margin: 0.8rem 0;
+    padding: 1.2rem;
+    border-radius: 12px;
   }
-  
+
   .question-manager-header {
     flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
+    align-items: flex-start;
+    gap: 0.8rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .question-manager-title {
+    font-size: 1rem;
+  }
+
+  .add-question-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.6rem;
+    font-size: 0.7rem;
+  }
+
+  .question-card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+  }
+
+  .question-text {
+    font-size: 0.7rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .question-options {
+    gap: 0.5rem;
+  }
+
+  .option-item {
+    padding: 0.5rem 0.6rem;
+    gap: 0.5rem;
+  }
+
+  .option-letter {
+    width: 1.4rem;
+    height: 1.4rem;
+    font-size: 0.5rem;
+  }
+
+  .option-text {
+    font-size: 0.6rem;
+  }
+
+  .question-editor {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .editor-label {
+    font-size: 0.6rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .editor-input {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.6rem;
+  }
+
+  .editor-textarea {
+    min-height: 64px;
+  }
+
+  .options-editor {
+    gap: 0.5rem;
+  }
+
+  .option-editor {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .option-editor input[type="text"] {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.6rem;
+  }
+
+  .question-actions {
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 0.6rem;
+  }
+
+  .btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.6rem;
   }
   
   .question-navigation {

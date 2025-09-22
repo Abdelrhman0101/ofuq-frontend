@@ -35,8 +35,8 @@
 /* Modern Course Details Container */
 .modern-course-details-container {
   background: white;
-  border-radius: 24px;
-  max-width: 900px;
+  border-radius: 19px;
+  max-width: 720px;
   width: 100%;
   max-height: 90vh;
   overflow: hidden;
@@ -45,6 +45,7 @@
               0 8px 32px rgba(0, 0, 0, 0.2);
   animation: slideUp 0.4s ease-out;
   position: relative;
+  top: 30px;
   border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -63,7 +64,7 @@
 .modern-course-header {
   background: linear-gradient(135deg, #028BAB 0%, #0289A9 100%);
   color: white;
-  padding: 32px;
+  padding: 26px;
   position: relative;
   overflow: hidden;
 }
@@ -82,13 +83,13 @@
 /* Close Button */
 .modern-close-btn {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 16px;
+  right: 16px;
   background: rgba(255, 255, 255, 0.2);
   border: none;
-  border-radius: 12px;
-  width: 44px;
-  height: 44px;
+  border-radius: 10px;
+  width: 35px;
+  height: 35px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -200,34 +201,34 @@
 
 /* Course Title and Description */
 .modern-course-title {
-  font-size: 32px;
+  font-size: 26px;
   font-weight: 700;
-  margin: 0 0 16px 0;
+  margin: 0 0 13px 0;
   line-height: 1.2;
   color: white;
 }
 
 .modern-course-description {
-  font-size: 16px;
+  font-size: 13px;
   line-height: 1.6;
-  margin: 0 0 24px 0;
+  margin: 0 0 19px 0;
   color: rgba(255, 255, 255, 0.9);
 }
 
 /* Course Stats */
 .modern-course-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  gap: 13px;
 }
 
 .modern-stat-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
+  gap: 10px;
+  padding: 13px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+  border-radius: 13px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
@@ -242,10 +243,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
+  border-radius: 10px;
   color: white;
   flex-shrink: 0;
 }
@@ -257,25 +258,25 @@
 }
 
 .stat-number {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 700;
   color: white;
   line-height: 1.2;
 }
 
 .stat-number.price-value {
-  font-size: 16px;
+  font-size: 13px;
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: 10px;
   color: rgba(255, 255, 255, 0.7);
   font-weight: 500;
 }
 
 /* Modern Course Content */
 .modern-course-content {
-  padding: 32px;
+  padding: 26px;
   max-height: 60vh;
   overflow-y: auto;
   background: #fafafa;
