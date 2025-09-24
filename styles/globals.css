@@ -28,6 +28,7 @@ body {
     )
     rgb(var(--background-start-rgb));
   font-family: 'Cairo', sans-serif;
+  padding-top: 0; /* Remove default padding since header.css handles it */
 }
 
 a {
@@ -246,7 +247,7 @@ a {
   margin: 24px 0;
 }
 
-.divider::before {
+/* .divider::before {
   content: '';
   position: absolute;
   top: 50%;
@@ -254,7 +255,7 @@ a {
   right: 0;
   height: 1px;
   background: #e2e8f0;
-}
+} */
 
 .divider span {
   background: white;

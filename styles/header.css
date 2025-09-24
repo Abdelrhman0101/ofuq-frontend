@@ -423,7 +423,7 @@
 
 /* Ensure header doesn't interfere with page content */
 body {
-  padding-top: 56px;
+  /* padding-top: 56px; */
 }
 
 @media (max-width: 768px) {

@@ -23,7 +23,7 @@ export default function RootLayout({
         <Sidebar />
         
         {/* Main Content */}
-        <main className="  transition-all duration-300" style={{marginRight: '260px'}}>
+        <main className="  transition-all duration-300" style={{marginRight: '224px'}}>
           <div className="p-4 md:p-6 w-full">
             {children}
           </div>

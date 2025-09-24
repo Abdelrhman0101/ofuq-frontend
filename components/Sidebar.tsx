@@ -21,7 +21,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
 
   const navItems: NavItem[] = [
     {
-      href: '/',
+      href: '/admin',
       label: 'الرئيسية',
       icon: (
         <svg className="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -39,7 +39,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
       )
     },
     {
-      href: '/courses',
+      href: '/admin/courses',
       label: 'الدورات',
       icon: (
         <svg className="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -64,16 +64,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <button 
-        className="md:hidden fixed top-4 right-4 z-50 bg-[#029CBE] text-white p-2 rounded-lg shadow-lg"
-        onClick={toggleMobileSidebar}
-      >
-        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
-        </svg>
-      </button>
-
       {/* Sidebar */}
       <aside className={`sidebar ${isMobileOpen ? 'open' : ''}`}>
         {/* Header */}

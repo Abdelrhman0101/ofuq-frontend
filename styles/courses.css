@@ -26,10 +26,12 @@
 
 /* الحاوي الرئيسي */
 .courses-container {
-  min-height: calc(100vh - 45px);
-  width: 97%;
+  min-height: calc(100vh - 56px);
+  width: calc(100% - 224px);
   position: relative;
   overflow-x: hidden;
+  margin-right: 224px;
+  padding-top: 56px;
 }
 
 .courses-container::before {
@@ -46,26 +48,35 @@
 .courses-content {
   position: relative;
   z-index: 1;
-  max-width: calc(100vw - 70px);
+  max-width: 100%;
   margin: 0;
   width: 100%;
+  padding: 1rem;
 }
 
 /* استعلامات الوسائط للتجاوب */
 @media (max-width: 1024px) {
+  .courses-container {
+    width: calc(100% - 192px);
+    margin-right: 192px;
+  }
+  
   .courses-content {
-    max-width: calc(100vw - 224px);
+    padding: 0.8rem;
   }
 }
 
 @media (max-width: 768px) {
+  .courses-container {
+    width: 100%;
+    margin-right: 0;
+    min-height: calc(100vh - 48px);
+    padding-top: 48px;
+  }
+  
   .courses-content {
     max-width: 100vw;
     padding: 0.6rem;
-  }
-  
-  .courses-container {
-    min-height: calc(100vh - 48px);
   }
 }
 

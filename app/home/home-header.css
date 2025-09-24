@@ -1,0 +1,232 @@
+/* Home Header Styles */
+.home-page {
+  min-height: 100vh;
+  font-family: 'Arial', sans-serif;
+  direction: rtl;
+}
+
+.home-header {
+  background-color: #019EBB3D;
+  padding: 15px 0;
+  position: relative;
+  z-index: 100;
+  height: 80px;
+}
+
+.header-container {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  height: 100%;
+}
+
+/* Logo Section */
+.header-logo {
+  flex-shrink: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.logo-image {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Navigation Links */
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-right: 20px;
+}
+
+.nav-link {
+  background-color: white;
+  color: #019EBB;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  background-color: rgba(1, 158, 187, 0.1);
+  color: #019EBB;
+}
+
+.nav-link.active {
+  background-color: #019EBB;
+  color: white;
+}
+
+/* Auth Buttons */
+.header-auth {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-shrink: 0;
+}
+
+.auth-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  min-width: 100px;
+}
+
+.signup-btn {
+  background-color: transparent;
+  color: black;
+  border: none;
+}
+
+.signup-btn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.login-btn {
+  background-color: white;
+  color: black;
+  border: none;
+}
+
+.login-btn:hover {
+  background-color: #f0f0f0;
+  color: black;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  padding: 40px 20px;
+}
+
+.hero-placeholder {
+  text-align: center;
+  padding: 60px 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero-placeholder h1 {
+  font-size: 48px;
+  color: #333;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.hero-placeholder p {
+  font-size: 24px;
+  color: #666;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    gap: 15px;
+    padding: 0 15px;
+  }
+
+  .header-nav {
+    order: 3;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .header-auth {
+    order: 2;
+    gap: 10px;
+  }
+
+  .nav-link {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+
+  .auth-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    min-width: 80px;
+  }
+
+  .hero-placeholder h1 {
+    font-size: 32px;
+  }
+
+  .hero-placeholder p {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-header {
+    padding: 10px 0;
+  }
+
+  .header-container {
+    padding: 0 10px;
+  }
+
+  .logo-image {
+    height: 40px;
+  }
+
+  .header-nav {
+    gap: 15px;
+  }
+
+  .nav-link {
+    font-size: 13px;
+    padding: 5px 10px;
+  }
+
+  .auth-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    min-width: 70px;
+  }
+
+  .hero-placeholder {
+    padding: 40px 15px;
+  }
+
+  .hero-placeholder h1 {
+    font-size: 24px;
+  }
+
+  .hero-placeholder p {
+    font-size: 16px;
+  }
+}
+
+/* Additional styling for better visual hierarchy */
+.home-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(1, 158, 187, 0.3), transparent);
+}
