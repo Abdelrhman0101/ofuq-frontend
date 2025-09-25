@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import '../styles/auth.css';
+import ForgotPasswordForm from './ForgotPasswordForm';
 
 interface LoginFormProps {
   onTabChange?: (tab: 'login' | 'signup') => void;
@@ -9,6 +10,7 @@ interface LoginFormProps {
 
 const LoginForm: React.FC<LoginFormProps> = ({ onTabChange }) => {
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -16,6 +18,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onTabChange }) => {
 
   const handleTabChange = (tab: 'login' | 'signup') => {
     setActiveTab(tab);
+    setShowForgotPassword(false); // Reset forgot password view when switching tabs
     onTabChange?.(tab);
   };
 
@@ -33,6 +36,20 @@ const LoginForm: React.FC<LoginFormProps> = ({ onTabChange }) => {
       console.log('Login form submitted:', { email, password });
     }
   };
+
+  const handleForgotPasswordClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowForgotPassword(true);
+  };
+
+  const handleBackToLogin = () => {
+    setShowForgotPassword(false);
+  };
+
+  // Show forgot password form if requested
+  if (showForgotPassword) {
+    return <ForgotPasswordForm onBackToLogin={handleBackToLogin} />;
+  }
 
   return (
     <div className="auth-form-container">
@@ -115,6 +132,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ onTabChange }) => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          {activeTab === 'login' && (
+            <div className="forgot-password-link">
+              <a href="#" onClick={handleForgotPasswordClick}>
+                هل نسيت كلمة السر؟
+              </a>
+            </div>
+          )}
         </div>
 
         <button type="submit" className="login-btn">

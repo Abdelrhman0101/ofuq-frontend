@@ -5,7 +5,7 @@ import CourseCard from '../../components/CourseCard';
 import ValuesSection from '../../components/ValuesSection';
 import TestimonialsSlider from '../../components/TestimonialsSlider';
 import Footer from '../../components/Footer';
-import './home-header.css';
+import '../../styles/home-header.css';
 import '../../styles/course-cards.css';
 import '../../styles/contact-section.css';
 

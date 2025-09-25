@@ -72,9 +72,103 @@ export default function AdminDashboard() {
         .admin-main {
           flex: 1;
           padding: 2rem;
-          margin-right: 0px;
-          margin-top: 0px;
+          margin-right: 224px;
+          margin-top: 80px;
         }
+        
+        .dashboard-header {
+          margin-bottom: 2rem;
+        }
+        
+        .dashboard-header h1 {
+          color: #333;
+          margin-bottom: 0.5rem;
+        }
+        
+        .dashboard-stats {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 1rem;
+          margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+          background: white;
+          padding: 1.5rem;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card h3 {
+          color: #666;
+          font-size: 0.9rem;
+          margin-bottom: 0.5rem;
+        }
+        
+        .stat-number {
+          font-size: 2rem;
+          font-weight: bold;
+          color: #029CBE;
+          margin: 0;
+        }
+        
+        .quick-actions h2 {
+          color: #333;
+          margin-bottom: 1rem;
+        }
+        
+        .actions-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 1rem;
+        }
+        
+        .action-card {
+          background: white;
+          padding: 1.5rem;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          cursor: pointer;
+          transition: transform 0.2s ease;
+          text-decoration: none;
+          color: inherit;
+        }
+        
+        .action-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .action-card h3 {
+          color: #029CBE;
+          margin-bottom: 0.5rem;
+        }
+        
+        .action-card p {
+          color: #666;
+          font-size: 0.9rem;
+          margin: 0;
+        }
+        
+        @media (max-width: 768px) {
+          .admin-main {
+            margin-right: 0;
+            margin-top: 60px;
+            padding: 1rem;
+          }
+          
+          .dashboard-stats {
+            grid-template-columns: 1fr;
+          }
+          
+          .actions-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
         
         .dashboard-header {
           margin-bottom: 2rem;
