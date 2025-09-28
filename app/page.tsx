@@ -1,13 +1,13 @@
 import React from 'react';
-import HomeHeader from '../../components/HomeHeader';
-import HeroSection from '../../components/HeroSection';
-import CourseCard from '../../components/CourseCard';
-import ValuesSection from '../../components/ValuesSection';
-import TestimonialsSlider from '../../components/TestimonialsSlider';
-import Footer from '../../components/Footer';
-import '../../styles/home-header.css';
-import '../../styles/course-cards.css';
-import '../../styles/contact-section.css';
+import HomeHeader from '../components/HomeHeader';
+import HeroSection from '../components/HeroSection';
+import CourseCard from '../components/CourseCard';
+import ValuesSection from '../components/ValuesSection';
+import TestimonialsSlider from '../components/TestimonialsSlider';
+import Footer from '../components/Footer';
+import '../styles/home-header.css';
+import '../styles/course-cards.css';
+import '../styles/contact-section.css';
 
 export default function HomePage() {
   // بيانات وهمية للكورسات
