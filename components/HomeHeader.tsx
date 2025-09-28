@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import '../styles/home-header.css';
 
 const HomeHeader = () => {
@@ -34,9 +35,9 @@ const HomeHeader = () => {
 
             {/* Desktop Navigation Links */}
             <nav className="header-nav desktop-nav">
-              <a href="#" className="nav-link">عنّا</a>
-              <a href="#" className="nav-link">برامجنا التدريبية</a>
-              <a href="#" className="nav-link active">الرئيسية</a>
+              <Link href="/about" className="nav-link">عنّا</Link>
+              <Link href="/courses" className="nav-link">برامجنا التدريبية</Link>
+              <Link href="/" className="nav-link active">الرئيسية</Link>
             </nav>
           </div>
 
@@ -69,9 +70,9 @@ const HomeHeader = () => {
             </button>
           </div>
           <nav className="sidebar-nav">
-            <a href="#" className="sidebar-link active" onClick={closeSidebar}>الرئيسية</a>
-            <a href="#" className="sidebar-link" onClick={closeSidebar}>برامجنا التدريبية</a>
-            <a href="#" className="sidebar-link" onClick={closeSidebar}>عنّا</a>
+            <Link href="/" className="sidebar-link active" onClick={closeSidebar}>الرئيسية</Link>
+            <Link href="/courses" className="sidebar-link" onClick={closeSidebar}>برامجنا التدريبية</Link>
+            <Link href="/about" className="sidebar-link" onClick={closeSidebar}>عنّا</Link>
           </nav>
         </div>
       </div>

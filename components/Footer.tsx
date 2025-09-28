@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const Footer = () => {
   return (
@@ -54,9 +55,9 @@ const Footer = () => {
         <div className="footer-column">
           <h3 className="footer-title">تصفح الموقع</h3>
           <div className="footer-links">
-            <a href="/about" className="footer-link">عنّا</a>
-            <a href="/privacy" className="footer-link">الخصوصية</a>
-            <a href="/terms" className="footer-link">الشروط والأحكام</a>
+            <Link href="/about" className="footer-link">عنّا</Link>
+            <Link href="/privacy" className="footer-link">الخصوصية</Link>
+            <Link href="/terms" className="footer-link">الشروط والأحكام</Link>
           </div>
         </div>
 
