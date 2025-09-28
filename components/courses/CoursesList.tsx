@@ -39,9 +39,15 @@ const CoursesList: React.FC<CoursesListProps> = ({
                 <div className="course-card-content">
                   <div className="course-image">
                     {course.coverImage ? (
-                      <img src={URL.createObjectURL(course.coverImage)} alt={course.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'var(--border-radius-md)' }} />
+                      <img 
+                        src={URL.createObjectURL(course.coverImage)} 
+                        alt={course.title} 
+                        className="course-image"
+                      />
                     ) : (
-                      <span>📚</span>
+                      <div className="course-image-placeholder">
+                        <span>📚</span>
+                      </div>
                     )}
                   </div>
                   <div className="course-body">

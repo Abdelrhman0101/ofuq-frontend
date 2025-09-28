@@ -3,10 +3,6 @@ const nextConfig = {
   images: {
     domains: ['localhost'],
   },
-}
-
-
-module.exports = {
   webpack(config) {
     config.module.rules.push({
       test: /\.svg$/i,
@@ -26,4 +22,6 @@ module.exports = {
 
     return config;
   },
-};
+}
+
+module.exports = nextConfig;

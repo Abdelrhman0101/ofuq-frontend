@@ -303,17 +303,27 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
                               }}
                               className="video-upload-input"
                               id={`video-${chapter.id}-${lesson.id}`}
+                              style={{ display: 'none' }}
                             />
                             <label htmlFor={`video-${chapter.id}-${lesson.id}`} className="video-upload-btn">
-                              {lesson.videoFile ? (
-                                <span className="video-selected">
-                                  📹 {lesson.videoFile.name}
-                                </span>
-                              ) : (
-                                <span className="video-placeholder">
-                            
-                                </span>
-                              )}
+                              <div className="upload-area">
+                                {lesson.videoFile ? (
+                                  <div className="file-selected-content">
+                                    <div className="file-icon">📹</div>
+                                    <div className="file-info">
+                                      <div className="file-name">{lesson.videoFile.name}</div>
+                                      <div className="file-size">{(lesson.videoFile.size / 1024 / 1024).toFixed(2)} MB</div>
+                                    </div>
+                                    <div className="change-file-text">انقر لتغيير الفيديو</div>
+                                  </div>
+                                ) : (
+                                  <div className="upload-placeholder">
+                                    <div className="upload-icon">📹</div>
+                                    <div className="upload-text">انقر لرفع فيديو الدرس</div>
+                                    <div className="upload-subtext">MP4, AVI, MOV (حد أقصى 100MB)</div>
+                                  </div>
+                                )}
+                              </div>
                             </label>
                           </div>
                         </div>
@@ -355,48 +365,74 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
                               }}
                               className="attachments-upload-input"
                               id={`attachments-${chapter.id}-${lesson.id}`}
+                              style={{ display: 'none' }}
                             />
                             <label htmlFor={`attachments-${chapter.id}-${lesson.id}`} className="attachments-upload-btn">
-                  
-                            </label>
-                            
-                            {lesson.attachments && lesson.attachments.length > 0 && (
-                              <div className="attachments-list">
-                                {lesson.attachments.map((attachment, attachmentIndex) => (
-                                  <div key={attachmentIndex} className="attachment-item">
-                                    <span className="attachment-name">📄 {attachment.name}</span>
-                                    <button
-                                      onClick={() => {
-                                        setCourses(prevCourses => 
-                                          prevCourses.map(course =>
-                                            course.id === currentCourse.id
-                                              ? {
-                                                  ...course, 
-                                                  chapters: course.chapters.map((ch, idx) =>
-                                                    idx === chapterIndex
-                                                      ? { 
-                                                          ...ch, 
-                                                          lessons: ch.lessons.map((l, i) =>
-                                                            i === lessonIndex 
-                                                              ? { ...l, attachments: l.attachments.filter((_, ai) => ai !== attachmentIndex) }
-                                                              : l
-                                                          )
-                                                        }
-                                                      : ch
-                                                  )
-                                                }
-                                              : course
-                                          )
-                                        );
-                                      }}
-                                      className="remove-attachment-btn"
-                                    >
-                                      ✕
-                                    </button>
+                              <div className="upload-area">
+                                {lesson.attachments && lesson.attachments.length > 0 ? (
+                                  <div className="attachments-selected-content">
+                                    <div className="attachments-header">
+                                      <div className="file-icon">📄</div>
+                                      <div className="attachments-count">{lesson.attachments.length} مرفق(ات)</div>
+                                      <div className="add-more-text">انقر لإضافة المزيد</div>
+                                    </div>
+                                    <div className="attachments-preview">
+                                      {lesson.attachments.slice(0, 3).map((attachment, index) => (
+                                        <div key={index} className="attachment-preview-item">
+                                          <span className="attachment-preview-name">
+                                            {attachment.name.length > 20 ? 
+                                              `${attachment.name.substring(0, 20)}...` : 
+                                              attachment.name
+                                            }
+                                          </span>
+                                          <button
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+                                              setCourses(prevCourses => 
+                                                prevCourses.map(course =>
+                                                  course.id === currentCourse.id
+                                                    ? {
+                                                        ...course, 
+                                                        chapters: course.chapters.map((ch, idx) =>
+                                                          idx === chapterIndex
+                                                            ? { 
+                                                                ...ch, 
+                                                                lessons: ch.lessons.map((l, i) =>
+                                                                  i === lessonIndex 
+                                                                    ? { ...l, attachments: l.attachments.filter((_, ai) => ai !== index) }
+                                                                    : l
+                                                                )
+                                                              }
+                                                            : ch
+                                                        )
+                                                      }
+                                                    : course
+                                                )
+                                              );
+                                            }}
+                                            className="remove-attachment-preview-btn"
+                                          >
+                                            ✕
+                                          </button>
+                                        </div>
+                                      ))}
+                                      {lesson.attachments.length > 3 && (
+                                        <div className="more-attachments">
+                                          +{lesson.attachments.length - 3} أخرى
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
-                                ))}
+                                ) : (
+                                  <div className="upload-placeholder">
+                                    <div className="upload-icon">📄</div>
+                                    <div className="upload-text">انقر لرفع مرفقات الدرس</div>
+                                    <div className="upload-subtext">PDF, DOC, PPT (يمكن اختيار عدة ملفات)</div>
+                                  </div>
+                                )}
                               </div>
-                            )}
+                            </label>
                           </div>
                         </div>
 

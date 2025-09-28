@@ -22,7 +22,7 @@
   padding: 0 15px;
   border-radius: 12px;
   flex: 0 0 auto;
-  max-width: 200px;
+  max-width: 280px;
 }
 
 .popular-badge {
@@ -33,7 +33,7 @@
 }
 
 .popular-title {
-  font-size: 28px;
+  font-size: 20px;
   font-weight: bold;
   color: #333;
   margin: 20px 0 0 0;
@@ -78,7 +78,7 @@
 /* Course Cards Grid */
 .courses-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 30px;
   margin-top: 40px;
 }
@@ -288,6 +288,12 @@
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+  .courses-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .popular-courses-header {
     flex-direction: column;
@@ -315,6 +321,6 @@
   }
   
   .popular-title {
-    font-size: 24px;
+    font-size: 16px;
   }
 }

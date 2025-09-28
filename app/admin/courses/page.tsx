@@ -73,7 +73,7 @@ export default function Courses() {
       categoryId: '',
       price: courseBasicInfo.price,
       isFree: courseBasicInfo.isFree,
-      coverImage: undefined,
+      coverImage: courseBasicInfo.coverImage as File | undefined,
       status: 'draft',
       createdAt: new Date(),
       chapters: []
