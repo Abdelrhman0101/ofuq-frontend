@@ -5,9 +5,12 @@ import CourseCard from '../components/CourseCard';
 import ValuesSection from '../components/ValuesSection';
 import TestimonialsSlider from '../components/TestimonialsSlider';
 import Footer from '../components/Footer';
+import ScrollToTop from '../components/ScrollToTop';
+import SocialMediaFloat from '../components/SocialMediaFloat';
 import '../styles/home-header.css';
 import '../styles/course-cards.css';
 import '../styles/contact-section.css';
+import '../styles/floating-components.css';
 
 export default function HomePage() {
   // بيانات وهمية للكورسات
@@ -118,6 +121,10 @@ export default function HomePage() {
       </main>
       
       <Footer />
+      
+      {/* Floating Components */}
+      <ScrollToTop />
+      <SocialMediaFloat />
     </div>
   );
 }

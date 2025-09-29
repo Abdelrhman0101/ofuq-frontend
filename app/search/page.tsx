@@ -5,7 +5,10 @@ import HomeHeader from '../../components/HomeHeader';
 import Footer from '../../components/Footer';
 import HeroSearchSection from '../../components/HeroSearchSection';
 import CourseCard from '../../components/CourseCard';
+import ScrollToTop from '../../components/ScrollToTop';
+import SocialMediaFloat from '../../components/SocialMediaFloat';
 import '../../styles/course-cards.css';
+import '../../styles/floating-components.css';
 
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -273,6 +276,10 @@ export default function SearchPage() {
         </section>
       </main>
       <Footer />
+      
+      {/* Floating Components */}
+      <ScrollToTop />
+      <SocialMediaFloat />
     </div>
   );
 }

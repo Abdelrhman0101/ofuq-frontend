@@ -36,45 +36,67 @@ const HeroSection = () => {
   return (
     <section className="hero-section">
       <div className="hero-container">
-        {/* Left Side Content */}
-        <div className="hero-left">
-          {/* Student Stats */}
-          <div className="student-stats">
-            <div className="stats-content">
-              <span className="student-count">200+</span>
-              <span className="student-label">طالب سعيد</span>
+        {/* Main Content Grid */}
+        <div className="hero-content">
+          {/* Left Side Content */}
+          <div className="hero-left">
+            {/* Student Stats */}
+            <div className="student-stats">
+              <div className="stats-content">
+                <span className="student-count">200+</span>
+                <span className="student-label">طالب سعيد</span>
+              </div>
+              <div className="student-profiles">
+                {studentProfiles.map((profile, index) => (
+                  <div key={index} className="profile-avatar" style={{zIndex: studentProfiles.length - index}}>
+                    <img src={profile} alt={`Student ${index + 1}`} />
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="student-profiles">
-              {studentProfiles.map((profile, index) => (
-                <div key={index} className="profile-avatar" style={{zIndex: studentProfiles.length - index}}>
-                  <img src={profile} alt={`Student ${index + 1}`} />
-                </div>
-              ))}
+
+            {/* Certificate Badge */}
+            <div className="certificate-badge">
+              تعلّم واحصل على الشهادات
+            </div>
+
+            {/* Main Title */}
+            <div className="hero-title">
+              <h1>
+                تعلم مهارة جديدة وغيّر{' '}
+                <span className="animated-text">
+                  {displayText}
+                  <span className="cursor">|</span>
+                </span>
+              </h1>
+            </div>
+
+            {/* Subtitle */}
+            <p className="hero-subtitle">
+              دروس مبسطة، محتوى عالي الجودة، ودعم مستمر لمساعدتك تحقق أهدافك
+            </p>
+          </div>
+
+          {/* Right Side Content */}
+          <div className="hero-right">
+            <div className="hero-image-container">
+              <img 
+                src="/hero-image.png" 
+                alt="Learning Illustration" 
+                className="hero-image"
+              />
+              
+              {/* Course Stats */}
+              <div className="course-stats">
+                <span className="course-count">300+</span>
+                <span className="course-label">كورس ناجح</span>
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Certificate Badge */}
-          <div className="certificate-badge">
-            تعلّم واحصل على الشهادات
-          </div>
-
-          {/* Main Title */}
-          <div className="hero-title">
-            <h1>
-              تعلم مهارة جديدة وغيّر{' '}
-              <span className="animated-text">
-                {displayText}
-                <span className="cursor">|</span>
-              </span>
-            </h1>
-          </div>
-
-          {/* Subtitle */}
-          <p className="hero-subtitle">
-            دروس مبسطة، محتوى عالي الجودة، ودعم مستمر لمساعدتك تحقق أهدافك
-          </p>
-
-          {/* Smart Search */}
+        {/* Centered Search Section */}
+        <div className="hero-search-section">
           <div className="smart-search">
             <div className="search-container">
               <input 
@@ -87,23 +109,6 @@ const HeroSection = () => {
                   <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side Content */}
-        <div className="hero-right">
-          <div className="hero-image-container">
-            <img 
-              src="/hero-image.png" 
-              alt="Learning Illustration" 
-              className="hero-image"
-            />
-            
-            {/* Course Stats */}
-            <div className="course-stats">
-              <span className="course-count">300+</span>
-              <span className="course-label">كورس ناجح</span>
             </div>
           </div>
         </div>

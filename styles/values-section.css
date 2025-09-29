@@ -86,7 +86,8 @@
   height: 100%;
   background: linear-gradient(90deg, #019EBB 0%, #00C4E6 100%);
   border-radius: 4px;
-  transition: width 0.3s ease;
+  transition: width 2s ease-out;
+  width: 0%;
 }
 
 /* Right Section */

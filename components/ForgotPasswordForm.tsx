@@ -37,6 +37,11 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToLogin }
 
   return (
     <div className="auth-form-container">
+      {/* Logo */}
+      <div className="auth-form-logo">
+        <img src="/mahad_alofk2.png" alt="معهد الأفق للتعليم عن بعد" />
+      </div>
+
       {/* Form Content Container */}
       <div className="form-content forgot-password-content">
         {/* Title */}

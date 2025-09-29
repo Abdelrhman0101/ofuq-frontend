@@ -7,8 +7,11 @@ import VideoSection from '../../components/VideoSection';
 import CourseSidebar from '../../components/CourseSidebar';
 import CourseContent from '../../components/CourseContent';
 import CourseCard from '../../components/CourseCard';
+import ScrollToTop from '../../components/ScrollToTop';
+import SocialMediaFloat from '../../components/SocialMediaFloat';
 import '../../styles/course-details.css';
 import '../../styles/course-cards.css';
+import '../../styles/floating-components.css';
 
 const CourseDetailsPage = () => {
   // Sample data - in a real app, this would come from props or API
@@ -132,6 +135,10 @@ const CourseDetailsPage = () => {
       </section>
       
       <Footer />
+      
+      {/* Floating Components */}
+      <ScrollToTop />
+      <SocialMediaFloat />
       
       <style jsx>{`
         .course-details-page {

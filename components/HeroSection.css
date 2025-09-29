@@ -12,12 +12,33 @@
 .hero-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 60px 20px;
+  padding: 60px 20px 40px 20px;
+  display: flex;
+  flex-direction: column;
+  
+  align-items: center;
+  width: 100%;
+}
+
+/* Content Container */
+.hero-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 60px;
   align-items: center;
   width: 100%;
+}
+
+/* Search Section - Now separate and centered */
+.hero-search-section {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 0;
+  padding: 0;
+  /* Align search box from center of text to center of image */
+  margin-left: calc(50% / 2);
+  margin-right: calc(50% / 2);
 }
 
 /* Left Side Styles */
@@ -147,10 +168,9 @@
 
 .search-container {
   position: relative;
-  max-width: 400px;
+  width: 800px;
   background: rgba(255, 255, 255, 0.9);
   border-radius: 50px;
-  padding: 5px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
@@ -232,6 +252,7 @@
   flex-direction: column;
   align-items: center;
   animation: fadeInUp 1s ease-out 1.2s both;
+  gap: 0;
 }
 
 .course-count {
@@ -292,10 +313,9 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .hero-container {
+  .hero-content {
     grid-template-columns: 1fr;
     gap: 40px;
-    padding: 40px 20px;
   }
   
   .hero-title h1 {
@@ -336,5 +356,8 @@
   
   .course-count {
     font-size: 18px;
+  }
+  .search-container{
+    width: 100%;
   }
 }

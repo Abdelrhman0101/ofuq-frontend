@@ -7,6 +7,7 @@
   justify-content: center;
   padding: 20px;
   font-family: 'Arial', sans-serif;
+  position: relative;
 }
 
 .auth-form-container {
@@ -16,12 +17,27 @@
   height: auto;
   background: white;
   border-radius: 24px;
-  padding: 40px;
+  padding-top: 40px;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-bottom: 30;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
+}
+
+/* Logo inside form */
+.auth-form-logo {
+  margin-top: -70px;
+  margin-bottom: -20px;
+}
+
+.auth-form-logo img {
+  height: 150px;
+  width: auto;
+  object-fit: contain;
 }
 
 /* Tab Switch Buttons */
@@ -33,10 +49,7 @@
   border-radius: 5px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  position: absolute;
-  top: 40px;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-bottom: 40px;
 }
 
 .auth-tab {
@@ -68,7 +81,7 @@
 
 /* Form Content Container */
 .form-content {
-  margin-top: 145px;
+ 
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -312,7 +325,7 @@
   }
   
   .form-content {
-    margin-top: 105px;
+    margin-top: 0px;
   }
   
   .google-login-btn {
@@ -424,7 +437,7 @@
 
 /* Forgot Password Form Styles */
 .forgot-password-content {
-  margin-top: 60px;
+
   text-align: center;
 }
 
@@ -525,7 +538,7 @@
 
 @media (max-width: 480px) {
   .forgot-password-content {
-    margin-top: 40px;
+    margin-top: 0px;
   }
   
   .forgot-password-title {
@@ -574,7 +587,6 @@
 
 /* Verification Code Form Styles */
 .verification-content {
-  margin-top: 60px;
   text-align: center;
 }
 
@@ -734,7 +746,7 @@
 
 @media (max-width: 480px) {
   .verification-content {
-    margin-top: 40px;
+    margin-top: 0px;
   }
   
   .verification-title {
@@ -818,7 +830,6 @@
 
 /* New Password Form Styles */
 .new-password-content {
-  margin-top: 60px;
   text-align: center;
 }
 
@@ -965,7 +976,10 @@
 
 @media (max-width: 480px) {
   .new-password-content {
-    margin-top: 40px;
+    /* margin-top: 40px; */
+  }
+  .auth-form-logo img{
+    margin-top: 20px;
   }
   
   .new-password-title {

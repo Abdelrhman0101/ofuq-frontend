@@ -149,10 +149,20 @@
     flex-direction: column;
     width: 100%;
     max-width: 300px;
+    gap: 10px;
+    position: static;
   }
   
-  .contact-input,
+  .contact-input {
+    width: 100%;
+    padding: 0 20px;
+    position: static;
+  }
+  
   .contact-submit-btn {
     width: 100%;
+    position: static;
+    border-radius: 8px;
+    margin-top: 0;
   }
 }
