@@ -75,10 +75,10 @@ a {
   background: linear-gradient(90deg, #029CBE, #028BAB, #028BAB);
 }
 
-.logo-container {
+/* .logo-container {
   text-align: center;
   margin-bottom: 26px;
-}
+} */
 
 .logo {
   width: 51px;

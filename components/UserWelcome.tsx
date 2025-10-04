@@ -1,5 +1,5 @@
 import React from 'react';
-import './UserWelcome.css';
+import '../styles/user-welcome.css';
 
 interface UserWelcomeProps {
   userName?: string;

@@ -35,9 +35,10 @@ const HomeHeader = () => {
 
             {/* Desktop Navigation Links */}
             <nav className="header-nav desktop-nav">
-              <Link href="/about" className="nav-link">عنّا</Link>
-              <Link href="/courses" className="nav-link">برامجنا التدريبية</Link>
               <Link href="/" className="nav-link active">الرئيسية</Link>
+              <Link href="/courses" className="nav-link">برامجنا التدريبية</Link>
+              <Link href="/about" className="nav-link">عنّا</Link>
+
             </nav>
           </div>
 
@@ -54,8 +55,8 @@ const HomeHeader = () => {
 
           {/* Auth Buttons */}
           <div className="header-auth">
-            <button className="auth-btn login-btn">تسجيل دخول</button>
-            <button className="auth-btn signup-btn">إنشاء حساب</button>
+            <Link href="/auth" className="auth-btn login-btn1">تسجيل دخول</Link>
+            <Link href="/auth" className="auth-btn signup-btn">إنشاء حساب</Link>
           </div>
         </div>
       </header>

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import './WatchProgress.css';
+import '../styles/watch-progress.css';
 
 interface Course {
   id: number;

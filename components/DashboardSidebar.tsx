@@ -35,8 +35,8 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen = false, onC
           <Image
             src="/mahad_alofk2.png"
             alt="معهد الأفق للتعليم عن بعد"
-            width={150}
-            height={80}
+            width={200}
+            height={110}
             className="sidebar-logo"
           />
         </div>
@@ -62,7 +62,10 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen = false, onC
         <ul className="bottom-list">
           {bottomItems.map((item, index) => (
             <li key={index} className="bottom-item">
-              <Link href={item.href} className="bottom-link">
+              <Link 
+                href={item.href} 
+                className={`bottom-link ${pathname === item.href ? 'active' : ''}`}
+              >
                 <span className="bottom-icon">{item.icon}</span>
                 <span className="bottom-text">{item.name}</span>
               </Link>

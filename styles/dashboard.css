@@ -368,6 +368,15 @@
   color: #dc3545;
 }
 
+.bottom-link.active {
+  background-color: #019EBB;
+  color: white;
+}
+
+.bottom-link.active:hover {
+  background-color: #017a94;
+}
+
 .bottom-icon {
   font-size: 20px;
   margin-left: 12px;

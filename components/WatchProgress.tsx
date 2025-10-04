@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import CourseGrid from './CourseGrid';
 import { Course } from './CourseGrid';
-import './WatchProgress.css';
+import '../styles/watch-progress.css';
 
 interface WatchProgressProps {
   courses?: Course[];

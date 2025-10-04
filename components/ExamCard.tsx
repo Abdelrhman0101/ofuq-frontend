@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import './WatchProgress.css';
+import '../styles/watch-progress.css';
 
 interface Exam {
   id: number;

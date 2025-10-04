@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import './HeroSection.css';
+import '../styles/hero-section.css';
 
 const HeroSection = () => {
   const [displayText, setDisplayText] = useState('');

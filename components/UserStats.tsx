@@ -1,5 +1,5 @@
 import React from 'react';
-import './UserStats.css';
+import '../styles/user-stats.css';
 
 interface UserStatsProps {
   lastTestScore?: number;
