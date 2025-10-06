@@ -30,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
       )
     },
     {
-      href: '/students',
+      href: '/admin/students',
       label: 'الطلاب',
       icon: (
         <svg className="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">

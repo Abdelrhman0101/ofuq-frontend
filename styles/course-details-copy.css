@@ -1438,14 +1438,19 @@
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #666;
+  gap: 10px;
+  font-size: 15px;
+  color: #444;
+  font-weight: 500;
+  background: rgba(65, 66, 208, 0.05);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(65, 66, 208, 0.1);
 }
 
 .stat-icon {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   fill: #4142D0;
 }
 

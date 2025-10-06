@@ -1,4 +1,5 @@
-import React from 'react';
+'use client';
+import React, { useMemo, useState } from 'react';
 import { Course } from '@/types/course';
 
 interface ReviewStepProps {
@@ -27,6 +28,35 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
   const totalQuestions = currentCourse.chapters?.reduce((total, chapter) =>
     total + (chapter.lessons?.reduce((lessonTotal, lesson) =>
       lessonTotal + (lesson.questions?.length || 0), 0) || 0), 0) || 0;
+
+  // توليد امتحان الكورس: سؤال عشوائي من كل درس
+  const [examQuestions, setExamQuestions] = useState(() => {
+    const questions: any[] = [];
+    currentCourse.chapters.forEach((chapter) => {
+      chapter.lessons.forEach((lesson) => {
+        const qCount = lesson.questions?.length || 0;
+        if (qCount > 0) {
+          const idx = Math.floor(Math.random() * qCount);
+          questions.push({ ...lesson.questions[idx], lessonTitle: lesson.title });
+        }
+      });
+    });
+    return questions;
+  });
+
+  const regenerateExam = () => {
+    const questions: any[] = [];
+    currentCourse.chapters.forEach((chapter) => {
+      chapter.lessons.forEach((lesson) => {
+        const qCount = lesson.questions?.length || 0;
+        if (qCount > 0) {
+          const idx = Math.floor(Math.random() * qCount);
+          questions.push({ ...lesson.questions[idx], lessonTitle: lesson.title });
+        }
+      });
+    });
+    setExamQuestions(questions);
+  };
 
   return (
     <div className="course-creation-step review-step">
@@ -108,6 +138,32 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Course Exam Preview */}
+        {/* <div className="review-section">
+          <div className="review-section-header">
+            <h3 className="review-section-title">امتحان الكورس (سؤال واحد من كل درس)</h3>
+            <button className="step-save-btn" onClick={regenerateExam}>إعادة توليد الامتحان</button>
+          </div>
+          {examQuestions.length === 0 ? (
+            <p style={{ color: '#666' }}>لا توجد أسئلة في الدروس لتوليد الامتحان.</p>
+          ) : (
+            <div className="review-content-summary">
+              {examQuestions.map((q: any, index: number) => (
+                <div key={q.id || index} className="review-chapter-item">
+                  <div className="review-chapter-title">
+                    {`سؤال ${index + 1} - من الدرس: ${q.lessonTitle || ''}`}
+                  </div>
+                  <div className="review-chapter-lessons">
+                    <div className="review-lesson-item">
+                      {q.text}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div> */}
 
         {/* Action Buttons */}
         <div className="step-actions review-actions">

@@ -1,4 +1,149 @@
 /* Course Management System Styles */
+/* إضافات واجهة إدارة المحتوى: تبديل إتاحة الفيديو وروابط المصادر */
+.video-visibility-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+.video-visibility-toggle .toggle-label {
+  color: #028BAB;
+  font-size: 0.9rem;
+}
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+}
+.switch input {
+  display: none;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.2s;
+  border-radius: 24px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  top: 3px;
+  background-color: white;
+  transition: 0.2s;
+  border-radius: 50%;
+}
+.switch input:checked + .slider {
+  background-color: #028BAB;
+}
+.switch input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+.resource-link-section {
+  margin-top: 12px;
+  border-top: 1px solid #eee;
+  padding-top: 12px;
+}
+.resource-inputs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.resource-title-input,
+.resource-url-input,
+.resource-type-select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  min-width: 180px;
+}
+.add-resource-btn {
+  padding: 8px 12px;
+  background: #028BAB;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.add-resource-btn:hover {
+  opacity: 0.9;
+}
+.resource-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.resource-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8f9fa;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+.resource-badge {
+  font-size: 12px;
+  background: #e9ecef;
+  color: #028BAB;
+  padding: 2px 6px;
+  border-radius: 12px;
+  text-transform: capitalize;
+}
+.resource-link-text {
+  color: #028BAB;
+  text-decoration: underline;
+  flex: 1;
+}
+.remove-resource-btn {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* Icon-based resource type picker */
+.resource-type-picker {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.resource-type-picker .type-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+.resource-type-picker .type-item:hover {
+  border-color: #028BAB;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.resource-type-picker .type-item.selected {
+  border-color: #028BAB;
+  background: #EFF6FF;
+}
+.resource-type-picker .type-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  color: #028BAB;
+}
 
 /* Hero Stats */
 .hero-stats {
@@ -3589,9 +3734,9 @@ textarea:focus {
 }
 
 .stat-number {
-  font-size: 10px;
+  font-size: 20px;
   font-weight: 700;
-  color: #333;
+  color: #ffffff;
 }
 
 .stat-label {

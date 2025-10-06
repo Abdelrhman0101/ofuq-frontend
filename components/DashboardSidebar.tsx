@@ -16,6 +16,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen = false, onC
     { name: 'برامجي', icon: '📚', href: '/user/my_courses' },
     { name: 'اختباراتي', icon: '📝', href: '/user/my_exams' },
     { name: 'شهاداتي', icon: '🏆', href: '/user/my_certificates' },
+    { name: 'المفضلة', icon: '⭐', href: '/user/fav' },
   ];
 
   const bottomItems = [

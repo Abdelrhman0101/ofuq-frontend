@@ -33,10 +33,21 @@ export interface Lesson {
   title: string;
   description: string;
   videoFile?: File;
+  // تحديد إتاحة الفيديو للعامة أو لا
+  isVideoPublic?: boolean;
   attachments: File[];
   duration?: number;
   order: number;
   questions: Question[];
+  // روابط مصادر الدرس مع نوع الأيقونة
+  resources?: {
+    id: string;
+    title: string;
+    description?: string;
+    url: string;
+    type: 'website' | 'article' | 'video' | 'book' | 'tool' | 'other';
+    domain?: string;
+  }[];
 }
 
 export interface Chapter {

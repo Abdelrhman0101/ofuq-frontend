@@ -17,6 +17,48 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
   onNext,
   onPrev,
 }) => {
+  type ResourceType = 'website' | 'article' | 'video' | 'book' | 'tool' | 'other';
+
+  const renderResourceIcon = (type: ResourceType) => {
+    switch (type) {
+      case 'website':
+        return (
+          <svg viewBox="0 0 24 24" className="resource-icon website-icon">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+          </svg>
+        );
+      case 'article':
+        return (
+          <svg viewBox="0 0 24 24" className="resource-icon article-icon">
+            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h8c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+          </svg>
+        );
+      case 'video':
+        return (
+          <svg viewBox="0 0 24 24" className="resource-icon video-icon">
+            <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+          </svg>
+        );
+      case 'book':
+        return (
+          <svg viewBox="0 0 24 24" className="resource-icon book-icon">
+            <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z" />
+          </svg>
+        );
+      case 'tool':
+        return (
+          <svg viewBox="0 0 24 24" className="resource-icon tool-icon">
+            <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z" />
+          </svg>
+        );
+      default:
+        return (
+          <svg viewBox="0 0 24 24" className="resource-icon default-icon">
+            <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
+          </svg>
+        );
+    }
+  };
   return (
     <div className="step-content-container">
       <div className="step-header">
@@ -146,8 +188,10 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
                         title: '',
                         description: '',
                         attachments: [],
+                        isVideoPublic: false,
                         order: 1,
-                        questions: []
+                        questions: [],
+                        resources: []
                       };
                       setCourses(prevCourses => 
                         prevCourses.map(course =>
@@ -326,6 +370,41 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
                               </div>
                             </label>
                           </div>
+                          {/* Public/Private Switch */}
+                          <div className="video-visibility-toggle">
+                            <span className="toggle-label">إتاحة الفيديو للعامة</span>
+                            <label className="switch">
+                              <input
+                                type="checkbox"
+                                checked={!!lesson.isVideoPublic}
+                                onChange={(e) => {
+                                  const value = e.target.checked;
+                                  setCourses(prevCourses => 
+                                    prevCourses.map(course =>
+                                      course.id === currentCourse.id
+                                        ? {
+                                            ...course,
+                                            chapters: course.chapters.map((ch, idx) =>
+                                              idx === chapterIndex
+                                                ? {
+                                                    ...ch,
+                                                    lessons: ch.lessons.map((l, i) =>
+                                                      i === lessonIndex
+                                                        ? { ...l, isVideoPublic: value }
+                                                        : l
+                                                    )
+                                                  }
+                                                : ch
+                                            )
+                                          }
+                                        : course
+                                    )
+                                  );
+                                }}
+                              />
+                              <span className="slider round"></span>
+                            </label>
+                          </div>
                         </div>
 
                         {/* Attachments Section */}
@@ -433,6 +512,153 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
                                 )}
                               </div>
                             </label>
+                          </div>
+                          {/* Resource Link with Icon Selector */}
+                          <div className="resource-link-section">
+                            <div className="resource-inputs">
+                              <input
+                                type="text"
+                                placeholder="عنوان المصدر (اختياري)"
+                                className="resource-title-input"
+                                id={`res-title-${chapter.id}-${lesson.id}`}
+                              />
+                              <input
+                                type="url"
+                                placeholder="رابط المصدر (URL)"
+                                className="resource-url-input"
+                                id={`res-url-${chapter.id}-${lesson.id}`}
+                              />
+                              <input
+                                type="hidden"
+                                id={`res-type-${chapter.id}-${lesson.id}`}
+                                value="website"
+                              />
+                              <div
+                                className="resource-type-picker"
+                                id={`res-type-picker-${chapter.id}-${lesson.id}`}
+                              >
+                                {(['website','article','video','book','tool','other'] as ResourceType[]).map((t) => (
+                                  <button
+                                    key={t}
+                                    type="button"
+                                    className="type-item"
+                                    title={t}
+                                    onClick={(e) => {
+                                      const hidden = document.getElementById(`res-type-${chapter.id}-${lesson.id}`) as HTMLInputElement | null;
+                                      const picker = document.getElementById(`res-type-picker-${chapter.id}-${lesson.id}`);
+                                      if (hidden) hidden.value = t;
+                                      if (picker) {
+                                        Array.from(picker.querySelectorAll('.type-item')).forEach(el => el.classList.remove('selected'));
+                                        (e.currentTarget as HTMLButtonElement).classList.add('selected');
+                                      }
+                                    }}
+                                  >
+                                    <span className="type-icon">{renderResourceIcon(t)}</span>
+                                  </button>
+                                ))}
+                              </div>
+                              <button
+                                className="add-resource-btn"
+                                onClick={() => {
+                                  const titleEl = document.getElementById(`res-title-${chapter.id}-${lesson.id}`) as HTMLInputElement | null;
+                                  const urlEl = document.getElementById(`res-url-${chapter.id}-${lesson.id}`) as HTMLInputElement | null;
+                                  const typeEl = document.getElementById(`res-type-${chapter.id}-${lesson.id}`) as HTMLSelectElement | null;
+                                  const title = titleEl?.value?.trim() || '';
+                                  const url = urlEl?.value?.trim() || '';
+                                  const type = (typeEl?.value || 'website') as 'website' | 'article' | 'video' | 'book' | 'tool' | 'other';
+
+                                  if (!url) {
+                                    alert('يرجى إدخال رابط المصدر');
+                                    return;
+                                  }
+
+                                  const domainMatch = url.match(/https?:\/\/([^/]+)/i);
+                                  const domain = domainMatch ? domainMatch[1] : undefined;
+
+                                  const newResource = {
+                                    id: Date.now().toString(),
+                                    title: title || url,
+                                    url,
+                                    type,
+                                    domain,
+                                  };
+
+                                  setCourses(prevCourses => 
+                                    prevCourses.map(course =>
+                                      course.id === currentCourse.id
+                                        ? {
+                                            ...course,
+                                            chapters: course.chapters.map((ch, idx) =>
+                                              idx === chapterIndex
+                                                ? {
+                                                    ...ch,
+                                                    lessons: ch.lessons.map((l, i) =>
+                                                      i === lessonIndex
+                                                        ? { ...l, resources: [...(l.resources || []), newResource] }
+                                                        : l
+                                                    )
+                                                  }
+                                                : ch
+                                            )
+                                          }
+                                        : course
+                                    )
+                                  );
+
+                                  if (titleEl) titleEl.value = '';
+                                  if (urlEl) urlEl.value = '';
+                                  if (typeEl) typeEl.value = 'website';
+                                }}
+                              >
+                                إضافة رابط مصدر
+                              </button>
+                            </div>
+
+                            {/* Added resources list */}
+                            {(lesson.resources && lesson.resources.length > 0) && (
+                              <div className="resource-list">
+                                {lesson.resources.map((res, ri) => (
+                                  <div key={res.id} className="resource-list-item">
+                                    <span className={`resource-badge type-${res.type}`}>{res.type}</span>
+                                    <a href={res.url} target="_blank" rel="noreferrer" className="resource-link-text">
+                                      {res.title}
+                                    </a>
+                                    <button
+                                      className="remove-resource-btn"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        setCourses(prevCourses => 
+                                          prevCourses.map(course =>
+                                            course.id === currentCourse.id
+                                              ? {
+                                                  ...course,
+                                                  chapters: course.chapters.map((ch, idx) =>
+                                                    idx === chapterIndex
+                                                      ? {
+                                                          ...ch,
+                                                          lessons: ch.lessons.map((l, i) =>
+                                                            i === lessonIndex
+                                                              ? { 
+                                                                  ...l, 
+                                                                  resources: (l.resources || []).filter((_, rIndex) => rIndex !== ri) 
+                                                                }
+                                                              : l
+                                                          )
+                                                        }
+                                                      : ch
+                                                  )
+                                                }
+                                              : course
+                                          )
+                                        );
+                                      }}
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
 

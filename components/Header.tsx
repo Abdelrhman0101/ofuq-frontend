@@ -1,5 +1,7 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { getCurrentUser, signout, User } from '../utils/authService';
 import '../styles/header.css';
 
 const DropdownArrow = '/icons/dropdown-arrow.svg';
@@ -14,6 +16,14 @@ const CalendarIcon = '/icons/calendar.svg';
 const Header: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  
+  const router = useRouter();
+
+  useEffect(() => {
+    const userData = getCurrentUser();
+    setUser(userData);
+  }, []);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -25,10 +35,16 @@ const Header: React.FC = () => {
     setIsDropdownOpen(false);
   };
 
-  const handleLogout = () => {
-    // وظيفة تسجيل الخروج
-    console.log('تسجيل الخروج');
-    // يمكن إضافة منطق تسجيل الخروج هنا
+  const handleLogout = async () => {
+    try {
+      await signout();
+      console.log('تم تسجيل الخروج بنجاح');
+      router.push('/auth');
+    } catch (error) {
+      console.log('خطأ في تسجيل الخروج:', error);
+      // Even if API call fails, redirect to auth page
+      router.push('/auth');
+    }
   };
 
   return (
@@ -57,6 +73,14 @@ const Header: React.FC = () => {
           {/* القائمة المنسدلة للمستخدم */}
           {isDropdownOpen && (
             <div className="dropdown-menu">
+              {/* User Name Display */}
+              {user && (
+                <div className="dropdown-item user-info" style={{ borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '10px' }}>
+                  <span style={{ fontWeight: 'bold', color: '#333' }}>{user.name}</span>
+                  <span style={{ fontSize: '12px', color: '#666' }}>{user.email}</span>
+                </div>
+              )}
+              
               <div className="dropdown-item">
                 <img src={UserProfileIcon} alt="User Profile" width="16" height="16" />
                 <span>الملف الشخصي</span>

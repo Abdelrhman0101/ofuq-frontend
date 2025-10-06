@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import '../styles/auth.css';
 import ForgotPasswordForm from './ForgotPasswordForm';
+import { signup, signin } from '../utils/authService';
 
 interface LoginFormProps {
   onTabChange?: (tab: 'login' | 'signup') => void;
@@ -15,10 +17,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ onTabChange }) => {
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  const router = useRouter();
 
   const handleTabChange = (tab: 'login' | 'signup') => {
     setActiveTab(tab);
     setShowForgotPassword(false); // Reset forgot password view when switching tabs
+    setError(''); // Clear any errors when switching tabs
     onTabChange?.(tab);
   };
 
@@ -27,13 +35,65 @@ const LoginForm: React.FC<LoginFormProps> = ({ onTabChange }) => {
     console.log('Google login clicked');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission logic here
-    if (activeTab === 'signup') {
-      console.log('Signup form submitted:', { firstName, lastName, email, password });
-    } else {
-      console.log('Login form submitted:', { email, password });
+    setError('');
+    setIsLoading(true);
+
+    try {
+      console.log('[AuthForm] Submit clicked', { mode: activeTab });
+      if (activeTab === 'signup') {
+        // Validate password confirmation
+        if (password !== confirmPassword) {
+          setError('كلمات السر غير متطابقة');
+          console.log('[Signup] Password mismatch');
+          setIsLoading(false);
+          return;
+        }
+
+        const fullName = `${firstName} ${lastName}`;
+        console.log('[Signup] Full name composed', { fullName });
+        console.log('[Signup] Calling signup API');
+        const result = await signup({
+          name: fullName,
+          email,
+          password,
+          password_confirmation: confirmPassword
+        });
+
+        console.log('Signup successful:', result);
+        
+        // Redirect based on role
+        if (result.user.role === 'admin') {
+          console.log('[Signup] Routing to /admin');
+          router.push('/admin');
+        } else {
+          console.log('[Signup] Routing to /user');
+          router.push('/user');
+        }
+      } else {
+        console.log('[Signin] Calling signin API');
+        const result = await signin({
+          email,
+          password
+        });
+
+        console.log('Signin successful:', result);
+        
+        // Redirect based on role
+        if (result.user.role === 'admin') {
+          console.log('[Signin] Routing to /admin');
+          router.push('/admin');
+        } else {
+          console.log('[Signin] Routing to /user');
+          router.push('/user');
+        }
+      }
+    } catch (error: any) {
+      console.log('Authentication Error:', error);
+      setError(error.message || 'حدث خطأ أثناء المعالجة');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -146,8 +206,29 @@ const LoginForm: React.FC<LoginFormProps> = ({ onTabChange }) => {
           )}
         </div>
 
-        <button type="submit" className="login-btn">
-          {activeTab === 'login' ? 'تسجيل الدخول' : 'إنشاء حساب'}
+        {/* Confirm Password Field - Only show for signup */}
+        {activeTab === 'signup' && (
+          <div className="form-field">
+            <input
+              type="password"
+              className="form-input"
+              placeholder="تأكيد كلمة السر"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="error-message" style={{ color: 'red', marginBottom: '15px', textAlign: 'center' }}>
+            {error}
+          </div>
+        )}
+
+        <button type="submit" className="login-btn" disabled={isLoading}>
+          {isLoading ? 'جاري المعالجة...' : (activeTab === 'login' ? 'تسجيل الدخول' : 'إنشاء حساب')}
         </button>
       </form>
 

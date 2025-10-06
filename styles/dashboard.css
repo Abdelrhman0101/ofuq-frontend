@@ -67,9 +67,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #019EBB, #0288A3);
-  border-radius: 50%;
-  color: white;
+  
 }
 
 .stat-content {
@@ -301,7 +299,7 @@
 .nav-link {
   display: flex;
   align-items: center;
-  padding: 12px 24px;
+  padding: 11px 24px;
   color: #495057;
   text-decoration: none;
   transition: all 0.3s ease;
@@ -340,6 +338,7 @@
   padding: 20px 0;
   border-top: 1px solid #e9ecef;
   margin-top: auto;
+  
 }
 
 .bottom-list {
@@ -355,7 +354,7 @@
 .bottom-link {
   display: flex;
   align-items: center;
-  padding: 12px 24px;
+  padding: 0 24px;
   color: #495057;
   text-decoration: none;
   transition: all 0.3s ease;
