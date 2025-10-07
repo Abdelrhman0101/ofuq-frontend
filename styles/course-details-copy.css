@@ -1319,6 +1319,307 @@
   color: #333;
 }
 
+/* Final Exam Section Styles */
+.final-exam-section {
+  margin: 40px 0 30px 0;
+  padding: 0;
+}
+
+.final-exam-card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border: 2px solid #e9ecef;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.final-exam-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #019EBB 0%, #0288a3 50%, #017a94 100%);
+}
+
+.exam-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.exam-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #019EBB 0%, #0288a3 100%);
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(1, 158, 187, 0.3);
+  flex-shrink: 0;
+}
+
+.exam-icon {
+  width: 32px;
+  height: 32px;
+  fill: white;
+}
+
+.exam-info {
+  flex: 1;
+  text-align: right;
+}
+
+.exam-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.exam-description {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.exam-progress {
+  margin: 25px 0;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.progress-info {
+  margin-bottom: 15px;
+}
+
+.progress-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  display: block;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 12px;
+  background: #e9ecef;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #019EBB 0%, #0288a3 100%);
+  border-radius: 6px;
+  transition: width 0.5s ease;
+  position: relative;
+}
+
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.final-exam-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px 30px;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+  margin: 20px 0;
+}
+
+.final-exam-btn.enabled {
+  background: linear-gradient(135deg, #019EBB 0%, #0288a3 100%);
+  color: white;
+  box-shadow: 0 6px 20px rgba(1, 158, 187, 0.3);
+}
+
+.final-exam-btn.enabled:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(1, 158, 187, 0.4);
+  background: linear-gradient(135deg, #0288a3 0%, #017a94 100%);
+}
+
+.final-exam-btn.enabled:active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(1, 158, 187, 0.3);
+}
+
+.final-exam-btn.disabled {
+  background: #f8f9fa;
+  color: #6b7280;
+  border: 2px solid #e9ecef;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.final-exam-btn.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.exam-btn-icon {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+  transition: transform 0.3s ease;
+}
+
+.final-exam-btn.enabled:hover .exam-btn-icon {
+  transform: scale(1.1);
+}
+
+.exam-requirements {
+  margin-top: 20px;
+  padding: 15px 20px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 10px;
+}
+
+.requirement-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #856404;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: right;
+}
+
+.requirement-icon {
+  width: 20px;
+  height: 20px;
+  fill: #f39c12;
+  flex-shrink: 0;
+}
+
+/* Responsive Design for Final Exam */
+@media (max-width: 768px) {
+  .final-exam-section {
+    margin: 30px 10px 20px 10px;
+  }
+  
+  .final-exam-card {
+    padding: 20px 15px;
+  }
+  
+  .exam-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .exam-icon-container {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .exam-icon {
+    width: 26px;
+    height: 26px;
+  }
+  
+  .exam-title {
+    font-size: 20px;
+  }
+  
+  .exam-description {
+    font-size: 14px;
+  }
+  
+  .exam-progress {
+    padding: 15px;
+  }
+  
+  .progress-text {
+    font-size: 14px;
+  }
+  
+  .final-exam-btn {
+    padding: 15px 20px;
+    font-size: 16px;
+  }
+  
+  .exam-btn-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .requirement-item {
+    font-size: 14px;
+    gap: 10px;
+  }
+  
+  .requirement-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .final-exam-card {
+    padding: 15px 10px;
+  }
+  
+  .exam-title {
+    font-size: 18px;
+  }
+  
+  .exam-description {
+    font-size: 13px;
+  }
+  
+  .progress-text {
+    font-size: 13px;
+  }
+  
+  .final-exam-btn {
+    padding: 12px 15px;
+    font-size: 15px;
+  }
+  
+  .requirement-item {
+    font-size: 13px;
+  }
+}
+
 .instructor-info {
   display: flex;
   align-items: center;

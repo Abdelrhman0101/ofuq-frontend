@@ -116,8 +116,85 @@
   flex-shrink: 0;
 }
 
+/* Dropdown Styles */
+.nav-dropdown {
+  position: relative;
+}
+
+.dropdown-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  justify-content: space-between;
+}
+
+.dropdown-toggle::before {
+  display: none !important;
+}
+
+.dropdown-arrow {
+  transition: transform 0.3s ease;
+  margin-left: auto;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+.dropdown-menu.open {
+  max-height: 200px;
+  transform: translateY(0);
+  opacity: 1;
+  
+}
+
+.dropdown-link {
+  display: block;
+  padding: 0.8rem 1.5rem 0.8rem 2.5rem;
+  color: #495057;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 400;
+  transition: all 0.3s ease;
+  border-radius: 6px;
+  margin: 0.3rem 0.5rem;
+  font-family: 'Cairo', sans-serif;
+  background: white;
+  border: 1px solid transparent;
+}
+
+.dropdown-link:hover {
+  background: linear-gradient(135deg, #029CBE 0%, #0288a8 100%);
+  color: white;
+  transform: translateX(-3px);
+  border-color: #029CBE;
+  box-shadow: 0 2px 6px rgba(2, 156, 190, 0.2);
+}
+
+.dropdown-link.active {
+  background: linear-gradient(135deg, #029CBE 0%, #0288a8 100%);
+  color: white;
+  font-weight: 500;
+  border-color: #029CBE;
+  box-shadow: 0 2px 6px rgba(2, 156, 190, 0.3);
+}
+
 .sidebar-footer {
-  position: absolute;
+  position: relative;
   bottom: 0;
   left: 0;
   right: 0;
@@ -150,12 +227,21 @@
   }
   
   .sidebar-logo {
-    width: 48px;
-    height: 48px;
+    width: 120px;
+    height: 120px;
+  }
+  
+  .sidebar-logo img {
+    width: 120px;
+    height: 120px;
   }
   
   .sidebar-title {
-    font-size: 0.88rem;
+    display: none;
+  }
+  
+  .sidebar-subtitle {
+    display: none;
   }
   
   .nav-link {
@@ -170,19 +256,25 @@
   
   .sidebar-header {
     padding: 0.8rem;
+    padding-bottom: 0rem;
   }
   
   .sidebar-logo {
-    width: 40px;
-    height: 40px;
+    width: 100px;
+    height: 100px;
+  }
+  
+  .sidebar-logo img {
+    width: 100px;
+    height: 100px;
   }
   
   .sidebar-title {
-    font-size: 0.8rem;
+    display: none;
   }
   
   .sidebar-subtitle {
-    font-size: 0.64rem;
+    display: none;
   }
 }
 

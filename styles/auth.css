@@ -216,7 +216,36 @@
   color: #3638b8;
 }
 
-/* Footer Link */
+/* Footer Links Styles */
+.auth-footer-links {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  text-align: right;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.auth-footer-links .footer-link {
+  color: #6c757d;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
+}
+
+.auth-footer-links .footer-link:hover {
+  color: #4142D0;
+  text-decoration: underline;
+}
+
+.auth-footer-links .link-separator {
+  margin: 0 1rem;
+  color: #dee2e6;
+}
+
 .footer-link {
   
   color: #666;

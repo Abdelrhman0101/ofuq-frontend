@@ -160,9 +160,20 @@
   border-bottom: 1px solid #eee;
 }
 
+.sm-table thead th:first-child {
+  width: 60px;
+  text-align: center;
+}
+
 .sm-table tbody td {
   padding: 12px;
   border-bottom: 1px solid #f1f1f1;
+}
+
+.sm-table tbody td:first-child {
+  text-align: center;
+  font-weight: 600;
+  color: #0298BA;
 }
 
 .sm-actions {

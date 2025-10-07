@@ -7,17 +7,33 @@ import '../styles/sidebar.css';
 
 interface SidebarProps {
   isOpen?: boolean;
+  isMobileOpen?: boolean;
+  onClose?: () => void;
+}
+
+interface SubNavItem {
+  href: string;
+  label: string;
 }
 
 interface NavItem {
   href: string;
   label: string;
   icon: React.ReactNode;
+  subItems?: SubNavItem[];
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, isMobileOpen = false, onClose }) => {
   const pathname = usePathname();
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [openDropdowns, setOpenDropdowns] = useState<string[]>([]);
+
+  const toggleDropdown = (href: string) => {
+    setOpenDropdowns(prev => 
+      prev.includes(href) 
+        ? prev.filter(item => item !== href)
+        : [...prev, href]
+    );
+  };
 
   const navItems: NavItem[] = [
     {
@@ -48,18 +64,58 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
       )
     },
     {
-      href: '/reports',
+      href: '/admin/instructors',
+      label: 'المحاضرين',
+      icon: (
+        <svg className="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        </svg>
+      )
+    },
+    {
+      href: '/admin/reports',
       label: 'التقارير',
       icon: (
         <svg className="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
           <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
         </svg>
-      )
+      ),
+      subItems: [
+        {
+          href: '/admin/reports/financial',
+          label: 'التقارير المالية'
+        },
+        {
+          href: '/admin/reports/visits',
+          label: 'الزيارات'
+        }
+      ]
+    },
+    {
+      href: '/admin/policies',
+      label: 'السياسات',
+      icon: (
+        <svg className="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+        </svg>
+      ),
+      subItems: [
+        {
+          href: '/admin/policies/privacy',
+          label: 'سياسة الخصوصية'
+        },
+        {
+          href: '/admin/policies/terms',
+          label: 'الشروط والأحكام'
+        }
+      ]
     }
   ];
 
   const toggleMobileSidebar = () => {
-    setIsMobileOpen(!isMobileOpen);
+    if (onClose) {
+      onClose();
+    }
   };
 
   return (
@@ -83,14 +139,63 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
         <nav className="sidebar-nav">
           {navItems.map((item) => (
             <div key={item.href} className="nav-item">
-              <Link 
-                href={item.href} 
-                className={`nav-link ${pathname === item.href ? 'active' : ''}`}
-                onClick={() => setIsMobileOpen(false)}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </Link>
+              {item.subItems ? (
+                // Dropdown menu item
+                <div className="nav-dropdown">
+                  <button 
+                    className={`nav-link dropdown-toggle ${
+                      pathname.startsWith(item.href) ? 'active' : ''
+                    }`}
+                    onClick={() => toggleDropdown(item.href)}
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                    <svg 
+                      className={`dropdown-arrow ${
+                        openDropdowns.includes(item.href) ? 'open' : ''
+                      }`} 
+                      width="16" 
+                      height="16" 
+                      viewBox="0 0 24 24" 
+                      fill="currentColor"
+                    >
+                      <path d="M7 10l5 5 5-5z"/>
+                    </svg>
+                  </button>
+                  <div className={`dropdown-menu ${
+                    openDropdowns.includes(item.href) ? 'open' : ''
+                  }`}>
+                    {item.subItems.map((subItem) => (
+                      <Link 
+                        key={subItem.href}
+                        href={subItem.href} 
+                        className={`dropdown-link ${
+                          pathname === subItem.href ? 'active' : ''
+                        }`}
+                        onClick={() => {
+                          setIsMobileOpen(false);
+                          if (onClose) onClose();
+                        }}
+                      >
+                        {subItem.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                // Regular menu item
+                <Link 
+                  href={item.href} 
+                  className={`nav-link ${pathname === item.href ? 'active' : ''}`}
+                  onClick={() => {
+                    setIsMobileOpen(false);
+                    if (onClose) onClose();
+                  }}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              )}
             </div>
           ))}
         </nav>
@@ -107,7 +212,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
       {isMobileOpen && (
         <div 
           className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={() => setIsMobileOpen(false)}
+          onClick={() => {
+            if (onClose) onClose();
+          }}
         />
       )}
     </>

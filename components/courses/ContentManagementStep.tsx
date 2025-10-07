@@ -18,6 +18,9 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
   onPrev,
 }) => {
   type ResourceType = 'website' | 'article' | 'video' | 'book' | 'tool' | 'other';
+  
+  // State for video upload method (file or url)
+  const [videoUploadMethods, setVideoUploadMethods] = useState<{[key: string]: 'file' | 'url'}>({});
 
   const renderResourceIcon = (type: ResourceType) => {
     switch (type) {
@@ -315,13 +318,149 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
                           <label className="video-upload-label">
                             فيديو الدرس
                           </label>
-                          <div className="video-upload-container">
-                            <input
-                              type="file"
-                              accept="video/*"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
+                          
+                          {/* Video Upload Method Toggle */}
+                          <div className="video-upload-method-toggle">
+                            <button
+                              type="button"
+                              className={`upload-method-btn ${(videoUploadMethods[lesson.id] || 'file') === 'file' ? 'active' : ''}`}
+                              onClick={() => {
+                                setVideoUploadMethods(prev => ({
+                                  ...prev,
+                                  [lesson.id]: 'file'
+                                }));
+                                // Clear URL when switching to file
+                                setCourses(prevCourses => 
+                                  prevCourses.map(course =>
+                                    course.id === currentCourse.id
+                                      ? {
+                                          ...course, 
+                                          chapters: course.chapters.map((ch, idx) =>
+                                            idx === chapterIndex
+                                              ? { 
+                                                  ...ch, 
+                                                  lessons: ch.lessons.map((l, i) =>
+                                                    i === lessonIndex 
+                                                      ? { ...l, videoUrl: undefined }
+                                                      : l
+                                                  )
+                                                }
+                                              : ch
+                                          )
+                                        }
+                                      : course
+                                  )
+                                );
+                              }}
+                            >
+                              <span className="upload-method-icon">📁</span>
+                              رفع ملف
+                            </button>
+                            <button
+                              type="button"
+                              className={`upload-method-btn ${videoUploadMethods[lesson.id] === 'url' ? 'active' : ''}`}
+                              onClick={() => {
+                                setVideoUploadMethods(prev => ({
+                                  ...prev,
+                                  [lesson.id]: 'url'
+                                }));
+                                // Clear file when switching to URL
+                                setCourses(prevCourses => 
+                                  prevCourses.map(course =>
+                                    course.id === currentCourse.id
+                                      ? {
+                                          ...course, 
+                                          chapters: course.chapters.map((ch, idx) =>
+                                            idx === chapterIndex
+                                              ? { 
+                                                  ...ch, 
+                                                  lessons: ch.lessons.map((l, i) =>
+                                                    i === lessonIndex 
+                                                      ? { ...l, videoFile: undefined }
+                                                      : l
+                                                  )
+                                                }
+                                              : ch
+                                          )
+                                        }
+                                      : course
+                                  )
+                                );
+                              }}
+                            >
+                              <span className="upload-method-icon">🔗</span>
+                              رابط فيديو
+                            </button>
+                          </div>
+
+                          {/* File Upload */}
+                          {(videoUploadMethods[lesson.id] || 'file') === 'file' && (
+                            <div className="video-upload-container">
+                              <input
+                                type="file"
+                                accept="video/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    setCourses(prevCourses => 
+                                      prevCourses.map(course =>
+                                        course.id === currentCourse.id
+                                          ? {
+                                              ...course, 
+                                              chapters: course.chapters.map((ch, idx) =>
+                                                idx === chapterIndex
+                                                  ? { 
+                                                      ...ch, 
+                                                      lessons: ch.lessons.map((l, i) =>
+                                                        i === lessonIndex 
+                                                          ? { ...l, videoFile: file }
+                                                          : l
+                                                      )
+                                                    }
+                                                  : ch
+                                              )
+                                            }
+                                          : course
+                                      )
+                                    );
+                                  }
+                                }}
+                                className="video-upload-input"
+                                id={`video-${chapter.id}-${lesson.id}`}
+                                style={{ display: 'none' }}
+                              />
+                              <label htmlFor={`video-${chapter.id}-${lesson.id}`} className="video-upload-btn">
+                                <div className="upload-area">
+                                  {lesson.videoFile ? (
+                                    <div className="file-selected-content">
+                                      <div className="file-icon">📹</div>
+                                      <div className="file-info">
+                                        <div className="file-name">{lesson.videoFile.name}</div>
+                                        <div className="file-size">{(lesson.videoFile.size / 1024 / 1024).toFixed(2)} MB</div>
+                                      </div>
+                                      <div className="change-file-text">انقر لتغيير الفيديو</div>
+                                    </div>
+                                  ) : (
+                                    <div className="upload-placeholder">
+                                      <div className="upload-icon">📹</div>
+                                      <div className="upload-text">انقر لرفع فيديو الدرس</div>
+                                      <div className="upload-subtext">MP4, AVI, MOV (حد أقصى 100MB)</div>
+                                    </div>
+                                  )}
+                                </div>
+                              </label>
+                            </div>
+                          )}
+
+                          {/* URL Input */}
+                          {videoUploadMethods[lesson.id] === 'url' && (
+                            <div className="video-url-input-container">
+                              <input
+                                type="url"
+                                placeholder="أدخل رابط الفيديو (Google Drive, YouTube, Vimeo, إلخ)"
+                                value={lesson.videoUrl || ''}
+                                onChange={(e) => {
+                                  const url = e.target.value;
                                   setCourses(prevCourses => 
                                     prevCourses.map(course =>
                                       course.id === currentCourse.id
@@ -333,7 +472,7 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
                                                     ...ch, 
                                                     lessons: ch.lessons.map((l, i) =>
                                                       i === lessonIndex 
-                                                        ? { ...l, videoFile: file }
+                                                        ? { ...l, videoUrl: url }
                                                         : l
                                                     )
                                                   }
@@ -343,33 +482,17 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
                                         : course
                                     )
                                   );
-                                }
-                              }}
-                              className="video-upload-input"
-                              id={`video-${chapter.id}-${lesson.id}`}
-                              style={{ display: 'none' }}
-                            />
-                            <label htmlFor={`video-${chapter.id}-${lesson.id}`} className="video-upload-btn">
-                              <div className="upload-area">
-                                {lesson.videoFile ? (
-                                  <div className="file-selected-content">
-                                    <div className="file-icon">📹</div>
-                                    <div className="file-info">
-                                      <div className="file-name">{lesson.videoFile.name}</div>
-                                      <div className="file-size">{(lesson.videoFile.size / 1024 / 1024).toFixed(2)} MB</div>
-                                    </div>
-                                    <div className="change-file-text">انقر لتغيير الفيديو</div>
-                                  </div>
-                                ) : (
-                                  <div className="upload-placeholder">
-                                    <div className="upload-icon">📹</div>
-                                    <div className="upload-text">انقر لرفع فيديو الدرس</div>
-                                    <div className="upload-subtext">MP4, AVI, MOV (حد أقصى 100MB)</div>
-                                  </div>
-                                )}
-                              </div>
-                            </label>
-                          </div>
+                                }}
+                                className="video-url-input"
+                              />
+                              {lesson.videoUrl && (
+                                <div className="video-url-preview">
+                                  <span className="video-url-preview-icon">🔗</span>
+                                  <span>رابط الفيديو: {lesson.videoUrl.length > 50 ? lesson.videoUrl.substring(0, 50) + '...' : lesson.videoUrl}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
                           {/* Public/Private Switch */}
                           <div className="video-visibility-toggle">
                             <span className="toggle-label">إتاحة الفيديو للعامة</span>

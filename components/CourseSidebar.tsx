@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface CourseSidebarProps {
   courseImage: string;
@@ -20,14 +21,15 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
   instructorImage
 }) => {
   const [isFavorite, setIsFavorite] = useState(false);
+  const router = useRouter();
 
   const toggleFavorite = () => {
     setIsFavorite(!isFavorite);
   };
 
   const handleRegister = () => {
-    // Handle registration logic here
-    console.log('Registration clicked');
+    // Navigate to checkout page
+    router.push('/checkout');
   };
 
   const handleSocialShare = (platform: string) => {

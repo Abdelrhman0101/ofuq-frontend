@@ -65,16 +65,14 @@ const ValuesSection = () => {
           <p className="values-subtitle">قيم حالتنا</p>
           <h2 className="values-title">برامجنا التدريبية مختلفة جدا عن جميع البرامج الاخرى</h2>
           <p className="values-description">
-            لوريم إيبسوم دولور سيت أميت، كونسيتيتور أديبيسكنغ إليت، سيد دو أيوسمود تيبور إنسيديدنت أوت ليبوري.
+            يعتبر من أهم البرامج التدريبية في مصر، حيث يقدم دورات تدريبية متقدمة في مختلف المجالات مثل التكنولوجيا، الأعمال، والتربية.
           </p>
           
           {/* Statistics */}
-          <div className="statistics">
-            <div className="stat-item">
-              <div className="stat-header">
-                <span className="stat-label">نجاح دراسة الحالة</span>
-                <span className="stat-percentage">{animatedPercentages.success}%</span>
-              </div>
+          <div className="statistics" style={{alignItems: 'start'}}>
+            <div className="stat-item" >
+              <div className="stat-label">جودة التعليم<div className="stat-percentage">{animatedPercentages.success}%</div></div>
+              
               <div className="progress-bar">
                 <div 
                   className="progress-fill" 
@@ -87,10 +85,8 @@ const ValuesSection = () => {
             </div>
             
             <div className="stat-item">
-              <div className="stat-header">
-                <span className="stat-label">طالب سعيد</span>
-                <span className="stat-percentage">{animatedPercentages.happy}%</span>
-              </div>
+              <div className="stat-label">رضا الطلاب<div className="stat-percentage">{animatedPercentages.happy}%</div></div>
+              
               <div className="progress-bar">
                 <div 
                   className="progress-fill" 
@@ -103,10 +99,8 @@ const ValuesSection = () => {
             </div>
             
             <div className="stat-item">
-              <div className="stat-header">
-                <span className="stat-label">مجتمع الطلاب</span>
-                <span className="stat-percentage">{animatedPercentages.community}%</span>
-              </div>
+              <div className="stat-label">معدل إتمام الدورات<div className="stat-percentage">{animatedPercentages.community}%</div></div>
+              
               <div className="progress-bar">
                 <div 
                   className="progress-fill" 

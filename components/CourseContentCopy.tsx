@@ -6,6 +6,7 @@ import InstructorProfile from './InstructorProfile';
 import LessonAttachments from './LessonAttachments';
 import LessonResources from './LessonResources';
 import '../styles/course-details-copy.css';
+import '../styles/student-reviews.css';
 
 interface CourseContentProps {
   rating: number;
@@ -403,6 +404,113 @@ const CourseContentCopy: React.FC<CourseContentProps> = ({
                   )}
                 </div>
               ))}
+            </div>
+
+            {/* Final Exam Section */}
+            <div className="final-exam-section">
+              <div className="final-exam-card">
+                <div className="exam-header">
+                  <div className="exam-icon-container">
+                    <svg className="exam-icon" viewBox="0 0 24 24">
+                      <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                  </div>
+                  <div className="exam-info">
+                    <h3 className="exam-title">الاختبار النهائي للكورس</h3>
+                    <p className="exam-description">اختبار شامل لجميع محتويات الكورس</p>
+                  </div>
+                </div>
+                
+                <div className="exam-progress">
+                  <div className="progress-info">
+                    <span className="progress-text">
+                      {(() => {
+                        const totalLessons = courseContentData.reduce((total, section) => total + section.lessons.length, 0);
+                        const completedLessons = courseContentData.reduce((total, section) => 
+                          total + section.lessons.filter(lesson => lesson.completed).length, 0);
+                        const progressPercentage = Math.round((completedLessons / totalLessons) * 100);
+                        const allCompleted = completedLessons === totalLessons;
+                        
+                        return allCompleted 
+                          ? "تم إكمال جميع الدروس - يمكنك الآن أداء الاختبار النهائي"
+                          : `تم إكمال ${completedLessons} من ${totalLessons} دروس (${progressPercentage}%)`;
+                      })()}
+                    </span>
+                  </div>
+                  
+                  <div className="progress-bar-container">
+                    <div 
+                      className="progress-bar-fill"
+                      style={{
+                        width: `${(() => {
+                          const totalLessons = courseContentData.reduce((total, section) => total + section.lessons.length, 0);
+                          const completedLessons = courseContentData.reduce((total, section) => 
+                            total + section.lessons.filter(lesson => lesson.completed).length, 0);
+                          return Math.round((completedLessons / totalLessons) * 100);
+                        })()}%`
+                      }}
+                    ></div>
+                  </div>
+                </div>
+
+                <button 
+                  className={`final-exam-btn ${(() => {
+                    const totalLessons = courseContentData.reduce((total, section) => total + section.lessons.length, 0);
+                    const completedLessons = courseContentData.reduce((total, section) => 
+                      total + section.lessons.filter(lesson => lesson.completed).length, 0);
+                    return completedLessons === totalLessons ? 'enabled' : 'disabled';
+                  })()}`}
+                  disabled={(() => {
+                    const totalLessons = courseContentData.reduce((total, section) => total + section.lessons.length, 0);
+                    const completedLessons = courseContentData.reduce((total, section) => 
+                      total + section.lessons.filter(lesson => lesson.completed).length, 0);
+                    return completedLessons !== totalLessons;
+                  })()}
+                  onClick={() => {
+                    const totalLessons = courseContentData.reduce((total, section) => total + section.lessons.length, 0);
+                    const completedLessons = courseContentData.reduce((total, section) => 
+                      total + section.lessons.filter(lesson => lesson.completed).length, 0);
+                    
+                    if (completedLessons === totalLessons) {
+                      // Navigate to final exam
+                      console.log('Starting final exam...');
+                      // Here you would typically navigate to the exam page
+                    }
+                  }}
+                >
+                  <svg className="exam-btn-icon" viewBox="0 0 24 24">
+                    <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,16.5L6.5,12L7.91,10.59L11,13.67L16.59,8.09L18,9.5L11,16.5Z"/>
+                  </svg>
+                  <span>
+                    {(() => {
+                      const totalLessons = courseContentData.reduce((total, section) => total + section.lessons.length, 0);
+                      const completedLessons = courseContentData.reduce((total, section) => 
+                        total + section.lessons.filter(lesson => lesson.completed).length, 0);
+                      return completedLessons === totalLessons ? 'بدء الاختبار النهائي' : 'أكمل جميع الدروس أولاً';
+                    })()}
+                  </span>
+                </button>
+
+                {(() => {
+                  const totalLessons = courseContentData.reduce((total, section) => total + section.lessons.length, 0);
+                  const completedLessons = courseContentData.reduce((total, section) => 
+                    total + section.lessons.filter(lesson => lesson.completed).length, 0);
+                  
+                  if (completedLessons !== totalLessons) {
+                    return (
+                      <div className="exam-requirements">
+                        <div className="requirement-item">
+                          <svg className="requirement-icon" viewBox="0 0 24 24">
+                            <path d="M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z"/>
+                          </svg>
+                          <span>يجب مشاهدة جميع فيديوهات الدروس لفتح الاختبار النهائي</span>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
             </div>
             
           </div>

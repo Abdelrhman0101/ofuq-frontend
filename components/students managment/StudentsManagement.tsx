@@ -295,6 +295,7 @@ export default function StudentsManagement() {
         <table className="sm-table">
           <thead>
             <tr>
+              <th>ID</th>
               <th>الاسم الأول</th>
               <th>الاسم الأخير</th>
               <th>البريد الإلكتروني</th>
@@ -310,6 +311,7 @@ export default function StudentsManagement() {
           <tbody>
             {visibleStudents.map((student) => (
               <tr key={student.id}>
+                <td>{student.id}</td>
                 <td>{student.firstName}</td>
                 <td>{student.lastName}</td>
                 <td>{student.email}</td>

@@ -112,6 +112,194 @@
   font-size: 16px;
 }
 
+/* Instructor Dropdown Styles */
+.instructor-dropdown-container {
+  position: relative;
+  width: 100%;
+}
+
+.instructor-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 48px;
+}
+
+.instructor-dropdown-trigger:hover {
+  border-color: #d1d5db;
+}
+
+.instructor-dropdown-trigger:focus-within {
+  border-color: #028BAB;
+  box-shadow: 0 0 0 3px rgba(2, 139, 171, 0.1);
+}
+
+.selected-instructor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.instructor-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+}
+
+.instructor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.instructor-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.instructor-specialization {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.instructor-placeholder {
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+.dropdown-arrow {
+  font-size: 0.75rem;
+  color: #6b7280;
+  transition: transform 0.3s ease;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+.instructor-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  margin-top: 4px;
+  max-height: 300px;
+  overflow: hidden;
+}
+
+.instructor-search {
+  padding: 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.instructor-search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.instructor-search-input:focus {
+  border-color: #028BAB;
+  box-shadow: 0 0 0 2px rgba(2, 139, 171, 0.1);
+}
+
+.instructor-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.instructor-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #f9fafb;
+}
+
+.instructor-item:hover {
+  background: #f8fafc;
+}
+
+.instructor-item:last-child {
+  border-bottom: none;
+}
+
+.no-instructors {
+  padding: 16px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Course Card Instructor Display */
+.course-instructor-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px;
+  background: rgba(2, 139, 171, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(2, 139, 171, 0.1);
+}
+
+.course-instructor-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #e5e7eb;
+}
+
+.course-instructor-name {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #028BAB;
+}
+
+/* Course List Instructor Display */
+.course-list-instructor {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.course-list-instructor-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #e5e7eb;
+}
+
+.course-list-instructor-name {
+  font-size: 0.7rem;
+  color: #028BAB;
+  font-weight: 500;
+}
+
 /* Icon-based resource type picker */
 .resource-type-picker {
   display: flex;
@@ -496,6 +684,7 @@
 .hero-create-text {
   font-size: 0.9rem;
   font-weight: 600;
+  padding: 6.4px 12.8px;
 }
 
 /* Navigation Styles */
@@ -4102,4 +4291,48 @@ textarea:focus {
   .lesson-meta {
     justify-content: flex-start;
   }
+}
+
+/* Form Select Styles */
+.form-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: white;
+  color: #374151;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: left 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  padding-left: 40px;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-select:hover {
+  border-color: #d1d5db;
+}
+
+.form-select option {
+  padding: 8px;
+  color: #374151;
+}
+
+.form-select option:hover {
+  background-color: #f3f4f6;
+}
+
+/* RTL Support for Select */
+[dir="rtl"] .form-select {
+  background-position: right 12px center;
+  padding-left: 16px;
+  padding-right: 40px;
 }

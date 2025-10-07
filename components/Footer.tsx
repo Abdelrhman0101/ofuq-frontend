@@ -56,7 +56,7 @@ const Footer = () => {
           <h3 className="footer-title">تصفح الموقع</h3>
           <div className="footer-links">
             <Link href="/about" className="footer-link">عنّا</Link>
-            <Link href="/privacy" className="footer-link">الخصوصية</Link>
+            <Link href="/privacy" className="footer-link">سياسة الخصوصية</Link>
             <Link href="/terms" className="footer-link">الشروط والأحكام</Link>
           </div>
         </div>

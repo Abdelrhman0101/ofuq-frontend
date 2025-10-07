@@ -1,7 +1,12 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { Course } from '@/types/course';
 import '../../styles/courses.css';
+
+interface Category {
+  id: number;
+  name: string;
+}
 
 interface HeroSectionProps {
   courses: Course[];
@@ -22,6 +27,28 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   viewMode,
   setViewMode,
 }) => {
+  const [showCategoriesPopup, setShowCategoriesPopup] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([
+    { id: 1, name: 'البرمجة' },
+    { id: 2, name: 'التصميم' },
+    { id: 3, name: 'التسويق' }
+  ]);
+  const [newCategoryName, setNewCategoryName] = useState('');
+
+  const handleAddCategory = () => {
+    if (newCategoryName.trim()) {
+      const newCategory: Category = {
+        id: categories.length + 1,
+        name: newCategoryName.trim()
+      };
+      setCategories([...categories, newCategory]);
+      setNewCategoryName('');
+    }
+  };
+
+  const handleDeleteCategory = (id: number) => {
+    setCategories(categories.filter(cat => cat.id !== id));
+  };
   return (
     <div className="hero-section">
       <div className="hero-content">
@@ -64,7 +91,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
               </div>
             </div>
             
-            {/* صف الأزرار - إنشاء كورس جديد وأزرار العرض */}
+              {/* صف الأزرار - إنشاء كورس جديد وأزرار العرض */}
             <div className="hero-actions-row">
               {/* زر إنشاء كورس جديد مع زر الإغلاق */}
               <div className="hero-create-section">
@@ -79,6 +106,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                   <span className="hero-create-text">إنشاء كورس جديد</span>
                 </div>
                 
+                {/* زر إدارة الأقسام */}
+                <div 
+                  className="hero-create-btn hero-categories-btn"
+                  onClick={() => setShowCategoriesPopup(true)}
+                >
+                  <span className="hero-create-text">إدارة الأقسام</span>
+                </div>
 
               </div>
               
@@ -114,6 +148,77 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Categories Management Popup */}
+      {showCategoriesPopup && (
+        <div className="categories-popup-overlay" onClick={() => setShowCategoriesPopup(false)}>
+          <div className="categories-popup" onClick={(e) => e.stopPropagation()}>
+            <div className="categories-popup-header">
+              <h3 className="categories-popup-title">
+
+                إدارة الأقسام
+              </h3>
+              <button 
+                className="categories-popup-close"
+                onClick={() => setShowCategoriesPopup(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="categories-popup-content">
+              {/* Add Category Form */}
+              <div className="add-category-form">
+                <div className="add-category-input-group">
+                  <input
+                    type="text"
+                    className="add-category-input"
+                    placeholder="اسم القسم الجديد"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
+                  />
+                  <button 
+                    className="add-category-btn"
+                    onClick={handleAddCategory}
+                  >
+                    إضافة
+                  </button>
+                </div>
+              </div>
+
+              {/* Categories Table */}
+              <div className="categories-table-container">
+                <table className="categories-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>اسم القسم</th>
+                      <th>الإجراءات</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {categories.map((category) => (
+                      <tr key={category.id}>
+                        <td>{category.id}</td>
+                        <td>{category.name}</td>
+                        <td>
+                          <button 
+                            className="delete-category-btn"
+                            onClick={() => handleDeleteCategory(category.id)}
+                          >
+                            حذف
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import StudentReviews from './StudentReviews';
 import InstructorProfile from './InstructorProfile';
+import '../styles/student-reviews.css';
 
 interface CourseContentProps {
   rating: number;

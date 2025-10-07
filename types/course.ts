@@ -33,6 +33,7 @@ export interface Lesson {
   title: string;
   description: string;
   videoFile?: File;
+  videoUrl?: string; // رابط الفيديو من مصادر خارجية مثل Google Drive
   // تحديد إتاحة الفيديو للعامة أو لا
   isVideoPublic?: boolean;
   attachments: File[];
@@ -58,6 +59,15 @@ export interface Chapter {
   order: number;
 }
 
+export interface Instructor {
+  id: string;
+  name: string;
+  profileImage?: string;
+  email?: string;
+  bio?: string;
+  specialization?: string;
+}
+
 export interface Course {
   id:string;
   title: string;
@@ -69,6 +79,7 @@ export interface Course {
   chapters: Chapter[];
   createdAt: Date;
   status: 'draft' | 'published';
+  instructor?: Instructor;
 }
 
 export type CourseCreationStep = 'basic-info' | 'content-management' | 'review';

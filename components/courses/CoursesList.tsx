@@ -60,6 +60,16 @@ const CoursesList: React.FC<CoursesListProps> = ({
                       </div>
                     </div>
                     <div className="course-content">
+                      {course.instructor && (
+                        <div className="course-instructor-section">
+                          <img 
+                            src={course.instructor.profileImage || '/profile.jpg'} 
+                            alt={course.instructor.name}
+                            className="course-instructor-avatar"
+                          />
+                          <span className="course-instructor-name">{course.instructor.name}</span>
+                        </div>
+                      )}
                       <p className="course-description">{course.description}</p>
                       <div className="course-meta">
                         <div className="course-price">
@@ -128,6 +138,16 @@ const CoursesList: React.FC<CoursesListProps> = ({
                   </div>
                 </div>
                 <p className="course-list-description">{course.description}</p>
+                {course.instructor && (
+                  <div className="course-list-instructor">
+                    <img 
+                      src={course.instructor.profileImage || '/profile.jpg'} 
+                      alt={course.instructor.name}
+                      className="course-list-instructor-avatar"
+                    />
+                    <span className="course-list-instructor-name">{course.instructor.name}</span>
+                  </div>
+                )}
                 <div className="course-list-actions">
                   <button
                     onClick={() => {

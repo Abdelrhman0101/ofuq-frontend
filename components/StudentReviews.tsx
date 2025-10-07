@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import '../styles/student-reviews.css';
 
 interface ReviewData {
   id: string;
@@ -28,8 +29,17 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
   overallRating,
   totalReviews,
   ratingDistribution,
-  reviews
+  reviews: initialReviews
 }) => {
+  const [reviews, setReviews] = useState<ReviewData[]>(initialReviews);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [newReview, setNewReview] = useState({
+    rating: 0,
+    message: '',
+    name: ''
+  });
+  const [hoveredRating, setHoveredRating] = useState(0);
+
   const renderStars = (rating: number, size: 'small' | 'large' = 'small') => {
     const stars = [];
     const starSize = size === 'large' ? '24px' : '16px';
@@ -49,8 +59,65 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
     return stars;
   };
 
+  const renderInteractiveStars = (currentRating: number, onStarClick: (rating: number) => void, onStarHover: (rating: number) => void, onStarLeave: () => void) => {
+    const stars = [];
+    const displayRating = hoveredRating || currentRating;
+    
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <svg 
+          key={i} 
+          className={`star interactive ${i <= displayRating ? 'filled' : 'empty'}`} 
+          viewBox="0 0 24 24"
+          style={{ width: '24px', height: '24px', cursor: 'pointer' }}
+          onClick={() => onStarClick(i)}
+          onMouseEnter={() => onStarHover(i)}
+          onMouseLeave={onStarLeave}
+        >
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+      );
+    }
+    return stars;
+  };
+
   const getPercentage = (count: number) => {
     return totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+  };
+
+  const handleSubmitReview = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newReview.name.trim() || !newReview.message.trim() || newReview.rating === 0) {
+      alert('يرجى ملء جميع الحقول واختيار التقييم');
+      return;
+    }
+
+    const review: ReviewData = {
+      id: Date.now().toString(),
+      name: newReview.name,
+      avatar: '/profile.jpg', // Default avatar
+      rating: newReview.rating,
+      date: 'الآن',
+      message: newReview.message
+    };
+
+    setReviews([review, ...reviews]);
+    setNewReview({ rating: 0, message: '', name: '' });
+    setShowReviewForm(false);
+    setHoveredRating(0);
+  };
+
+  const handleStarClick = (rating: number) => {
+    setNewReview(prev => ({ ...prev, rating }));
+  };
+
+  const handleStarHover = (rating: number) => {
+    setHoveredRating(rating);
+  };
+
+  const handleStarLeave = () => {
+    setHoveredRating(0);
   };
 
   return (
@@ -88,6 +155,75 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
         </div>
       </div>
 
+      {/* Add Review Button */}
+      <div className="add-review-section">
+        {!showReviewForm ? (
+          <button 
+            className="add-review-btn"
+            onClick={() => setShowReviewForm(true)}
+          >
+            <svg className="add-icon" viewBox="0 0 24 24">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+            اكتب رأيك
+          </button>
+        ) : (
+          <div className="review-form">
+            <h3>اكتب رأيك في الكورس</h3>
+            <form onSubmit={handleSubmitReview}>
+              <div className="form-group">
+                <label>الاسم:</label>
+                <input
+                  type="text"
+                  value={newReview.name}
+                  onChange={(e) => setNewReview(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="اكتب اسمك"
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>التقييم:</label>
+                <div className="rating-input">
+                  {renderInteractiveStars(newReview.rating, handleStarClick, handleStarHover, handleStarLeave)}
+                  <span className="rating-text">
+                    {newReview.rating > 0 ? `${newReview.rating} من 5` : 'اختر التقييم'}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="form-group">
+                <label>رأيك:</label>
+                <textarea
+                  value={newReview.message}
+                  onChange={(e) => setNewReview(prev => ({ ...prev, message: e.target.value }))}
+                  placeholder="اكتب رأيك في الكورس..."
+                  rows={4}
+                  required
+                />
+              </div>
+              
+              <div className="form-actions">
+                <button type="submit" className="submit-btn">
+                  نشر الرأي
+                </button>
+                <button 
+                  type="button" 
+                  className="cancel-btn"
+                  onClick={() => {
+                    setShowReviewForm(false);
+                    setNewReview({ rating: 0, message: '', name: '' });
+                    setHoveredRating(0);
+                  }}
+                >
+                  إلغاء
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+      </div>
+
       {/* Reviews List Section */}
       <div className="reviews-list">
         {reviews.map((review) => (
@@ -112,182 +248,6 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
           </div>
         ))}
       </div>
-
-      <style jsx>{`
-        .student-reviews-container {
-          background-color: #019EBB3D;
-          padding: 30px;
-          border-radius: 12px;
-          direction: rtl;
-        }
-
-        .rating-statistics {
-          display: flex;
-          gap: 40px;
-          margin-bottom: 40px;
-          align-items: flex-start;
-        }
-
-        .rating-breakdown {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 15px;
-        }
-
-        .rating-row {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-        }
-
-        .rating-label {
-          min-width: 80px;
-        }
-
-        .star-count {
-          font-size: 14px;
-          color: #333;
-          font-weight: 500;
-        }
-
-        .rating-bar-container {
-          flex: 1;
-          height: 8px;
-          background-color: #e0e0e0;
-          border-radius: 4px;
-          overflow: hidden;
-        }
-
-        .rating-bar {
-          height: 100%;
-          background-color: #019EBB;
-          border-radius: 4px;
-          transition: width 0.3s ease;
-        }
-
-        .overall-rating {
-          flex: 0 0 200px;
-        }
-
-        .rating-card {
-          background: white;
-          padding: 25px;
-          border-radius: 12px;
-          text-align: center;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .rating-number {
-          font-size: 28px;
-          font-weight: bold;
-          color: #333;
-          margin-bottom: 10px;
-        }
-
-        .rating-stars {
-          display: flex;
-          justify-content: center;
-          gap: 4px;
-          margin-bottom: 10px;
-        }
-
-        .star.filled {
-          fill: #ffd700;
-        }
-
-        .star.empty {
-          fill: #ddd;
-        }
-
-        .rating-label {
-          font-size: 14px;
-          color: #666;
-          font-weight: 500;
-        }
-
-        .reviews-list {
-          display: flex;
-          flex-direction: column;
-          gap: 25px;
-        }
-
-        .review-item {
-          background: white;
-          padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        .reviewer-header {
-          display: flex;
-          align-items: flex-start;
-          gap: 15px;
-          margin-bottom: 15px;
-        }
-
-        .reviewer-avatar {
-          width: 50px;
-          height: 50px;
-          border-radius: 50%;
-          object-fit: cover;
-        }
-
-        .reviewer-info {
-          flex: 1;
-        }
-
-        .reviewer-name {
-          font-size: 16px;
-          font-weight: 600;
-          color: #333;
-          margin: 0 0 8px 0;
-        }
-
-        .review-meta {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-        }
-
-        .review-rating {
-          display: flex;
-          gap: 2px;
-        }
-
-        .review-date {
-          font-size: 12px;
-          color: #666;
-        }
-
-        .review-message {
-          font-size: 14px;
-          line-height: 1.6;
-          color: #555;
-          margin: 0;
-        }
-
-        @media (max-width: 768px) {
-          .rating-statistics {
-            flex-direction: column;
-            gap: 25px;
-          }
-
-          .overall-rating {
-            flex: none;
-          }
-
-          .reviewer-header {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-          }
-
-          .review-meta {
-            justify-content: center;
-          }
-        }
-      `}</style>
     </div>
   );
 };

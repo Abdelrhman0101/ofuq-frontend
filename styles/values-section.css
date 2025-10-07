@@ -5,9 +5,9 @@
 }
 
 .values-container {
-  max-width: 1200px;
+  /* max-width: 1200px; */
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 30px;
   display: flex;
   align-items: center;
   gap: 60px;
@@ -53,25 +53,31 @@
 
 .stat-item {
   width: 100%;
-}
-
-.stat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+
 }
 
 .stat-label {
   color: #333;
   font-size: 16px;
   font-weight: 500;
+  margin-bottom: 4px;
+  text-align: right;
+  /* display: flex; */
+  gap: 8px;
+  justify-content: flex-end;
+  
 }
 
 .stat-percentage {
   color: #019EBB;
   font-size: 16px;
   font-weight: bold;
+  margin-bottom: 8px;
+  text-align: right;
 }
 
 .progress-bar {
@@ -103,7 +109,7 @@
   position: relative;
   width: 100%;
   max-width: 500px;
-  height: 400px;
+  height: 500px;
   background: linear-gradient(135deg, #4142D0 0%, #5A5BF0 100%);
   border-radius: 20px;
   display: flex;
