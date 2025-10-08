@@ -2,7 +2,10 @@
 import React, { useState } from 'react';
 import { Course, Chapter, Lesson, Question } from '@/types/course';
 import LessonQuestionManager from './LessonQuestionManager';
+import Toast from '../Toast';
 import '../../styles/courses.css';
+import '../../styles/toast.css';
+
 
 interface ContentManagementStepProps {
   course: Course;
@@ -21,6 +24,22 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
   
   // State for video upload method (file or url)
   const [videoUploadMethods, setVideoUploadMethods] = useState<{[key: string]: 'file' | 'url'}>({});
+
+  // Toast state
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info' | 'confirm'>('info');
+
+  // Toast functions
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' | 'confirm') => {
+    setToastMessage(message);
+    setToastType(type);
+    setToastVisible(true);
+  };
+
+  const closeToast = () => {
+    setToastVisible(false);
+  };
 
   const renderResourceIcon = (type: ResourceType) => {
     switch (type) {
@@ -691,7 +710,7 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
                                   const type = (typeEl?.value || 'website') as 'website' | 'article' | 'video' | 'book' | 'tool' | 'other';
 
                                   if (!url) {
-                                    alert('يرجى إدخال رابط المصدر');
+                                    showToast('يرجى إدخال رابط المصدر', 'error');
                                     return;
                                   }
 
@@ -833,6 +852,14 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
           </button>
         </div>
       </div>
+      
+      {/* Toast Component */}
+      <Toast
+        message={toastMessage}
+        type={toastType}
+        isVisible={toastVisible}
+        onClose={closeToast}
+      />
     </div>
   );
 };

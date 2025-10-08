@@ -1643,7 +1643,7 @@
   }
   
   .hero-content {
-    padding: 2rem;
+    /* padding: 2rem; */
   }
   
   .hero-title {
@@ -2004,5 +2004,8 @@
   
   .mcq-question-actions {
     justify-content: center;
+  }
+  .hero-circle{
+display: none;
   }
 }

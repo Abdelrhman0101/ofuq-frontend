@@ -18,6 +18,8 @@ interface BasicInfoStepProps {
 const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ courseBasicInfo, setCourseBasicInfo, handleCreateBasicCourse }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [categorySearchTerm, setCategorySearchTerm] = useState('');
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
 
   // قائمة تصنيفات الكورسات
   const courseCategories = [
@@ -70,10 +72,20 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ courseBasicInfo, setCours
     instructor.specialization?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const filteredCategories = courseCategories.filter(category =>
+    category.toLowerCase().includes(categorySearchTerm.toLowerCase())
+  );
+
   const handleInstructorSelect = (instructor: Instructor) => {
     setCourseBasicInfo({...courseBasicInfo, instructor});
     setIsDropdownOpen(false);
     setSearchTerm('');
+  };
+
+  const handleCategorySelect = (category: string) => {
+    setCourseBasicInfo({...courseBasicInfo, category});
+    setIsCategoryDropdownOpen(false);
+    setCategorySearchTerm('');
   };
 
   return (
@@ -199,18 +211,57 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ courseBasicInfo, setCours
             <label className="form-label">
               تصنيف الكورس *
             </label>
-            <select
-              value={courseBasicInfo.category || ''}
-              onChange={(e) => setCourseBasicInfo({...courseBasicInfo, category: e.target.value})}
-              className="form-select"
-            >
-              <option value="">اختر تصنيف الكورس</option>
-              {courseCategories.map((category, index) => (
-                <option key={index} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
+            <div className="instructor-dropdown-container">
+              <div 
+                className="instructor-dropdown-trigger"
+                onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+              >
+                {courseBasicInfo.category ? (
+                  <div className="selected-instructor">
+                    <div className="category-icon">📚</div>
+                    <div className="instructor-info">
+                      <span className="instructor-name">{courseBasicInfo.category}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="instructor-placeholder">
+                    <span>اختر تصنيف الكورس</span>
+                  </div>
+                )}
+                <span className={`dropdown-arrow ${isCategoryDropdownOpen ? 'open' : ''}`}>▼</span>
+              </div>
+              
+              {isCategoryDropdownOpen && (
+                <div className="instructor-dropdown-menu">
+                  <div className="instructor-search">
+                    <input
+                      type="text"
+                      placeholder="البحث عن تصنيف..."
+                      value={categorySearchTerm}
+                      onChange={(e) => setCategorySearchTerm(e.target.value)}
+                      className="instructor-search-input"
+                    />
+                  </div>
+                  <div className="instructor-list">
+                    {filteredCategories.map((category, index) => (
+                      <div
+                        key={index}
+                        className="instructor-item"
+                        onClick={() => handleCategorySelect(category)}
+                      >
+                        <div className="category-icon">📚</div>
+                        <div className="instructor-info">
+                          <span className="instructor-name">{category}</span>
+                        </div>
+                      </div>
+                    ))}
+                    {filteredCategories.length === 0 && (
+                      <div className="no-instructors">لا توجد نتائج</div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         

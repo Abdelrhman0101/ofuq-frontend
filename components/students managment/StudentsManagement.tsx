@@ -2,9 +2,11 @@
 
 import React, { useMemo, useState } from 'react';
 import '../../styles/students-management.css';
+import '../../styles/toast.css';
 import CourseGrid, { Course as CourseGridCourse } from '../CourseGrid';
 import CertificateCard from '../CertificateCard';
 import FinalGradesList from './FinalGradesList';
+import Toast from '../Toast';
 
 type StudentCourse = CourseGridCourse & { finalExamScore: number };
 
@@ -138,6 +140,12 @@ export default function StudentsManagement() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'blocked'>('all');
   const [sortOption, setSortOption] = useState<'none' | 'highestGrade' | 'courseCount'>('none');
 
+  // Toast state
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info' | 'confirm'>('info');
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'courses' | 'certificates' | 'finalGrades' | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
@@ -172,9 +180,33 @@ export default function StudentsManagement() {
   };
 
   const deleteStudent = (id: number) => {
-    if (confirm('هل أنت متأكد من حذف الطالب؟')) {
-      setStudents((prev) => prev.filter((s) => s.id !== id));
+    setToastMessage('هل أنت متأكد من حذف الطالب؟');
+    setToastType('confirm');
+    setPendingDeleteId(id);
+    setToastVisible(true);
+  };
+
+  const confirmDelete = () => {
+    if (pendingDeleteId !== null) {
+      setStudents((prev) => prev.filter((s) => s.id !== pendingDeleteId));
+      setToastMessage('تم حذف الطالب بنجاح');
+      setToastType('success');
+      setPendingDeleteId(null);
+      // Keep toast visible for success message
+      setTimeout(() => {
+        setToastVisible(false);
+      }, 2000);
     }
+  };
+
+  const cancelDelete = () => {
+    setPendingDeleteId(null);
+    setToastVisible(false);
+  };
+
+  const closeToast = () => {
+    setToastVisible(false);
+    setPendingDeleteId(null);
   };
 
   const toggleBlockStudent = (id: number) => {
@@ -399,6 +431,15 @@ export default function StudentsManagement() {
           </div>
         </div>
       )}
+
+      <Toast
+        message={toastMessage}
+        type={toastType}
+        isVisible={toastVisible}
+        onClose={closeToast}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </div>
   );
 }

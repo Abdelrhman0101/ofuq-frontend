@@ -36,18 +36,18 @@ export default function AdminDashboard() {
             <h3>إدارة الكورسات</h3>
             <p>إضافة وتعديل الكورسات</p>
           </a>
-          <div className="action-card">
+          <a href="/admin/students" className="action-card">
             <h3>إدارة الطلاب</h3>
             <p>عرض وإدارة الطلاب المسجلين</p>
-          </div>
-          <div className="action-card">
+          </a>
+          <a href="/admin/reports/financial" className="action-card">
             <h3>التقارير</h3>
             <p>عرض تقارير الأداء والإحصائيات</p>
-          </div>
-          <div className="action-card">
-            <h3>الإعدادات</h3>
-            <p>إعدادات النظام والموقع</p>
-          </div>
+          </a>
+          <a href="/admin/profile-management" className="action-card">
+            <h3>إدارة الملف الشخصي</h3>
+            <p>إدارة معلومات المستخدم</p>
+          </a>
         </div>
       </div>
     </>

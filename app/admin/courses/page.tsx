@@ -4,10 +4,12 @@ import React, { useState, useEffect } from 'react';
 import '../../../styles/globals.css';
 import '../../../styles/courses.css';
 import '../../../styles/modern-course-details.css';
+import '../../../styles/toast.css';
 import './courses.css';
 
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
+import Toast from '@/components/Toast';
 import { Course, CourseCreationStep } from '@/types/course';
 
 import HeroSection from '@/components/courses/HeroSection';
@@ -44,6 +46,29 @@ export default function Courses() {
     isFree: true,
     coverImage: null as File | null
   });
+
+  // Toast state
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info' | 'confirm'>('info');
+
+  // Toast functions
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' | 'confirm') => {
+    setToastMessage(message);
+    setToastType(type);
+    setToastVisible(true);
+    
+    // Auto-hide success toasts after 3 seconds
+    if (type === 'success') {
+      setTimeout(() => {
+        setToastVisible(false);
+      }, 3000);
+    }
+  };
+
+  const closeToast = () => {
+    setToastVisible(false);
+  };
 
   // Initialize with empty courses array
   useEffect(() => {
@@ -113,7 +138,7 @@ export default function Courses() {
       );
       setCourses(updatedCourses);
       resetCourseCreation();
-      alert('تم حفظ الكورس كمسودة بنجاح!');
+      showToast('تم حفظ الكورس كمسودة بنجاح!', 'success');
     }
   };
 
@@ -126,7 +151,7 @@ export default function Courses() {
       );
       setCourses(updatedCourses);
       resetCourseCreation();
-      alert('تم نشر الكورس بنجاح!');
+      showToast('تم نشر الكورس بنجاح!', 'success');
     }
   };
 
@@ -237,6 +262,14 @@ export default function Courses() {
           )}
         </main>
       </div>
+      
+      {/* Toast Component */}
+      <Toast
+        message={toastMessage}
+        type={toastType}
+        isVisible={toastVisible}
+        onClose={closeToast}
+      />
     </div>
   );
 }
