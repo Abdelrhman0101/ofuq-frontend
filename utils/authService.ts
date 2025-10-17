@@ -95,9 +95,17 @@ export const handleGoogleCallback = async (): Promise<AuthResponse | null> => {
       return null;
     }
 
-    // Get token from URL parameters
+    // Get token or error from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
+    const error = urlParams.get('error');
+    
+    // Check for error first
+    if (error) {
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      throw new Error('فشل في تسجيل الدخول عبر Google. يرجى المحاولة مرة أخرى.');
+    }
     
     if (!token) {
       return null;
