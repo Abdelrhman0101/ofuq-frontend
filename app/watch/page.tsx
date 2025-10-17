@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import HomeHeader from '../../components/HomeHeader';
 import Footer from '../../components/Footer';
@@ -15,7 +15,7 @@ import { getBackendAssetUrl } from '../../utils/url';
 import { isAuthenticated } from '../../utils/authService';
 import { Course, getCourseDetails, getCourseProgress } from '../../utils/courseService';
 
-export default function WatchPage() {
+function WatchPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const lessonIdParam = searchParams.get('lessonId');
@@ -332,5 +332,13 @@ export default function WatchPage() {
       <Footer />
       <ScrollToTop />
     </div>
+  );
+}
+
+export default function WatchPage() {
+  return (
+    <Suspense fallback={<div>جاري التحميل...</div>}>
+      <WatchPageContent />
+    </Suspense>
   );
 }

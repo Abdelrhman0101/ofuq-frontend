@@ -77,10 +77,10 @@ export const signup = async (data: SignupData): Promise<AuthResponse> => {
 export const googleAuth = (): void => {
   try {
     // Get the backend URL from environment or use default
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
     
     // Redirect to the backend Google OAuth endpoint
-    window.location.href = `${backendUrl}/api/auth/google`;
+    window.location.href = `${backendUrl}/auth/google`;
   } catch (error) {
     console.error('Google Auth Error:', error);
     throw new Error('فشل في تسجيل الدخول عبر Google');
