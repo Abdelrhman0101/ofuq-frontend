@@ -163,36 +163,7 @@ const CourseContent: React.FC<CourseContentProps> = ({
     router.push(`/watch?${query}`);
   };
 
-  // Sample reviews data
-  const reviewsData = {
-    overallRating: 4.2,
-    totalReviews: 150,
-    ratingDistribution: {
-      5: 75,
-      4: 45,
-      3: 20,
-      2: 7,
-      1: 3
-    },
-    reviews: [
-      {
-        id: '1',
-        name: 'محمد',
-        avatar: '/profile.jpg',
-        rating: 5,
-        date: '3 شهور',
-        message: 'لوريم إيبسوم دولار سيت أميت، كونسيتيتور أديبيسنج إليت، سيد دو إييوسمود تيمبور إنسيديدونت يوت ليبوري إت دولوري ماغنا أليكوا. أوت إينيم أد مينيوم فينيام، كويز نوستريد إكسرسيتاتيون أولامكو لابوريس نيسي يوت أليكيب إكس إيا كومودو كوانتس. دويس أويت إيرور دولور إن ريبريت، إن فولوبتي فيليت إيسي كيلوم دولوري يوي فجات نولا باريتور. إكسبتور سينت أوكيات كوبايدات نون برودينت، سونت إن كولبا كوي أوفيسيا ديسيرت موليتي أنيم.'
-      },
-      {
-        id: '2',
-        name: 'محمد',
-        avatar: '/profile.jpg',
-        rating: 4,
-        date: '3 شهور',
-        message: 'لوريم إيبسوم دولار سيت أميت، كونسيتيتور أديبيسنج إليت، سيد دو إييوسمود تيمبور إنسيديدونت يوت ليبوري إت دولوري ماغنا أليكوا. أوت إينيم أد مينيوم فينيام، كويز نوستريد إكسرسيتاتيون أولامكو لابوريس نيسي يوت أليكيب إكس إيا كومودو كوانتس. دويس أويت إيرور دولور إن ريبريت، إن فولوبتي فيليت إيسي كيلوم دولوري يوي فجات نولا باريتور. إكسبتور سينت أوكيات كوبايدات نون برودينت، سونت إن كولبا كوي أوفيسيا ديسيرت موليتي أنيم.'
-      }
-    ]
-  };
+
 
   const getTabContent = () => {
     switch (activeTab) {
@@ -269,10 +240,7 @@ const CourseContent: React.FC<CourseContentProps> = ({
       case 'reviews':
         return (
           <StudentReviews 
-            overallRating={reviewsData.overallRating}
-            totalReviews={reviewsData.totalReviews}
-            ratingDistribution={reviewsData.ratingDistribution}
-            reviews={reviewsData.reviews}
+            courseId={courseId || ''}
           />
         );
       case 'instructor':

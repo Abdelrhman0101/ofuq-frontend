@@ -1,49 +1,43 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import '../styles/exam-details.css';
+import { FinalExamMetaData, getFinalExamMeta, getQuizAttempts, QuizAttempt } from '../utils/quizService';
 
 interface ExamDetailsProps {
+  courseId: number;
   courseName: string;
   completionPercentage: number;
   onBack: () => void;
 }
 
-const ExamDetails: React.FC<ExamDetailsProps> = ({ courseName, completionPercentage, onBack }) => {
-  const lessons = [
-    {
-      id: 1,
-      name: 'الدرس الأول: مقدمة في الموضوع',
-      examDate: '2024-01-15',
-      result: '85%',
-      status: 'completed' as const,
-      action: 'view'
-    },
-    {
-      id: 2,
-      name: 'الدرس الثاني: المفاهيم الأساسية',
-      examDate: '2024-01-20',
-      result: '92%',
-      status: 'completed' as const,
-      action: 'view'
-    },
-    {
-      id: 3,
-      name: 'الدرس الثالث: التطبيق العملي',
-      examDate: '2024-01-25',
-      result: '-',
-      status: 'incomplete' as const,
-      action: 'continue'
-    },
-    {
-      id: 4,
-      name: 'الدرس الرابع: المراجعة النهائية',
-      examDate: '2024-01-30',
-      result: '-',
-      status: 'incomplete' as const,
-      action: 'continue'
+const ExamDetails: React.FC<ExamDetailsProps> = ({ courseId, courseName, completionPercentage, onBack }) => {
+  const [meta, setMeta] = useState<FinalExamMetaData | null>(null);
+  const [attempts, setAttempts] = useState<QuizAttempt[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
+        const m = await getFinalExamMeta(courseId);
+        if (!cancelled) setMeta(m);
+        if (m?.quiz_id) {
+          const a = await getQuizAttempts(m.quiz_id);
+          if (!cancelled) setAttempts(a);
+        }
+      } catch (e: any) {
+        if (!cancelled) setError(e?.message ?? 'تعذر تحميل بيانات الاختبار النهائي');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
-  ];
+    load();
+    return () => { cancelled = true; };
+  }, [courseId]);
 
   return (
     <div className="exam-details-container">
@@ -64,43 +58,77 @@ const ExamDetails: React.FC<ExamDetailsProps> = ({ courseName, completionPercent
         </div>
       </div>
 
-      <div className="lessons-table-container">
-        <h2 className="table-title">تفاصيل الدروس والاختبارات</h2>
-        <div className="table-wrapper">
-          <table className="lessons-table">
-            <thead>
-              <tr>
-                <th>اسم الدرس</th>
-                <th>تاريخ الاختبار</th>
-                <th>النتيجة</th>
-                <th>حالة الاختبار</th>
-                <th>الإجراء</th>
-              </tr>
-            </thead>
-            <tbody>
-              {lessons.map((lesson) => (
-                <tr key={lesson.id}>
-                  <td>{lesson.name}</td>
-                  <td>{lesson.examDate}</td>
-                  <td>{lesson.result}</td>
-                  <td>
-                    <span className={`status-badge status-${lesson.status}`}>
-                      {lesson.status === 'completed' ? 'مكتمل' : 'غير مكتمل'}
-                    </span>
-                  </td>
-                  <td>
-                    <button 
-                      className={`action-button ${lesson.action === 'continue' ? 'continue' : ''}`}
-                    >
-                      {lesson.action === 'view' ? 'عرض النتيجة' : 'متابعة الاختبار'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {loading ? (
+        <div className="table-wrapper"><p>جاري تحميل بيانات الاختبار النهائي...</p></div>
+      ) : error ? (
+        <div className="table-wrapper"><p>حدث خطأ: {error}</p></div>
+      ) : (
+        <>
+          <div className="lessons-table-container">
+            <h2 className="table-title">معلومات الاختبار النهائي</h2>
+            <div className="table-wrapper">
+              <table className="lessons-table">
+                <tbody>
+                  <tr>
+                    <td>عدد الأسئلة المتاحة</td>
+                    <td>{meta?.questions_pool_count ?? 0}</td>
+                  </tr>
+                  <tr>
+                    <td>جاهزية بنك الأسئلة</td>
+                    <td>
+                      <span className={`status-badge ${meta?.has_sufficient_question_bank ? 'status-completed' : 'status-incomplete'}`}>
+                        {meta?.has_sufficient_question_bank ? 'جاهز' : 'غير كافٍ'}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>عدد المحاولات السابقة</td>
+                    <td>{meta?.attempts_count ?? attempts.length}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="lessons-table-container">
+            <h2 className="table-title">محاولاتك</h2>
+            <div className="table-wrapper">
+              <table className="lessons-table">
+                <thead>
+                  <tr>
+                    <th>التاريخ</th>
+                    <th>الدرجة</th>
+                    <th>عدد الأسئلة</th>
+                    <th>عدد الصحيحة</th>
+                    <th>الحالة</th>
+                    <th>المدة</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {attempts.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: 'center' }}>لا توجد محاولات حتى الآن</td>
+                    </tr>
+                  ) : attempts.map((a) => (
+                    <tr key={a.id}>
+                      <td>{a.created_at ? new Date(a.created_at).toLocaleString('ar-EG') : '-'}</td>
+                      <td>{Math.round(a.score)}%</td>
+                      <td>{a.total_questions ?? '-'}</td>
+                      <td>{a.correct_answers ?? '-'}</td>
+                      <td>
+                        <span className={`status-badge ${a.passed ? 'status-completed' : 'status-incomplete'}`}>
+                          {a.passed ? 'ناجح' : 'راسب'}
+                        </span>
+                      </td>
+                      <td>{a.time_taken ? `${a.time_taken} ث` : '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

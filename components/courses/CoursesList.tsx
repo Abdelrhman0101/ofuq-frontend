@@ -198,7 +198,7 @@ const CoursesList: React.FC<CoursesListProps> = ({
                           </span>
                         </div>
                         <div className="course-chapters">
-                          <span className="chapters-text">{course.chapters.length} فصل</span>
+                          <span className="chapters-text">{(course.chapters_count ?? course.chapters?.length ?? 0)} فصل</span>
                         </div>
                       </div>
                       <div className="course-date">

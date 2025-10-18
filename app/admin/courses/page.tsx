@@ -11,7 +11,7 @@ import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
 import Toast from '@/components/Toast';
 import { Course, CourseCreationStep, Instructor } from '@/types/course';
-import { getCourses } from '@/utils/courseService';
+import { getCourses, getAdminCourse } from '@/utils/courseService';
 import { Category } from '@/utils/categoryService';
 
 import HeroSection from '@/components/courses/HeroSection';
@@ -119,6 +119,46 @@ export default function Courses() {
 
     fetchCourses();
   }, []);
+
+  // Load full admin course details when selecting for edit
+  useEffect(() => {
+    const loadAdminCourse = async () => {
+      if (!selectedCourseId) return;
+      try {
+        const adminCourse = await getAdminCourse(selectedCourseId);
+        if (!adminCourse) return;
+        const chapters = (adminCourse.chapters || []).map((ch: any) => ({
+          id: String(ch.id),
+          title: String(ch.title ?? ''),
+          description: String(ch.description ?? ''),
+          order: Number(ch.order ?? 1),
+          lessons: (ch.lessons || []).map((l: any) => ({
+            id: String(l.id),
+            title: String(l.title ?? ''),
+            description: String(l.content ?? ''),
+            videoUrl: l.video_url ?? undefined,
+            isVideoPublic: Boolean(l.is_visible ?? false),
+            attachments: [],
+            duration: undefined,
+            order: Number(l.order ?? 1),
+            questions: [],
+            resources: [],
+            quiz: undefined,
+          })),
+        }));
+
+        setCourses(prev => prev.map(c => (
+          c.id === selectedCourseId
+            ? { ...c, chapters, chapters_count: chapters.length }
+            : c
+        )));
+      } catch (err) {
+        console.error('Error loading admin course details:', err);
+        showToast('فشل في تحميل تفاصيل الكورس', 'error');
+      }
+    };
+    loadAdminCourse();
+  }, [selectedCourseId]);
 
   // useEffect to handle navigation after selectedCourseId updates
   useEffect(() => {

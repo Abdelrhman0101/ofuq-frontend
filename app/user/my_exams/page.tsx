@@ -6,6 +6,7 @@ import ExamDetails from '../../../components/ExamDetails';
 import '../../../styles/my-courses.css';
 
 interface SelectedExam {
+  id: number;
   name: string;
   progress: number;
 }
@@ -13,8 +14,8 @@ interface SelectedExam {
 export default function MyExams() {
   const [selectedExam, setSelectedExam] = useState<SelectedExam | null>(null);
 
-  const handleExamSelect = (examName: string, progress: number) => {
-    setSelectedExam({ name: examName, progress });
+  const handleExamSelect = (examId: number, examName: string, progress: number) => {
+    setSelectedExam({ id: examId, name: examName, progress });
   };
 
   const handleBackToExams = () => {
@@ -36,6 +37,7 @@ export default function MyExams() {
         </>
       ) : (
         <ExamDetails 
+          courseId={selectedExam.id}
           courseName={selectedExam.name} 
           completionPercentage={selectedExam.progress}
           onBack={handleBackToExams}

@@ -563,6 +563,19 @@
   overflow: hidden;
 }
 
+/* Clamp description in admin course cards to 5 lines */
+.course-card .course-description {
+  color: #028BAB;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0 0 0.6rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .course-list-meta {
   display: flex;
   gap: 1.2rem;

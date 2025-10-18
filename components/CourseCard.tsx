@@ -7,7 +7,7 @@ interface CourseCardProps {
   id: string;
   title: string;
   image: string;
-  category: string;
+  category: string | { id: number; name: string; created_at?: string; updated_at?: string };
   rating: number;
   studentsCount: number;
   duration: string;
@@ -77,7 +77,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
       <div className={styles['course-card']}>
         <div className={styles['course-image']}>
           <img src={image} alt={title} />
-          <div className={styles['course-category']}>{category}</div>
+          <div className={styles['course-category']}>{typeof category === 'string' ? category : category?.name ?? 'عام'}</div>
         </div>
 
         <div className={styles['course-content']}>

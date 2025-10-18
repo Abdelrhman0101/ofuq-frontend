@@ -33,7 +33,7 @@ function CoursesContent() {
     const loadAllCourses = async () => {
       try {
         setLoading(true);
-        const courses = await getAllCourses();
+        const courses = await getAllCourses({ per_page: 1000 });
         setAllCourses(courses);
       } catch (err) {
         console.error('Error loading courses:', err);
@@ -55,21 +55,28 @@ function CoursesContent() {
     const coverImage = getBackendAssetUrl(coverRaw) || '/banner.jpg';
     const instructorImageRaw = course?.instructor?.image || '';
     const instructorAvatar = getBackendAssetUrl(instructorImageRaw) || '/profile.jpg';
+    // Ensure category is always a string, not an object
+    const categoryName = typeof course?.category === 'string' 
+      ? course.category 
+      : course?.category?.name || 'عام';
+
     return {
       id: course.id.toString(),
       title: course.title || 'عنوان غير متوفر',
       image: coverImage,
-      category: course?.category?.name || 'عام',
-      rating: 4.5,
-      studentsCount: 0,
-      duration: '30 ساعة',
-      lessonsCount: 0,
+      category: categoryName,
+      rating: parseFloat(String(course.average_rating ?? course.rating ?? '0')), // Use real rating from API
+      studentsCount: course.students_count || 0, // Use real students count from API
+      duration: course.duration ? `${course.duration} ساعة` : '0 ساعة', // Use real duration from API
+      lessonsCount: course.chapters_count || 
+                   ((course.chapters || []).reduce((sum, ch) => sum + ((ch.lessons || []).length), 0)) || 
+                   0, // Use real lessons count from API
       instructorName: course?.instructor?.name || 'مدرب',
       instructorAvatar,
-      price: course?.price || 0,
+      price: Number(course?.price ?? 0), // Real price as number (0 will show "مجاني")
       language: 'العربية',
       level: 'متوسط',
-      field: course?.category?.name || 'عام',
+      field: categoryName,
       createdAt: course?.created_at || new Date().toISOString(),
     };
   };

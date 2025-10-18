@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import '../../styles/students-management.css';
 import '../../styles/toast.css';
 import CourseGrid, { Course as CourseGridCourse } from '../CourseGrid';
 import CertificateCard from '../CertificateCard';
 import FinalGradesList from './FinalGradesList';
 import Toast from '../Toast';
+import { getStudentsStatus, deleteUser as apiDeleteUser, blockUser as apiBlockUser, unblockUser as apiUnblockUser, getUserCertificates } from '../../utils/studentsService';
 
 type StudentCourse = CourseGridCourse & { finalExamScore: number };
 
@@ -15,6 +16,8 @@ interface CertificateItem {
   completionDate: string;
   certificateId?: string;
   certificateImage?: string;
+  downloadUrl?: string;
+  verificationUrl?: string;
 }
 
 interface Student {
@@ -28,112 +31,7 @@ interface Student {
 }
 
 export default function StudentsManagement() {
-  const [students, setStudents] = useState<Student[]>([
-    {
-      id: 1,
-      firstName: 'أحمد',
-      lastName: 'محمد',
-      email: 'ahmed@example.com',
-      blocked: false,
-      courses: [
-        {
-          id: 101,
-          name: 'أساسيات البرمجة',
-          progress: 85,
-          image: '/hero-image.png',
-          category: 'Frontend',
-          instructor: { name: 'مدرب أحمد', avatar: '/profile.jpg' },
-          finalExamScore: 92,
-        },
-        {
-          id: 102,
-          name: 'قواعد البيانات',
-          progress: 60,
-          image: '/hero-image.png',
-          category: 'Database',
-          instructor: { name: 'مدرب سارة', avatar: '/profile2.jpg' },
-          finalExamScore: 78,
-        },
-      ],
-      certificates: [
-        {
-          courseName: 'أساسيات البرمجة',
-          completionDate: '2025-07-15',
-          certificateId: 'CERT-101',
-          certificateImage: '/certificates/sample-certificate.svg',
-        },
-      ],
-    },
-    {
-      id: 2,
-      firstName: 'سارة',
-      lastName: 'حسن',
-      email: 'sara@example.com',
-      blocked: false,
-      courses: [
-        {
-          id: 201,
-          name: 'تصميم واجهات المستخدم',
-          progress: 70,
-          image: '/hero-image.png',
-          category: 'UI/UX',
-          instructor: { name: 'مدرب ليلى', avatar: '/profile2.jpg' },
-          finalExamScore: 88,
-        },
-        {
-          id: 202,
-          name: 'تحليل البيانات',
-          progress: 40,
-          image: '/hero-image.png',
-          category: 'Data Science',
-          instructor: { name: 'مدرب نور', avatar: '/profile.jpg' },
-          finalExamScore: 74,
-        },
-        {
-          id: 203,
-          name: 'الذكاء الاصطناعي',
-          progress: 55,
-          image: '/hero-image.png',
-          category: 'AI',
-          instructor: { name: 'مدرب عمر', avatar: '/profile.jpg' },
-          finalExamScore: 81,
-        },
-      ],
-      certificates: [
-        {
-          courseName: 'تصميم واجهات المستخدم',
-          completionDate: '2025-06-01',
-          certificateId: 'CERT-201',
-          certificateImage: '/certificates/sample-certificate.svg',
-        },
-        {
-          courseName: 'تحليل البيانات',
-          completionDate: '2025-08-21',
-          certificateId: 'CERT-202',
-          certificateImage: '/certificates/javascript-certificate.svg',
-        },
-      ],
-    },
-    {
-      id: 3,
-      firstName: 'يوسف',
-      lastName: 'علي',
-      email: 'yousef@example.com',
-      blocked: true,
-      courses: [
-        {
-          id: 301,
-          name: 'الأمن السيبراني',
-          progress: 25,
-          image: '/hero-image.png',
-          category: 'Security',
-          instructor: { name: 'مدرب يوسف', avatar: '/profile.jpg' },
-          finalExamScore: 65,
-        },
-      ],
-      certificates: [],
-    },
-  ]);
+  const [students, setStudents] = useState<Student[]>([]);
 
   // Filters & Sorting state
   const [searchQuery, setSearchQuery] = useState('');
@@ -145,10 +43,36 @@ export default function StudentsManagement() {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info' | 'confirm'>('info');
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
-
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'courses' | 'certificates' | 'finalGrades' | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
+  const [certLoading, setCertLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    setLoading(true);
+    getStudentsStatus()
+      .then((data) => {
+        setStudents(data.map((s) => ({
+          ...s,
+          courses: s.courses.map((c) => ({
+            ...c,
+            finalExamScore: c.finalExamScore ?? 0,
+          })),
+          certificates: [],
+        })));
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Failed to load students', err);
+        setError('فشل تحميل بيانات الطلاب');
+        setToastMessage('فشل تحميل بيانات الطلاب');
+        setToastType('error');
+        setToastVisible(true);
+        setLoading(false);
+      });
+  }, []);
 
   const selectedStudent = useMemo(
     () => students.find((s) => s.id === selectedStudentId) || null,
@@ -161,10 +85,36 @@ export default function StudentsManagement() {
     setModalOpen(true);
   };
 
-  const openCertificatesModal = (studentId: number) => {
+  const openCertificatesModal = async (studentId: number) => {
     setSelectedStudentId(studentId);
     setModalType('certificates');
     setModalOpen(true);
+    try {
+      setCertLoading(true);
+      const certs = await getUserCertificates(studentId);
+      setStudents((prev) => prev.map((s) => (
+        s.id === studentId
+          ? {
+              ...s,
+              certificates: (certs || []).map((c) => ({
+                courseName: c.courseName,
+                completionDate: c.completionDate || '',
+                certificateId: c.id?.toString(),
+                certificateImage: undefined,
+                downloadUrl: c.downloadUrl,
+                verificationUrl: c.verificationUrl,
+              })),
+            }
+          : s
+      )));
+    } catch (e) {
+      console.error('Failed to load certificates', e);
+      setToastMessage('تعذر تحميل شهادات الطالب');
+      setToastType('error');
+      setToastVisible(true);
+    } finally {
+      setCertLoading(false);
+    }
   };
 
   const openFinalGradesModal = (studentId: number) => {
@@ -186,16 +136,21 @@ export default function StudentsManagement() {
     setToastVisible(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (pendingDeleteId !== null) {
-      setStudents((prev) => prev.filter((s) => s.id !== pendingDeleteId));
-      setToastMessage('تم حذف الطالب بنجاح');
-      setToastType('success');
-      setPendingDeleteId(null);
-      // Keep toast visible for success message
-      setTimeout(() => {
-        setToastVisible(false);
-      }, 2000);
+      try {
+        await apiDeleteUser(pendingDeleteId);
+        setStudents((prev) => prev.filter((s) => s.id !== pendingDeleteId));
+        setToastMessage('تم حذف الطالب بنجاح');
+        setToastType('success');
+      } catch (e) {
+        console.error('Delete user failed', e);
+        setToastMessage('فشل حذف الطالب');
+        setToastType('error');
+      } finally {
+        setPendingDeleteId(null);
+        setTimeout(() => setToastVisible(false), 2000);
+      }
     }
   };
 
@@ -209,8 +164,23 @@ export default function StudentsManagement() {
     setPendingDeleteId(null);
   };
 
-  const toggleBlockStudent = (id: number) => {
-    setStudents((prev) => prev.map((s) => (s.id === id ? { ...s, blocked: !s.blocked } : s)));
+  const toggleBlockStudent = async (id: number) => {
+    const target = students.find((s) => s.id === id);
+    if (!target) return;
+    const willBlock = !target.blocked;
+    try {
+      if (willBlock) {
+        await apiBlockUser(id, 'Admin action');
+      } else {
+        await apiUnblockUser(id);
+      }
+      setStudents((prev) => prev.map((s) => (s.id === id ? { ...s, blocked: willBlock } : s)));
+    } catch (e) {
+      console.error('Block/unblock failed', e);
+      setToastMessage('تعذر تحديث حالة الحساب');
+      setToastType('error');
+      setToastVisible(true);
+    }
   };
 
   const calcFinalExamAverage = (student: Student) => {
@@ -260,6 +230,12 @@ export default function StudentsManagement() {
 
   return (
     <div className="students-management">
+      {loading && (
+        <div className="sm-loading">جاري تحميل بيانات الطلاب...</div>
+      )}
+      {error && (
+        <div className="sm-error">{error}</div>
+      )}
       <div className="sm-header">
         <h1 className="sm-title">إدارة الطلاب</h1>
         <p className="sm-subtitle">عرض وإدارة بيانات الطلاب ضمن لوحة الإدارة</p>
@@ -404,21 +380,27 @@ export default function StudentsManagement() {
             {modalType === 'certificates' && (
               <div>
                 <h2 className="sm-modal-title">شهادات الطالب: {selectedStudent.firstName} {selectedStudent.lastName}</h2>
-                <div className="sm-certificates-list">
-                  {selectedStudent.certificates.length ? (
-                    selectedStudent.certificates.map((cert, idx) => (
-                      <CertificateCard
-                        key={`${selectedStudent.id}-${idx}`}
-                        courseName={cert.courseName}
-                        completionDate={cert.completionDate}
-                        certificateId={cert.certificateId}
-                        certificateImage={cert.certificateImage}
-                      />
-                    ))
-                  ) : (
-                    <p className="sm-empty">لا توجد شهادات لهذا الطالب</p>
-                  )}
-                </div>
+                {certLoading ? (
+                  <p className="sm-empty">جاري تحميل الشهادات...</p>
+                ) : (
+                  <div className="sm-certificates-list">
+                    {selectedStudent.certificates.length ? (
+                      selectedStudent.certificates.map((cert, idx) => (
+                        <CertificateCard
+                          key={`${selectedStudent.id}-${idx}`}
+                          courseName={cert.courseName}
+                          completionDate={cert.completionDate}
+                          certificateId={cert.certificateId}
+                          certificateImage={cert.certificateImage}
+                          downloadUrl={cert.downloadUrl}
+                          verificationUrl={cert.verificationUrl}
+                        />
+                      ))
+                    ) : (
+                      <p className="sm-empty">لا توجد شهادات لهذا الطالب</p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 

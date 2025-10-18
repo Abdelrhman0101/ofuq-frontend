@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import styles from './VideoSection.module.css';
 
 interface VideoSectionProps {
@@ -20,8 +20,6 @@ const VideoSection: React.FC<VideoSectionProps> = ({
   lockMessage = 'محجوب حتى إكمال أسئلة الدرس',
   onAttemptPlay
 }) => {
-  const [showPopup, setShowPopup] = useState(false);
-
   // دعم روابط embed (مثل Cloudflare/MediaDelivery) بعرض iframe
   const isEmbedUrl = (() => {
     if (!videoUrl) return false;
@@ -29,75 +27,50 @@ const VideoSection: React.FC<VideoSectionProps> = ({
     return url.includes('/embed/') || url.includes('mediadelivery.net/embed');
   })();
 
-  const handlePlayClick = () => {
-    if (isLocked) {
-      if (onAttemptPlay) onAttemptPlay();
-      return;
-    }
-    setShowPopup(true);
-  };
-
-  const handleClosePopup = () => {
-    setShowPopup(false);
-  };
-
+  // عرض الفيديو بشكل مدمج داخل السيكشن بدلاً من popup
   return (
-    <>
-      <div 
-        className={styles['main-video-section']} 
-        onClick={handlePlayClick}
-        style={{ cursor: isLocked ? 'not-allowed' : 'pointer' }}
-      >
-        <img 
-          src={thumbnailUrl} 
-          alt={alt}
-          className={styles['video-thumbnail']}
-        />
-        <div className={styles['play-button']}>
-          <div className={styles['play-icon']}></div>
-        </div>
-        {isLocked && (
+    <div className={styles['main-video-section']} style={{ cursor: 'default' }}>
+      {isLocked ? (
+        <>
+          <img 
+            src={thumbnailUrl} 
+            alt={alt}
+            className={styles['video-thumbnail']}
+          />
           <div className={styles['locked-overlay']}>
             <div className={styles['locked-badge']}>
               🔒 {lockMessage}
             </div>
           </div>
-        )}
-      </div>
-
-      {showPopup && (
-        <div className={styles['video-popup']} onClick={handleClosePopup}>
-          <div className={styles['popup-content']} onClick={(e) => e.stopPropagation()}>
-            <button className={styles['close-popup']} onClick={handleClosePopup}>
-              ×
-            </button>
-            {isEmbedUrl ? (
-              <iframe
-                src={videoUrl}
-                width="100%"
-                height="100%"
-                style={{ borderRadius: '8px' }}
-                allow="accelerometer; autoplay; encrypted-media; picture-in-picture"
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <video 
-                controls 
-                autoPlay 
-                width="100%" 
-                height="100%"
-                style={{ borderRadius: '8px' }}
-              >
-                <source src={videoUrl} type="video/mp4" />
-                متصفحك لا يدعم تشغيل الفيديو.
-              </video>
-            )}
-          </div>
-        </div>
+        </>
+      ) : (
+        <>
+          {isEmbedUrl ? (
+            <iframe
+              src={videoUrl}
+              width="100%"
+              height="100%"
+              style={{ borderRadius: '0' }}
+              allow="accelerometer; autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <video 
+              controls 
+              width="100%" 
+              height="100%"
+              poster={thumbnailUrl}
+              className={styles['video-element']}
+            >
+              <source src={videoUrl} type="video/mp4" />
+              متصفحك لا يدعم تشغيل الفيديو.
+            </video>
+          )}
+        </>
       )}
-    </>
+    </div>
   );
 };
 

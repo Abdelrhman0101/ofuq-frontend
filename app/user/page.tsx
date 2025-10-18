@@ -22,11 +22,11 @@ export default function UserDashboard() {
         profileImage="/profile.jpg"
       />
       
-      <UserStats 
+      {/* <UserStats 
         lastTestScore={85}
         completedPrograms={3}
         registeredPrograms={5}
-      />
+      /> */}
 
       <div className="dashboard-sections">
         <WatchProgress />

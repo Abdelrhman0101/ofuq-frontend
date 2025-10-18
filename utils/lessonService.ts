@@ -38,12 +38,10 @@ export interface UpdateLessonData {
   title?: string;
   description?: string;
   content?: string;
-  video_url?: string;
-  is_visible?: boolean;
-  [key: string]: any;
+  order?: number;
+  video_url?: string | null;
 }
 
-// Interface for update API response
 interface UpdateLessonResponse {
   data: Lesson;
   message: string;
@@ -151,6 +149,65 @@ export const updateLesson = async (lessonId: number, lessonData: UpdateLessonDat
       message = 'فشل في الاتصال بالخادم';
     }
     
+    throw new Error(message);
+  }
+};
+
+/**
+ * وضع علامة إكمال للدرس للمستخدم الحالي
+ * @param lessonId - معرف الدرس
+ * @returns Promise<{ status: string; completed_at?: string }>
+ */
+export const completeLesson = async (
+  lessonId: number | string
+): Promise<{ status: string; completed_at?: string }> => {
+  try {
+    const response = await apiClient.post(`/lessons/${lessonId}/complete`);
+    const data = response.data || {};
+    return data?.progress || { status: 'completed', completed_at: data?.completed_at };
+  } catch (error: any) {
+    console.error('Error completing lesson:', error);
+    let message = 'فشل في إكمال الدرس';
+    if (error?.response?.data?.message) {
+      message = error.response.data.message;
+    }
+    throw new Error(message);
+  }
+};
+
+export const updateLessonAdmin = async (lessonId: number, data: UpdateLessonData): Promise<Lesson> => {
+  try {
+    console.log(`[UpdateLessonAdmin] PUT /admin/lessons/${lessonId}`, data);
+    const response = await apiClient.put<UpdateLessonResponse>(`/admin/lessons/${lessonId}`, data);
+    return response.data.data;
+  } catch (error: any) {
+    console.error('Error updating lesson:', error);
+    let message = 'فشل في تحديث الدرس';
+    if (error.response) {
+      if (error.response.status === 422 && error.response.data?.errors) {
+        const errors = error.response.data.errors;
+        const errorMessages = Object.values(errors).flat();
+        message = errorMessages.join(', ');
+      } else if (error.response.data?.message) {
+        message = error.response.data.message;
+      } else {
+        message = `HTTP ${error.response.status}`;
+      }
+    }
+    throw new Error(message);
+  }
+};
+
+export const deleteLessonAdmin = async (lessonId: number): Promise<void> => {
+  try {
+    console.log(`[DeleteLessonAdmin] DELETE /admin/lessons/${lessonId}`);
+    await apiClient.delete(`/admin/lessons/${lessonId}`);
+  } catch (error: any) {
+    console.error('Error deleting lesson:', error);
+    let message = 'فشل في حذف الدرس';
+    if (error.response?.data?.message) {
+      message = error.response.data.message;
+    }
     throw new Error(message);
   }
 };

@@ -78,6 +78,9 @@ export const createCourse = async (courseData: any): Promise<Course> => {
       } else if (key === 'coverImage' && courseData[key] instanceof File) {
         // Handle file upload
         formData.append('cover_image', courseData[key]);
+      } else if (key === 'isFree') {
+        // Normalize camelCase to snake_case for backend
+        formData.append('is_free', courseData[key] ? '1' : '0');
       } else if (courseData[key] !== null && courseData[key] !== undefined) {
         // Handle boolean fields properly
         if (key === 'is_published' || key === 'is_free') {
@@ -139,15 +142,13 @@ export const createCourse = async (courseData: any): Promise<Course> => {
  */
 export const getCourses = async (): Promise<Course[]> => {
   try {
-    // ✅ تم التعديل هنا: الرد المتوقع هو كائن يحتوي على مفتاح data
-    const response = await apiClient.get<{ data: Course[] }>('/admin/courses');
-    
-    // ✅ تم التعديل هنا: نقوم بإرجاع قائمة الكورسات مباشرة من response.data.data
-    // الباك ايند يرسل { success: true, data: [...] }
+    const response = await apiClient.get<{ data: Course[] }>(
+      '/admin/courses',
+      { params: { per_page: 1000 } }
+    );
     if (response.data && Array.isArray(response.data.data)) {
       return response.data.data;
     }
-    
     console.error('Unexpected API response structure:', response.data);
     return []; // إرجاع مصفوفة فارغة في حالة وجود هيكل غير متوقع
   } catch (error) {
@@ -406,6 +407,44 @@ export const getCourseProgress = async (
   }
 };
 
+export interface CourseProgressDetails {
+  overall_progress: number;
+  status: 'not_started' | 'in_progress' | 'completed' | string;
+  completed_at?: string | null;
+  lessons: Array<{
+    lesson_id: number;
+    lesson_title: string;
+    status: 'not_started' | 'in_progress' | 'completed' | string;
+    started_at?: string | null;
+    completed_at?: string | null;
+  }>;
+}
+
+export const getCourseProgressDetails = async (
+  courseId: number | string
+): Promise<CourseProgressDetails | null> => {
+  try {
+    const response = await apiClient.get<any>(`/courses/${courseId}/progress`);
+    const cp = response?.data?.course_progress;
+    const details: CourseProgressDetails = {
+      overall_progress: Number(cp?.overall_progress ?? 0),
+      status: (cp?.status ?? 'not_started') as any,
+      completed_at: cp?.completed_at ?? null,
+      lessons: Array.isArray(cp?.lessons) ? cp.lessons.map((l: any) => ({
+        lesson_id: Number(l.lesson_id),
+        lesson_title: String(l.lesson_title ?? ''),
+        status: String(l.status ?? 'not_started') as any,
+        started_at: l.started_at ?? null,
+        completed_at: l.completed_at ?? null,
+      })) : [],
+    };
+    return details;
+  } catch (error: any) {
+    console.error('Error fetching course progress details:', error);
+    return null;
+  }
+};
+
 /**
  * Favorite Courses API
  */
@@ -490,5 +529,140 @@ export const getMyFavoriteCourseIds = async (): Promise<number[]> => {
   } catch (error) {
     console.error('Error fetching favorite course ids:', error);
     return [];
+  }
+};
+
+export interface Review {
+  id: number;
+  course_id: number;
+  user_id: number;
+  rating: number;
+  comment: string;
+  created_at: string;
+  updated_at: string;
+  user: {
+    id: number;
+    name: string;
+    email?: string;
+  };
+}
+
+interface ReviewsResponse {
+  success: boolean;
+  data: {
+    data: Review[];
+    current_page: number;
+    per_page: number;
+    total: number;
+    last_page: number;
+  };
+}
+
+interface ReviewSubmissionResponse {
+  success: boolean;
+  message: string;
+  data: Review;
+}
+
+/**
+ * Get reviews for a specific course
+ */
+export const getCourseReviews = async (courseId: number | string, page: number = 1, perPage: number = 15): Promise<Review[]> => {
+  try {
+    const response = await apiClient.get<ReviewsResponse>(`/courses/${courseId}/reviews`, {
+      params: { page, per_page: perPage }
+    });
+    
+    if (response.data && response.data.success && response.data.data) {
+      return response.data.data.data;
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('Error fetching course reviews:', error);
+    return [];
+  }
+};
+
+/**
+ * Submit a review for a course (requires enrollment)
+ */
+export const submitCourseReview = async (courseId: number | string, reviewData: {
+  rating: number;
+  comment: string;
+}): Promise<Review | null> => {
+  try {
+    const response = await apiClient.post<ReviewSubmissionResponse>(`/courses/${courseId}/reviews`, reviewData);
+    
+    if (response.data && response.data.success && response.data.data) {
+      return response.data.data;
+    }
+    
+    return null;
+  } catch (error: any) {
+    console.error('Error submitting review:', error);
+    
+    if (error.response && error.response.data && error.response.data.message) {
+      throw new Error(error.response.data.message);
+    }
+    
+    throw new Error('فشل في إرسال التقييم');
+  }
+};
+
+/**
+ * Update an existing review
+ */
+export const updateCourseReview = async (courseId: number | string, reviewId: number, reviewData: {
+  comment: string;
+}): Promise<Review | null> => {
+  try {
+    const response = await apiClient.put<ReviewSubmissionResponse>(`/courses/${courseId}/reviews/${reviewId}`, reviewData);
+    
+    if (response.data && response.data.success && response.data.data) {
+      return response.data.data;
+    }
+    
+    return null;
+  } catch (error: any) {
+    console.error('Error updating review:', error);
+    
+    if (error.response && error.response.data && error.response.data.message) {
+      throw new Error(error.response.data.message);
+    }
+    
+    throw new Error('فشل في تحديث التقييم');
+  }
+};
+
+/**
+ * Delete a review
+ */
+export const deleteCourseReview = async (courseId: number | string, reviewId: number): Promise<boolean> => {
+  try {
+    await apiClient.delete(`/courses/${courseId}/reviews/${reviewId}`);
+    return true;
+  } catch (error: any) {
+    console.error('Error deleting review:', error);
+    return false;
+  }
+};
+
+export const getAdminCourse = async (courseId: number | string): Promise<Course | null> => {
+  try {
+    const response = await apiClient.get<{ success: boolean; data: Course }>(`/admin/courses/${courseId}`);
+    const payload = response.data;
+    if (payload && payload.success && payload.data) {
+      return payload.data;
+    }
+    console.error('Unexpected admin course response:', response.data);
+    return null;
+  } catch (error: any) {
+    console.error('Error fetching admin course:', error);
+    let message = 'فشل في جلب تفاصيل الكورس من الإدارة';
+    if (error?.response?.data?.message) {
+      message = error.response.data.message;
+    }
+    throw new Error(message);
   }
 };

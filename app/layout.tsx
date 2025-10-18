@@ -5,6 +5,9 @@ import '@/styles/course-details.css'
 export const metadata: Metadata = {
   title: 'معهد الأفق التعليمي',
   description: 'منصة تعليمية متقدمة',
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({

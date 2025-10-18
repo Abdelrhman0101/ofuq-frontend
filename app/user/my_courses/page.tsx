@@ -30,11 +30,12 @@ export default function MyCourses() {
         // Fetch progress for each course in parallel
         const withProgress: GridCourse[] = await Promise.all(
           enrolled.map(async (c) => {
-            const progress = await getCourseProgress(c.id);
+            const progressValue = await getCourseProgress(c.id);
+            const progress = Math.max(0, Math.min(100, Math.round(Number(progressValue ?? 0))));
             return {
-              id: c.id,
-              name: c.title,
-              progress: Math.max(0, Math.min(100, Math.round(progress))),
+              id: Number(c.id),
+              name: String(c.title ?? ''),
+              progress,
               image: getBackendAssetUrl((c as any).cover_image_url ?? c.cover_image ?? ''),
               category: c.category?.name ?? 'عام',
               instructor: {

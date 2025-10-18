@@ -178,18 +178,18 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
           />
           <span className="instructor-name">{instructorName}</span>
         </div>
-        {instructorTitle && (
+        {/* {instructorTitle && (
           <div className="instructor-extra">
             <span className="instructor-role">{instructorTitle}</span>
           </div>
         )}
         {instructorBio && (
           <p className="instructor-bio">{instructorBio}</p>
-        )}
+        )} */}
       </div>
 
       {/* Social Share */}
-      <div className="social-share">
+      {/* <div className="social-share">
         <h3 className="share-title">شارك الكورس:</h3>
         <div className="social-icons">
           <div className="social-icon" onClick={() => handleSocialShare('whatsapp')}>
@@ -218,7 +218,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({
             </svg>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

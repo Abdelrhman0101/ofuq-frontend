@@ -1,7 +1,7 @@
 'use client';
 import React, { useMemo, useState } from 'react';
 import { Course } from '@/types/course';
-import { createCourse } from '@/utils/courseService';
+import { createCourse, updateCourse } from '@/utils/courseService';
 import { getCurrentUser, getAuthToken, isAuthenticated } from '../../utils/authService';
 
 interface ReviewStepProps {
@@ -67,25 +67,28 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
   const handleSaveDraft = async () => {
     setIsCreatingCourse(true);
     try {
-      if (currentCourse) {
-        // ✅ ADD THIS MERGE LOGIC
+      if (!currentCourse) {
+        return;
+      }
+      const isNew = String(currentCourse.id).startsWith('temp-');
+
+      if (isNew) {
         const finalPayload = {
           ...currentCourse,
-          ...courseBasicInfo, // Merges title, description, instructor, category etc.
-          instructor_id: courseBasicInfo.instructor?.id, // Explicitly add the IDs
+          ...courseBasicInfo,
+          instructor_id: courseBasicInfo.instructor?.id,
           category_id: courseBasicInfo.category?.id,
-          status: 'draft', // Set status for draft
-          // Remove the full objects to avoid conflicts
+          is_published: false,
           instructor: undefined,
           category: undefined,
-          is_published: undefined, // Remove is_published field to avoid conflicts with status
+          status: undefined,
           chaptersData: currentCourse.chapters?.map(chapter => ({
             title: chapter.title,
             description: chapter.description || '',
             order: chapter.order,
             lessons: chapter.lessons?.map(lesson => ({
               title: lesson.title,
-              description: lesson.description || '',
+              content: lesson.description || '',
               order: lesson.order,
               video_url: lesson.videoUrl || '',
               is_visible: lesson.isVideoPublic || false,
@@ -94,14 +97,26 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
             })) || []
           })) || []
         };
-
-        // Now, send the complete payload to the service
         await createCourse(finalPayload);
-        onSaveDraft();
+      } else {
+        const formData = new FormData();
+        // Map core fields from basic info (fallback to current course values)
+        if (courseBasicInfo.title) formData.append('title', courseBasicInfo.title);
+        if (courseBasicInfo.description) formData.append('description', courseBasicInfo.description);
+        if (typeof courseBasicInfo.price !== 'undefined') formData.append('price', String(courseBasicInfo.price));
+        if (typeof courseBasicInfo.duration !== 'undefined') formData.append('duration', String(courseBasicInfo.duration));
+        if (courseBasicInfo.instructor?.id) formData.append('instructor_id', String(courseBasicInfo.instructor.id));
+        if (courseBasicInfo.category?.id) formData.append('category_id', String(courseBasicInfo.category.id));
+        if (typeof courseBasicInfo.isFree !== 'undefined') formData.append('is_free', courseBasicInfo.isFree ? '1' : '0');
+        formData.append('is_published', '0');
+        if (courseBasicInfo.coverImage instanceof File) {
+          formData.append('cover_image', courseBasicInfo.coverImage);
+        }
+        await updateCourse(parseInt(String(currentCourse.id), 10), formData);
       }
+      onSaveDraft();
     } catch (error: any) {
       console.error('Error saving draft:', error);
-      // Handle error (show toast, etc.)
     } finally {
       setIsCreatingCourse(false);
     }
@@ -111,12 +126,9 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
     console.log('[ReviewStep] handlePublish called');
     console.log('[ReviewStep] currentCourse:', currentCourse);
     console.log('[ReviewStep] courseBasicInfo:', courseBasicInfo);
-    
-    // Check authentication status
     const isAuth = isAuthenticated();
     const currentUser = getCurrentUser();
     const authToken = getAuthToken();
-    
     console.log('[ReviewStep] Authentication status:', {
       isAuthenticated: isAuth,
       currentUser: currentUser,
@@ -125,25 +137,29 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
     });
     setIsCreatingCourse(true);
     try {
-      if (currentCourse) {
-        // ✅ ADD THIS MERGE LOGIC
+      if (!currentCourse) {
+        console.log('❌ currentCourse is null or undefined');
+        return;
+      }
+      const isNew = String(currentCourse.id).startsWith('temp-');
+
+      if (isNew) {
         const finalPayload = {
           ...currentCourse,
-          ...courseBasicInfo, // Merges title, description, instructor, category etc.
-          instructor_id: courseBasicInfo.instructor?.id, // Explicitly add the IDs
+          ...courseBasicInfo,
+          instructor_id: courseBasicInfo.instructor?.id,
           category_id: courseBasicInfo.category?.id,
-          is_published: true, // Set is_published to true for published courses
-          // Remove the full objects to avoid conflicts
+          is_published: true,
           instructor: undefined,
           category: undefined,
-          status: undefined, // Remove status field to avoid conflicts with is_published
+          status: undefined,
           chaptersData: currentCourse.chapters?.map(chapter => ({
             title: chapter.title,
             description: chapter.description || '',
             order: chapter.order,
             lessons: chapter.lessons?.map(lesson => ({
               title: lesson.title,
-              description: lesson.description || '',
+              content: lesson.description || '',
               order: lesson.order,
               video_url: lesson.videoUrl || '',
               is_visible: lesson.isVideoPublic || false,
@@ -152,28 +168,27 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
             })) || []
           })) || []
         };
-
-        console.log("🔍 Instructor ID:", finalPayload.instructor_id);
-        console.log("🔍 Category ID:", finalPayload.category_id);
-        console.log("🔍 courseBasicInfo.instructor:", courseBasicInfo.instructor);
-        console.log("🔍 courseBasicInfo.category:", courseBasicInfo.category);
-
-        console.log("🔍 Final payload to send:", finalPayload);
-
-        // Now, send the complete payload to the service
-        console.log("🔍 About to call createCourse...");
         const result = await createCourse(finalPayload);
-        console.log("🔍 createCourse result:", result);
-        
-        console.log("🔍 About to call onPublish...");
-        onPublish();
-        console.log("🔍 onPublish called successfully");
+        console.log('🔍 createCourse result:', result);
       } else {
-        console.log("❌ currentCourse is null or undefined");
+        const formData = new FormData();
+        if (courseBasicInfo.title) formData.append('title', courseBasicInfo.title);
+        if (courseBasicInfo.description) formData.append('description', courseBasicInfo.description);
+        if (typeof courseBasicInfo.price !== 'undefined') formData.append('price', String(courseBasicInfo.price));
+        if (typeof courseBasicInfo.duration !== 'undefined') formData.append('duration', String(courseBasicInfo.duration));
+        if (courseBasicInfo.instructor?.id) formData.append('instructor_id', String(courseBasicInfo.instructor.id));
+        if (courseBasicInfo.category?.id) formData.append('category_id', String(courseBasicInfo.category.id));
+        if (typeof courseBasicInfo.isFree !== 'undefined') formData.append('is_free', courseBasicInfo.isFree ? '1' : '0');
+        formData.append('is_published', '1');
+        if (courseBasicInfo.coverImage instanceof File) {
+          formData.append('cover_image', courseBasicInfo.coverImage);
+        }
+        const result = await updateCourse(parseInt(String(currentCourse.id), 10), formData);
+        console.log('🔍 updateCourse result:', result);
       }
+      onPublish();
     } catch (error: any) {
       console.error('❌ Error publishing course:', error);
-      // Handle error (show toast, etc.)
     } finally {
       setIsCreatingCourse(false);
     }

@@ -25,6 +25,55 @@ interface CreateChapterResponse {
   success: boolean;
 }
 
+export interface UpdateChapterData {
+  title?: string;
+  description?: string;
+  order?: number;
+}
+
+interface UpdateChapterResponse {
+  data: Chapter;
+  message: string;
+  success: boolean;
+}
+
+export const updateChapter = async (chapterId: number, data: UpdateChapterData): Promise<Chapter> => {
+  try {
+    console.log(`[UpdateChapter] PUT /admin/chapters/${chapterId}`, data);
+    const response = await apiClient.put<UpdateChapterResponse>(`/admin/chapters/${chapterId}`, data);
+    return response.data.data;
+  } catch (error: any) {
+    console.error('Error updating chapter:', error);
+    let message = 'فشل في تحديث الفصل';
+    if (error.response) {
+      if (error.response.status === 422 && error.response.data?.errors) {
+        const errors = error.response.data.errors;
+        const errorMessages = Object.values(errors).flat();
+        message = errorMessages.join(', ');
+      } else if (error.response.data?.message) {
+        message = error.response.data.message;
+      } else {
+        message = `HTTP ${error.response.status}`;
+      }
+    }
+    throw new Error(message);
+  }
+};
+
+export const deleteChapter = async (chapterId: number): Promise<void> => {
+  try {
+    console.log(`[DeleteChapter] DELETE /admin/chapters/${chapterId}`);
+    await apiClient.delete(`/admin/chapters/${chapterId}`);
+  } catch (error: any) {
+    console.error('Error deleting chapter:', error);
+    let message = 'فشل في حذف الفصل';
+    if (error.response?.data?.message) {
+      message = error.response.data.message;
+    }
+    throw new Error(message);
+  }
+};
+
 /**
  * Create a new chapter for a specific course
  * @param courseId - The ID of the course to add the chapter to

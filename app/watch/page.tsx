@@ -9,8 +9,8 @@ import CourseContent from '../../components/CourseContent';
 import ScrollToTop from '../../components/ScrollToTop';
 import styles from './watch.module.css';
 import Quiz from '../../components/Quiz';
-import { getUserLesson, Lesson } from '../../utils/lessonService';
-import { getChapterQuiz, QuizQuestion as ChapterQuizQuestion } from '../../utils/quizService';
+import { getUserLesson, completeLesson, Lesson } from '../../utils/lessonService';
+import { getChapterQuiz, submitQuizAnswers, QuizQuestion as ChapterQuizQuestion } from '../../utils/quizService';
 import { getBackendAssetUrl } from '../../utils/url';
 import { isAuthenticated } from '../../utils/authService';
 import { Course, getCourseDetails, getCourseProgress } from '../../utils/courseService';
@@ -32,6 +32,8 @@ function WatchPageContent() {
   const [course, setCourse] = useState<Course | null>(null);
   const [quizFinished, setQuizFinished] = useState<boolean>(false);
   const [courseProgress, setCourseProgress] = useState<number>(0);
+  const [quizId, setQuizId] = useState<number | null>(null);
+  const [quizKey, setQuizKey] = useState<number>(0);
 
   useEffect(() => {
     const loadData = async () => {
@@ -69,11 +71,12 @@ function WatchPageContent() {
         if (chapterId) {
           try {
             const quiz = await getChapterQuiz(chapterId);
+            setQuizId(Number(quiz?.quiz?.id ?? null));
             const mapped = (quiz.questions || []).map((q: ChapterQuizQuestion, idx: number) => ({
-              id: idx + 1,
+              id: Number((q as any).id ?? idx + 1),
               question: q.question,
               options: q.options || [],
-              correctAnswer: typeof q.correct_answer === 'number' ? q.correct_answer : -1
+              correctAnswer: typeof (q as any).correct_answer === 'number' ? (q as any).correct_answer : -1
             }));
             setQuestions(mapped);
           } catch (e) {
@@ -94,6 +97,55 @@ function WatchPageContent() {
   const thumbnailUrl = '/banner.jpg';
   const isQuizRequired = questions.length > 0;
   const isLocked = isQuizRequired && !quizFinished;
+
+  const handleQuizComplete = async (selectedAnswers: { [key: number]: number }) => {
+    try {
+      if (!quizId) {
+        alert('لم يتم تحديد اختبار لهذا الفصل');
+        return;
+      }
+      const answersPayload = questions.map((q, idx) => ({
+        question_id: q.id,
+        selected_indices: [selectedAnswers[idx]]
+      }));
+
+      const res = await submitQuizAnswers(quizId, answersPayload);
+      const passed = Boolean(res?.attempt?.passed);
+
+      if (passed) {
+        setQuizFinished(true);
+        if (lessonId) {
+          try { await completeLesson(lessonId); } catch (err) { console.warn('تعذر إكمال الدرس:', err); }
+        }
+        if (courseId != null) {
+          try { const progress = await getCourseProgress(courseId); setCourseProgress(progress); } catch (err) {}
+        }
+        alert('أحسنت! نجحت في اختبار الدرس. تم فتح الدرس والتنقل.');
+      } else {
+        alert('للأسف لم تجتز الاختبار. سيتم إعادة تحميل أسئلة جديدة للمحاولة مرة أخرى.');
+        if (chapterId) {
+          try {
+            const quiz = await getChapterQuiz(chapterId);
+            setQuizId(Number(quiz?.quiz?.id ?? null));
+            const remapped = (quiz.questions || []).map((q: ChapterQuizQuestion, idx: number) => ({
+              id: Number((q as any).id ?? idx + 1),
+              question: q.question,
+              options: q.options || [],
+              correctAnswer: typeof (q as any).correct_answer === 'number' ? (q as any).correct_answer : -1
+            }));
+            setQuestions(remapped);
+            setQuizFinished(false);
+            setQuizKey(prev => prev + 1);
+          } catch (e) {
+            console.warn('تعذر إعادة تحميل أسئلة الكويز:', e);
+          }
+        }
+      }
+    } catch (err: any) {
+      console.error('فشل إرسال إجابات الكويز:', err);
+      alert(err?.response?.data?.message || 'حدث خطأ أثناء إرسال الإجابات. حاول مجدداً.');
+    }
+  };
 
   // Compute previous/next lessons based on course data
   const { prevLesson, nextLesson } = useMemo(() => {
@@ -179,46 +231,7 @@ function WatchPageContent() {
             />
           )}
           
-          {/* Video Controls Bar */}
-          <div className={styles['video-controls-bar']}>
-            <div className={styles['controls-left']}>
-              <button className={styles['control-btn']}>
-                <svg className={styles['control-icon']} viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z"/>
-                </svg>
-              </button>
-              <button className={styles['control-btn']}>
-                <svg className={styles['control-icon']} viewBox="0 0 24 24">
-                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                </svg>
-              </button>
-              <span className={styles['time-display']}>00:00 / 45:30</span>
-            </div>
-            
-            <div className={styles['progress-container']}>
-              <input 
-                type="range" 
-                className={styles['progress-bar']} 
-                min="0" 
-                max="100" 
-                defaultValue="0"
-                disabled={isLocked}
-              />
-            </div>
-            
-            <div className={styles['controls-right']}>
-              <button className={styles['control-btn']}>
-                <svg className={styles['control-icon']} viewBox="0 0 24 24">
-                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-                </svg>
-              </button>
-              <button className={styles['control-btn']}>
-                <svg className={styles['control-icon']} viewBox="0 0 24 24">
-                  <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
-                </svg>
-              </button>
-            </div>
-          </div>
+          {/* Video Controls Bar - removed to avoid duplicate controls */}
 
           {/* Previous / Next lesson navigation */}
           <div className={styles['lesson-navigation']}>
@@ -284,9 +297,10 @@ function WatchPageContent() {
           {questions.length > 0 && (
             <div style={{ marginTop: '24px' }}>
               <Quiz 
+                key={quizKey}
                 questions={questions}
                 requireAllAnswered={true}
-                onComplete={() => setQuizFinished(true)}
+                onComplete={handleQuizComplete}
               />
             </div>
           )}

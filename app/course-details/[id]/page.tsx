@@ -110,10 +110,12 @@ const CourseDetailsPage = () => {
       title: course.title || 'عنوان غير متوفر',
       image: getBackendAssetUrl(coverRaw || instructorRaw),
       category: course?.category?.name || 'عام',
-      rating: parseFloat(String(course.rating ?? '4.5')), // Use API rating or default (coerce to string)
-      studentsCount: course.students_count || 0, // Use API students count or default
-      duration: course.duration ? `${course.duration} ساعة` : '30 ساعة', // Use API duration or default
-      lessonsCount: course.chapters_count || 0, // Use API chapters count as lessons
+      rating: parseFloat(String(course.average_rating ?? course.rating ?? '0')), // Use real rating from API
+      studentsCount: course.students_count || 0, // Use real students count from API
+      duration: course.duration ? `${course.duration} ساعة` : '0 ساعة', // Use real duration from API
+      lessonsCount: course.chapters_count || 
+                   ((course.chapters || []).reduce((sum, ch) => sum + ((ch.lessons || []).length), 0)) || 
+                   0, // Use real lessons count from API
       instructorName: course?.instructor?.name || 'مدرب',
       instructorAvatar: getBackendAssetUrl(instructorRaw),
       price: Number(course?.price ?? '0'),
@@ -199,14 +201,15 @@ const CourseDetailsPage = () => {
               );
             })()}
             <CourseContent 
-              rating={parseFloat(String(courseData.average_rating ?? courseData.rating ?? 4.5))}
+              rating={parseFloat(String(courseData.average_rating ?? courseData.rating ?? 0))} // Use real rating
               courseTitle={courseData.title}
               lecturesCount={
                 ((courseData.chapters || []).reduce((sum, ch) => sum + ((ch.lessons || []).length), 0)) ||
-                Number((courseData as any).lessons_count ?? 0)
+                Number((courseData as any).lessons_count ?? 0) ||
+                Number((courseData as any).chapters_count ?? 0) // Use real lessons count
               }
-              studentsCount={Number((courseData as any).students_count ?? 0)}
-              hoursCount={Number(courseData.duration ?? 30)}
+              studentsCount={Number((courseData as any).students_count ?? 0)} // Use real students count
+              hoursCount={Number(courseData.duration ?? 0)} // Use real duration
               courseDescription={courseData.description}
               courseId={courseId}
               isEnrolled={isEnrolled}
@@ -242,7 +245,7 @@ const CourseDetailsPage = () => {
               (courseData as any).image ||
               courseData.cover_image
             )}
-            currentPrice={courseData.price}
+            currentPrice={courseData.price} // This will show "مجاني" if price is 0
             originalPrice={courseData.price * 2} // Assuming 50% discount
             discount="خصم 50%"
             instructorName={courseData.instructor?.name || 'مدرب'}

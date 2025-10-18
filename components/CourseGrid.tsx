@@ -9,7 +9,7 @@ interface Course {
   name: string;
   progress: number;
   image: string;
-  category: string;
+  category: string | { id: number; name: string; created_at?: string; updated_at?: string };
   instructor: {
     name: string;
     avatar: string;
@@ -143,7 +143,7 @@ export default function CourseGrid({
       <div className="course-image">
         <img src={course.image} alt={course.name} />
         <div className="course-category">
-          {course.category}
+          {typeof course.category === 'string' ? course.category : course.category?.name || 'عام'}
         </div>
       </div>
       <div className="course-content">

@@ -5,6 +5,8 @@ import LessonQuestionManager from './LessonQuestionManager';
 import Toast from '../Toast';
 import '../../styles/courses.css';
 import '../../styles/toast.css';
+import { createChapter, updateChapter, deleteChapter } from '@/utils/chapterService';
+import { createLesson, updateLessonAdmin, deleteLessonAdmin } from '@/utils/lessonService';
 
 interface ContentManagementStepProps {
   course: Course;
@@ -40,6 +42,8 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
     setToastVisible(false);
   };
 
+  const toNum = (id: string | number) => (typeof id === 'number' ? id : parseInt(String(id), 10));
+  const isPersistedId = (id: string | number) => Number.isFinite(toNum(id));
   const renderResourceIcon = (type: ResourceType) => {
     switch (type) {
       case 'website':
@@ -95,36 +99,60 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
             الفصول ({currentCourse?.chapters?.length || 0})
           </h3>
           <button
-            onClick={() => {
+            onClick={async () => {
               if (currentCourse) {
-                // Calculate the order for the new chapter (first chapter gets order 1)
                 const newOrder = currentCourse.chapters.length + 1;
-                
-                // Generate a temporary ID for the new chapter
-                const tempId = `temp-chapter-${Date.now()}`;
-                
-                // Update the courses state with the new chapter (local state only)
-                setCourses(prevCourses => 
-                  prevCourses.map(course =>
-                    course.id === currentCourse.id
-                      ? { 
-                          ...course, 
-                          chapters: [
-                            {
-                              id: tempId,
-                              title: 'فصل جديد',
-                              description: '',
-                              lessons: [],
-                              order: newOrder
-                            },
-                            ...course.chapters.map(ch => ({ ...ch, order: ch.order + 1 }))
-                          ]
-                        }
-                      : course
-                  )
-                );
-
-                showToast('تم إضافة الفصل محلياً!', 'success');
+                const courseIdNum = toNum(currentCourse.id);
+                if (Number.isFinite(courseIdNum)) {
+                  try {
+                    const created = await createChapter(courseIdNum, { title: 'فصل جديد', description: '', order: newOrder });
+                    setCourses(prevCourses => 
+                      prevCourses.map(course =>
+                        course.id === currentCourse.id
+                          ? { 
+                              ...course, 
+                              chapters: [
+                                {
+                                  id: String(created.id),
+                                  title: created.title || 'فصل جديد',
+                                  description: created.description || '',
+                                  lessons: [],
+                                  order: created.order ?? newOrder
+                                },
+                                ...course.chapters.map(ch => ({ ...ch, order: ch.order + 1 }))
+                              ]
+                            }
+                          : course
+                      )
+                    );
+                    showToast('تم إضافة الفصل!', 'success');
+                  } catch (error: any) {
+                    showToast(error.message || 'فشل في إضافة الفصل', 'error');
+                  }
+                } else {
+                  const tempId = `temp-chapter-${Date.now()}`;
+                  setCourses(prevCourses => 
+                    prevCourses.map(course =>
+                      course.id === currentCourse.id
+                        ? { 
+                            ...course, 
+                            chapters: [
+                              {
+                                id: tempId,
+                                title: 'فصل جديد',
+                                description: '',
+                                lessons: [],
+                                order: newOrder
+                              },
+                              ...course.chapters.map(ch => ({ ...ch, order: ch.order + 1 }))
+                            ]
+                          }
+                        : course
+                    )
+                  );
+  
+                  showToast('تم إضافة الفصل محلياً!', 'success');
+                }
               }
             }}
             className="add-chapter-btn"
@@ -163,6 +191,17 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
                           )
                         );
                       }}
+                      onBlur={async (e) => {
+                        const chIdNum = toNum(chapter.id);
+                        if (Number.isFinite(chIdNum)) {
+                          try {
+                            await updateChapter(chIdNum, { title: e.target.value });
+                            showToast('تم تحديث عنوان الفصل', 'success');
+                          } catch (error: any) {
+                            showToast(error.message || 'فشل تحديث عنوان الفصل', 'error');
+                          }
+                        }
+                      }}
                       className="chapter-title-input"
                     />
                     <textarea
@@ -183,6 +222,17 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
                               : course
                           )
                         );
+                      }}
+                      onBlur={async (e) => {
+                        const chIdNum = toNum(chapter.id);
+                        if (Number.isFinite(chIdNum)) {
+                          try {
+                            await updateChapter(chIdNum, { description: e.target.value });
+                            showToast('تم تحديث وصف الفصل', 'success');
+                          } catch (error: any) {
+                            showToast(error.message || 'فشل تحديث وصف الفصل', 'error');
+                          }
+                        }
                       }}
                       className="chapter-description-input"
                       rows={2}
@@ -295,8 +345,6 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
                           value={lesson.title}
                           onChange={(e) => {
                             const newTitle = e.target.value;
-                            
-                            // Update local state only
                             setCourses(prevCourses => 
                               prevCourses.map(course =>
                                 course.id === currentCourse.id
@@ -319,6 +367,17 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
                               )
                             );
                           }}
+                          onBlur={async (e) => {
+                            const lessonIdNum = toNum(lesson.id);
+                            if (Number.isFinite(lessonIdNum)) {
+                              try {
+                                await updateLessonAdmin(lessonIdNum, { title: e.target.value });
+                                showToast('تم تحديث عنوان الدرس', 'success');
+                              } catch (error: any) {
+                                showToast(error.message || 'فشل تحديث عنوان الدرس', 'error');
+                              }
+                            }
+                          }}
                           className="lesson-title-input"
                         />
                         <textarea
@@ -326,8 +385,6 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
                           value={lesson.description}
                           onChange={(e) => {
                             const newDescription = e.target.value;
-                            
-                            // Update local state only
                             setCourses(prevCourses => 
                               prevCourses.map(course =>
                                 course.id === currentCourse.id
@@ -349,6 +406,17 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
                                   : course
                               )
                             );
+                          }}
+                          onBlur={async (e) => {
+                            const lessonIdNum = toNum(lesson.id);
+                            if (Number.isFinite(lessonIdNum)) {
+                              try {
+                                await updateLessonAdmin(lessonIdNum, { description: e.target.value, content: e.target.value });
+                                showToast('تم تحديث وصف الدرس', 'success');
+                              } catch (error: any) {
+                                showToast(error.message || 'فشل تحديث وصف الدرس', 'error');
+                              }
+                            }
                           }}
                           className="lesson-description-input"
                           rows={2}
