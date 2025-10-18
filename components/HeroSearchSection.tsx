@@ -54,7 +54,7 @@ export default function HeroSearchSection({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      onSearch?.(inputValue.trim());
+      onSearch?.(localSearchQuery.trim());
     }
   };
 
