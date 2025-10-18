@@ -74,13 +74,15 @@ const ProfileHeader = () => {
         <div className={ph['header-container']}>
           {/* Logo */}
           <div className={ph['header-logo']}>
-            <Image 
-              src="/mahad_alofk2.png" 
-              alt="معهد الأفق" 
-              width={120} 
-              height={50}
-              className={ph['logo-image']}
-            />
+            <Link href="/">
+              <Image 
+                src="/mahad_alofk2.png" 
+                alt="معهد افق" 
+                width={120} 
+                height={50}
+                className={ph['logo-image']}
+              />
+            </Link>
           </div>
 
           {/* Desktop Navigation Links - Centered */}

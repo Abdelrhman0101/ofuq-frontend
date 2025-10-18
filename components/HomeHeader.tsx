@@ -73,13 +73,15 @@ const HomeHeader = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             {/* Logo */}
             <div className={styles['header-logo']}>
-              <Image 
-                src="/mahad_alofk2.png" 
-                alt="معهد الأفق" 
-                width={120} 
-                height={50}
-                className={styles['logo-image']}
-              />
+              <Link href="/">
+                <Image 
+                  src="/mahad_alofk2.png" 
+                  alt="معهد افق" 
+                  width={120} 
+                  height={50}
+                  className={styles['logo-image']}
+                />
+              </Link>
             </div>
 
             {/* Desktop Navigation Links */}
