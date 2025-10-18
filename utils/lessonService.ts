@@ -14,6 +14,21 @@ export interface Lesson {
   resources?: any;
   created_at?: string;
   updated_at?: string;
+  // add quiz with nested questions returned from backend
+  quiz?: {
+    id: number;
+    title?: string;
+    description?: string;
+    passing_score?: number;
+    time_limit?: number;
+    questions?: {
+      id: number;
+      question: string;
+      options: string[];
+      correct_answer: string;
+      explanation?: string;
+    }[];
+  };
 }
 
 // Interface for creating a new lesson
@@ -40,6 +55,26 @@ export interface UpdateLessonData {
   content?: string;
   order?: number;
   video_url?: string | null;
+  is_visible?: boolean;
+  attachments?: any;
+  resources?: any;
+  chapter_id?: number;
+  quiz?: {
+    title?: string;
+    description?: string;
+    passing_score?: number;
+    time_limit?: number;
+    delete?: boolean;
+    questions?: {
+      id?: number;
+      question: string;
+      type?: string;
+      options?: string[];
+      correct_answer: string;
+      points?: number;
+      explanation?: string;
+    }[];
+  };
 }
 
 interface UpdateLessonResponse {

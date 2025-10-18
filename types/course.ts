@@ -47,6 +47,7 @@ export interface Lesson {
     description?: string;
     passing_score?: number;
     time_limit?: number;
+    questions?: Question[];
   };
   // روابط مصادر الدرس مع نوع الأيقونة
   resources?: {

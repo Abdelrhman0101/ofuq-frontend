@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { createQuestion, updateQuestion, deleteQuestion, QuestionData, Question as APIQuestion } from '../../utils/questionService';
+import { updateLessonAdmin } from '../../utils/lessonService';
 import Toast from '../Toast';
 import '../../styles/lesson-questions.css';
 import '../../styles/toast.css';
@@ -19,6 +19,7 @@ interface LessonQuestionManagerProps {
   quizId?: number;
   questions: Question[];
   onQuestionsChange: (questions: Question[]) => void;
+  onQuizCreated?: (quizId: number) => void;
 }
 
 const LessonQuestionManager: React.FC<LessonQuestionManagerProps> = ({
@@ -26,6 +27,7 @@ const LessonQuestionManager: React.FC<LessonQuestionManagerProps> = ({
   quizId,
   questions,
   onQuestionsChange,
+  onQuizCreated,
 }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
@@ -86,109 +88,108 @@ const LessonQuestionManager: React.FC<LessonQuestionManagerProps> = ({
     setIsEditing(true);
   };
 
+  const toApiQuestions = (list: Question[]) =>
+    list.map(q => ({
+      question: q.text.trim(),
+      options: q.options.map(o => o.trim()),
+      correct_answer: String(q.correctAnswer),
+      explanation: q.explanation?.trim() || undefined,
+    }));
+
+  const mapServerQuestionsToUI = (serverQuestions: any[]): Question[] => {
+    if (!Array.isArray(serverQuestions)) return [];
+    return serverQuestions.map((sq: any) => {
+      const correctRaw = sq.correct_answer;
+      const correctIndex = Array.isArray(correctRaw)
+        ? Number(correctRaw[0])
+        : Number(correctRaw);
+      return {
+        id: String(sq.id ?? generateId()),
+        text: sq.question ?? '',
+        options: Array.isArray(sq.options) ? sq.options : [],
+        correctAnswer: Number.isNaN(correctIndex) ? 0 : correctIndex,
+        explanation: sq.explanation ?? undefined,
+      } as Question;
+    });
+  };
+
   const handleSaveQuestion = async () => {
     if (!formData.text.trim() || formData.options.some(opt => !opt.trim())) {
       showToast('يرجى ملء جميع الحقول المطلوبة', 'error');
       return;
     }
 
-    // For temporary lessons (new lessons), create a temporary quiz ID
-    let currentQuizId = quizId;
-    if (!currentQuizId && lessonId.startsWith('temp-')) {
-      // Generate a temporary quiz ID for new lessons
-      currentQuizId = parseInt(`999${Date.now().toString().slice(-6)}`);
-      showToast('سيتم إنشاء اختبار للدرس عند الحفظ', 'success');
-    } else if (!currentQuizId) {
-      showToast('معرف الاختبار غير متوفر. يرجى إنشاء اختبار للدرس أولاً', 'error');
-      return;
-    }
-
-    const questionData: QuestionData = {
-      text: formData.text.trim(),
-      options: formData.options.map(opt => opt.trim()),
-      correctAnswer: formData.correctAnswer,
-      explanation: formData.explanation.trim() || undefined
-    };
-
     try {
-      let updatedQuestions;
-      
+      let updatedQuestions: Question[];
+
       if (editingQuestion) {
-        // Update existing question
+        // Update an existing question in local state
         setIsUpdating(true);
-        
-        if (lessonId.startsWith('temp-')) {
-          // For temporary lessons, update locally
-          updatedQuestions = questions.map(q => 
-            q.id === editingQuestion.id 
-              ? {
-                  id: editingQuestion.id,
-                  text: questionData.text,
-                  options: questionData.options,
-                  correctAnswer: questionData.correctAnswer,
-                  explanation: questionData.explanation
-                }
-              : q
-          );
-          showToast('تم تحديث السؤال محلياً', 'success');
-        } else {
-          // For existing lessons, update via API
-          const questionId = parseInt(editingQuestion.id);
-          const updatedQuestion = await updateQuestion(questionId, questionData);
-          
-          updatedQuestions = questions.map(q => 
-            q.id === editingQuestion.id 
-              ? {
-                  id: updatedQuestion.id.toString(),
-                  text: updatedQuestion.text,
-                  options: updatedQuestion.options,
-                  correctAnswer: updatedQuestion.correctAnswer,
-                  explanation: updatedQuestion.explanation
-                }
-              : q
-          );
-          showToast('تم تحديث السؤال بنجاح', 'success');
-        }
+        updatedQuestions = questions.map(q =>
+          q.id === editingQuestion.id
+            ? {
+                id: editingQuestion.id,
+                text: formData.text.trim(),
+                options: formData.options.map(o => o.trim()),
+                correctAnswer: formData.correctAnswer,
+                explanation: formData.explanation.trim() || undefined,
+              }
+            : q
+        );
       } else {
-        // Create new question
+        // Add a new question in local state
         setIsCreating(true);
-        
-        if (lessonId.startsWith('temp-')) {
-          // For temporary lessons, add locally with temporary ID
-          const tempQuestionId = `temp-question-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-          const questionForState: Question = {
-            id: tempQuestionId,
-            text: questionData.text,
-            options: questionData.options,
-            correctAnswer: questionData.correctAnswer,
-            explanation: questionData.explanation
-          };
-          
-          updatedQuestions = [...questions, questionForState];
-          setCurrentQuestionIndex(questions.length);
-          showToast('تم إضافة السؤال محلياً', 'success');
-        } else {
-          // For existing lessons, create via API
-          const newQuestion = await createQuestion(currentQuizId, questionData);
-          
-          const questionForState: Question = {
-            id: newQuestion.id.toString(),
-            text: newQuestion.text,
-            options: newQuestion.options,
-            correctAnswer: newQuestion.correctAnswer,
-            explanation: newQuestion.explanation
-          };
-          
-          updatedQuestions = [...questions, questionForState];
-          setCurrentQuestionIndex(questions.length);
-          showToast('تم إضافة السؤال بنجاح', 'success');
-        }
+        const tempQuestionId = `temp-question-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const questionForState: Question = {
+          id: tempQuestionId,
+          text: formData.text.trim(),
+          options: formData.options.map(o => o.trim()),
+          correctAnswer: formData.correctAnswer,
+          explanation: formData.explanation.trim() || undefined,
+        };
+        updatedQuestions = [...questions, questionForState];
+        setCurrentQuestionIndex(questions.length);
       }
 
-      onQuestionsChange(updatedQuestions);
-      setIsEditing(false);
-      setEditingQuestion(null);
-      
+      if (lessonId.startsWith('temp-')) {
+        // For temporary lessons, update only local state
+        onQuestionsChange(updatedQuestions);
+        showToast(editingQuestion ? 'تم تحديث السؤال محلياً' : 'تم إضافة السؤال محلياً', 'success');
+        setIsEditing(false);
+        setEditingQuestion(null);
+      } else {
+        // For existing lessons, persist entire quiz with all questions via lesson update
+        const numericLessonId = parseInt(lessonId);
+        if (!Number.isFinite(numericLessonId)) {
+          showToast('معرف الدرس غير صالح', 'error');
+          return;
+        }
+
+        const quizTitle = 'اختبار الدرس';
+        const payload = {
+          quiz: {
+            title: quizTitle,
+            questions: toApiQuestions(updatedQuestions),
+          },
+        };
+
+        const updatedLesson = await updateLessonAdmin(numericLessonId, payload);
+        const serverQuestions = updatedLesson?.quiz?.questions ?? [];
+        const normalized = mapServerQuestionsToUI(serverQuestions);
+
+        // Update parent state with normalized questions
+        onQuestionsChange(normalized);
+
+        // Notify parent if quiz was created or its id changed
+        const newQuizId = updatedLesson?.quiz?.id;
+        if (newQuizId && typeof onQuizCreated === 'function') {
+          onQuizCreated(newQuizId);
+        }
+
+        showToast(editingQuestion ? 'تم تحديث السؤال بنجاح' : 'تم إضافة السؤال بنجاح', 'success');
+        setIsEditing(false);
+        setEditingQuestion(null);
+      }
     } catch (error: any) {
       console.error('Error saving question:', error);
       showToast(error.message || 'حدث خطأ أثناء حفظ السؤال', 'error');
@@ -205,18 +206,42 @@ const LessonQuestionManager: React.FC<LessonQuestionManagerProps> = ({
 
     try {
       setIsDeleting(true);
-      const numericQuestionId = parseInt(questionId);
-      await deleteQuestion(numericQuestionId);
-      
-      const updatedQuestions = questions.filter(q => q.id !== questionId);
-      onQuestionsChange(updatedQuestions);
-      
-      if (currentQuestionIndex >= updatedQuestions.length && updatedQuestions.length > 0) {
-        setCurrentQuestionIndex(updatedQuestions.length - 1);
+      const remaining = questions.filter(q => q.id !== questionId);
+
+      if (lessonId.startsWith('temp-')) {
+        onQuestionsChange(remaining);
+        showToast('تم حذف السؤال محلياً', 'success');
+      } else {
+        const numericLessonId = parseInt(lessonId);
+        if (!Number.isFinite(numericLessonId)) {
+          showToast('معرف الدرس غير صالح', 'error');
+          return;
+        }
+
+        const quizTitle = 'اختبار الدرس';
+        const payload = {
+          quiz: {
+            title: quizTitle,
+            questions: toApiQuestions(remaining),
+          },
+        };
+
+        const updatedLesson = await updateLessonAdmin(numericLessonId, payload);
+        const serverQuestions = updatedLesson?.quiz?.questions ?? [];
+        const normalized = mapServerQuestionsToUI(serverQuestions);
+        onQuestionsChange(normalized);
+
+        const newQuizId = updatedLesson?.quiz?.id;
+        if (newQuizId && typeof onQuizCreated === 'function') {
+          onQuizCreated(newQuizId);
+        }
+
+        showToast('تم حذف السؤال بنجاح', 'success');
       }
-      
-      showToast('تم حذف السؤال بنجاح', 'success');
-      
+
+      if (currentQuestionIndex >= remaining.length && remaining.length > 0) {
+        setCurrentQuestionIndex(remaining.length - 1);
+      }
     } catch (error: any) {
       console.error('Error deleting question:', error);
       showToast(error.message || 'حدث خطأ أثناء حذف السؤال', 'error');

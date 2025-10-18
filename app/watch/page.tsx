@@ -1,5 +1,7 @@
 'use client';
 
+const SIMULATION_ENABLED = true;
+
 import React, { useEffect, useMemo, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import HomeHeader from '../../components/HomeHeader';
@@ -9,6 +11,9 @@ import CourseContent from '../../components/CourseContent';
 import ScrollToTop from '../../components/ScrollToTop';
 import styles from './watch.module.css'; // تأكد من أن هذا المسار صحيح
 import Quiz from '../../components/Quiz';
+import SimulationQuiz from '../../components/SimulationQuiz';
+import FinalExam from '../../components/FinalExam';
+import Certificate from '../../components/Certificate';
 import { getUserLesson, completeLesson, Lesson } from '../../utils/lessonService';
 // تم حذف getChapterQuiz، لكننا ما زلنا بحاجة إلى submitQuizAnswers
 import { submitQuizAnswers } from '../../utils/quizService';
@@ -59,6 +64,12 @@ function WatchPageContent() {
   const [courseProgress, setCourseProgress] = useState<number>(0);
   const [quizId, setQuizId] = useState<number | null>(null);
   const [quizKey, setQuizKey] = useState<number>(0); // لإعادة تحميل الكويز عند الفشل
+  
+  // حالات المحاكاة
+  const [showFinalExam, setShowFinalExam] = useState<boolean>(false);
+  const [showCertificate, setShowCertificate] = useState<boolean>(false);
+  const [showQuizPopup, setShowQuizPopup] = useState<boolean>(false);
+  const [simulationMode, setSimulationMode] = useState<boolean>(SIMULATION_ENABLED);
 
   useEffect(() => {
     const loadData = async () => {
@@ -90,19 +101,25 @@ function WatchPageContent() {
             id: Number(q.id ?? idx + 1),
             question: q.question,
             options: q.options || [],
-            // تحويل آمن للإجابة الصحيحة
+            // تحويل آمن للإجابة الصحيحة - تصحيح المنطق
             correctAnswer: typeof q.correct_answer === 'number' 
               ? q.correct_answer 
-              : parseInt(String(q.correct_answer), 10) || -1
+              : parseInt(String(q.correct_answer), 10) || 0
           }));
           setQuestions(mapped);
           setQuizFinished(false); // يجب إعادة تعيين حالة النجاح مع كل درس جديد
           setQuizKey(prev => prev + 1); // عرض كويز جديد
         } else {
-          // لا يوجد كويز لهذا الدرس
-          setQuestions([]);
-          setQuizId(null);
-          setQuizFinished(true); // نعتبره "منتهي" لأنه لا يوجد ما يجب إكماله
+          // لا يوجد كويز لهذا الدرس - في المحاكاة نعرض أسئلة وهمية
+          if (simulationMode) {
+            setQuestions([]);
+            setQuizId(null);
+            setQuizFinished(false); // في المحاكاة نعرض أسئلة وهمية
+          } else {
+            setQuestions([]);
+            setQuizId(null);
+            setQuizFinished(true); // نعتبره "منتهي" لأنه لا يوجد ما يجب إكماله
+          }
         }
 
         // 3. جلب بيانات الكورس (لأجل العرض الجانبي والتنقل)
@@ -136,10 +153,49 @@ function WatchPageContent() {
 
   const videoUrl = lesson?.video_url ? getBackendAssetUrl(lesson.video_url) : '/sample-video.mp4';
   const thumbnailUrl = '/banner.jpg'; // يمكنك تغييره ليأخذ صورة الكورس
-  const isQuizRequired = questions.length > 0;
+  const isQuizRequired = questions.length > 0 || simulationMode; // في المحاكاة نعرض دائماً أسئلة
   
-  // الدرس محجوب إذا كان الاختبار مطلوباً ولم يتم إنهاؤه
-  const isLocked = isQuizRequired && !quizFinished;
+  // التحقق من كون هذا الدرس الأول في الكورس
+  const isFirstLesson = useMemo(() => {
+    if (!course || !lesson || !course.chapters) return false;
+    const allLessons = course.chapters.flatMap(chapter => chapter.lessons);
+    return allLessons.length > 0 && allLessons[0]?.id === lesson.id;
+  }, [course, lesson]);
+  
+  // الدرس محجوب إذا كان الاختبار مطلوباً ولم يتم إنهاؤه، باستثناء الدرس الأول
+  // في وضع المحاكاة، لا نحجب أي درس بعد إنهاء الأسئلة
+  const isLocked = !simulationMode && isQuizRequired && !quizFinished && !isFirstLesson;
+
+  // دوال المحاكاة
+  const handleSimulationQuizEnd = () => {
+    if (!course || !lesson || !course.chapters) return;
+    
+    // إغلاق popup الأسئلة
+    setShowQuizPopup(false);
+    
+    // البحث عن الدرس التالي
+    const allLessons = course.chapters.flatMap(chapter => chapter.lessons);
+    const currentLessonIndex = allLessons.findIndex(l => l.id === lesson.id);
+    const nextLesson = allLessons[currentLessonIndex + 1];
+    
+    if (nextLesson) {
+      // الانتقال للدرس التالي
+      router.push(`/watch?courseId=${courseId}&chapterId=${nextLesson.chapter_id}&lessonId=${nextLesson.id}`);
+    } else {
+      // هذا آخر درس - عرض الامتحان النهائي
+      setShowFinalExam(true);
+    }
+  };
+
+  const handleFinalExamComplete = () => {
+    setShowFinalExam(false);
+    setShowCertificate(true);
+  };
+
+  const handleCertificateClose = () => {
+    setShowCertificate(false);
+    // يمكن إضافة منطق إضافي هنا مثل العودة لصفحة الكورس
+  };
 
   const handleQuizComplete = async (selectedAnswers: { [key: number]: number }) => {
     try {
@@ -245,9 +301,46 @@ function WatchPageContent() {
 
   const navigateToLesson = (target: { id: number; chapterId: number } | null) => {
     if (!target || !courseId) return;
+    
+    // في وضع المحاكاة، إذا كان هذا زر "التالي" وهناك أسئلة، اعرض popup الأسئلة
+    if (simulationMode && target.id > (lessonId || 0) && isQuizRequired) {
+      setShowQuizPopup(true);
+      return;
+    }
+    
     // التأكد من تمرير كل المعرفات اللازمة
     router.push(`/watch?lessonId=${target.id}&chapterId=${target.chapterId}&courseId=${courseId}`);
   };
+
+  // عرض الشهادة
+  if (showCertificate && course) {
+    return (
+      <Certificate
+        courseName={course.title}
+        instructorName={course.instructor?.name || "المدرب"}
+        studentName="الطالب" // يمكن الحصول عليه من بيانات المستخدم
+        completionDate={new Date()}
+        onClose={handleCertificateClose}
+      />
+    );
+  }
+
+  // عرض الامتحان النهائي
+  if (showFinalExam && course) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+              <h1 className="text-2xl font-bold text-gray-800 mb-2">الامتحان النهائي</h1>
+              <p className="text-gray-600 mb-4">كورس: {course.title}</p>
+            </div>
+            <FinalExam onComplete={handleFinalExamComplete} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles['watch-page']} style={{ width: '100%', minHeight: '100vh' }}>
@@ -337,7 +430,22 @@ function WatchPageContent() {
           )}
 
           {/* عرض الكويز */}
-          {questions.length > 0 && !loading && (
+          {simulationMode && !loading && (
+            <div style={{ marginTop: '24px' }}>
+              <SimulationQuiz 
+                onEnd={handleSimulationQuizEnd}
+                isLastLesson={(() => {
+                  if (!course || !lesson) return false;
+                  const allLessons = course.chapters.flatMap(chapter => chapter.lessons);
+                  const currentLessonIndex = allLessons.findIndex(l => l.id === lesson.id);
+                  return currentLessonIndex === allLessons.length - 1;
+                })()}
+              />
+            </div>
+          )}
+          
+          {/* الكويز الأصلي - يظهر فقط عندما تكون المحاكاة معطلة */}
+          {!simulationMode && questions.length > 0 && !loading && (
             <div style={{ marginTop: '24px' }}>
               <Quiz 
                 key={quizKey} // استخدام المفتاح لإعادة التحميل
@@ -387,6 +495,59 @@ function WatchPageContent() {
           )}
         </div>
       </main>
+      
+      {/* Quiz Popup */}
+      {showQuizPopup && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: '#fff',
+            borderRadius: '12px',
+            padding: '24px',
+            maxWidth: '800px',
+            width: '95%',
+            maxHeight: '85vh',
+            overflowY: 'auto',
+            position: 'relative',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)'
+          }}>
+            <button
+              onClick={() => setShowQuizPopup(false)}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: '#666'
+              }}
+            >
+              ×
+            </button>
+            <SimulationQuiz 
+              onFinish={handleSimulationQuizEnd}
+              isLastLesson={(() => {
+                if (!course || !lesson) return false;
+                const allLessons = course.chapters.flatMap(chapter => chapter.lessons);
+                const currentLessonIndex = allLessons.findIndex(l => l.id === lesson.id);
+                return currentLessonIndex === allLessons.length - 1;
+              })()}
+            />
+          </div>
+        </div>
+      )}
       
       <Footer />
       <ScrollToTop />
