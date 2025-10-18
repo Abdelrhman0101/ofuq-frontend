@@ -81,7 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
           </li>
 
           {/* Reports Dropdown */}
-          <li className={`${styles['nav-item']} ${styles['nav-dropdown']}`}>
+          {/* <li className={`${styles['nav-item']} ${styles['nav-dropdown']}`}>
             <button
               type="button"
               className={`${styles['nav-link']} ${styles['dropdown-toggle']}`}
@@ -109,10 +109,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
                 تقارير الزيارات
               </Link>
             </div>
-          </li>
+          </li> */}
 
           {/* Policies Dropdown */}
-          <li className={`${styles['nav-item']} ${styles['nav-dropdown']}`}>
+          {/* <li className={`${styles['nav-item']} ${styles['nav-dropdown']}`}>
             <button
               type="button"
               className={`${styles['nav-link']} ${styles['dropdown-toggle']}`}
@@ -140,7 +140,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
                 سياسة الخصوصية
               </Link>
             </div>
-          </li>
+          </li> */}
 
           <li className={styles['nav-item']}>
             <Link

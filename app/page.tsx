@@ -11,8 +11,6 @@ import ScrollToTop from '../components/ScrollToTop';
 import SocialMediaFloat from '../components/SocialMediaFloat';
 import { getFeaturedCourses, Course } from '../utils/courseService';
 import { getBackendAssetUrl } from '../utils/url';
-import '../styles/home-header.css';
-import '../styles/course-cards.css';
 import '../styles/contact-section.css';
 
 export default function HomePage() {

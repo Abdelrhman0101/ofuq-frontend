@@ -7,7 +7,6 @@ import { useRouter, usePathname } from 'next/navigation';
 import { isAuthenticated, getCurrentUser, signout, User } from '../utils/authService';
 import clsx from 'clsx';
 import styles from './HomeHeader.module.css';
-import '../styles/profile-header.css';
 import ph from './ProfileHeader.module.css';
 
 const ProfileHeader = () => {

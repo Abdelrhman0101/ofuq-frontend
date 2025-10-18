@@ -601,6 +601,7 @@
   /* margin-bottom: 4rem; */
   position: relative;
   overflow: hidden;
+  width: 100%;
 }
 
 
@@ -612,6 +613,9 @@
   padding: 1.3rem;
   border-radius: var(--border-radius-xl);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .hero-main {

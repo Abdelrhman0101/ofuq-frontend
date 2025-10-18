@@ -152,15 +152,9 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ courseBasicInfo, setCours
               >
                 {courseBasicInfo.instructor ? (
                   <div className="selected-instructor">
-                    <img 
-                      src={courseBasicInfo.instructor.profileImage || '/profile.jpg'} 
-                      alt={courseBasicInfo.instructor.name}
-                      className="instructor-avatar"
-                    />
                     <div className="instructor-info">
-                          <span className="instructor-name">{courseBasicInfo.instructor.name}</span>
-                          <span className="instructor-specialization">{courseBasicInfo.instructor.title}</span>
-                        </div>
+                      <span className="instructor-name">{courseBasicInfo.instructor.name}</span>
+                    </div>
                   </div>
                 ) : (
                   <div className="instructor-placeholder">
@@ -185,17 +179,11 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ courseBasicInfo, setCours
                     {filteredInstructors.map((instructor) => (
                       <div
                         key={instructor.id}
-                        className="instructor-item"
+                        className={`instructor-item ${courseBasicInfo.instructor?.id === instructor.id ? 'selected' : ''}`}
                         onClick={() => handleInstructorSelect(instructor)}
                       >
-                        <img 
-                          src={instructor.profileImage || '/profile.jpg'} 
-                          alt={instructor.name}
-                          className="instructor-avatar"
-                        />
                         <div className="instructor-info">
                           <span className="instructor-name">{instructor.name}</span>
-                          <span className="instructor-specialization">{instructor.title}</span>
                         </div>
                       </div>
                     ))}

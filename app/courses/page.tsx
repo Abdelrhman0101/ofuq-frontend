@@ -11,7 +11,6 @@ import ScrollToTop from '../../components/ScrollToTop';
 import SocialMediaFloat from '../../components/SocialMediaFloat';
 import { getAllCourses, Course } from '../../utils/courseService';
 import { getBackendAssetUrl } from '../../utils/url';
-import '../../styles/course-cards.css';
 
 function CoursesContent() {
   const searchParams = useSearchParams();
