@@ -8,6 +8,7 @@ import { isAuthenticated, getCurrentUser, signout, User } from '../utils/authSer
 import clsx from 'clsx';
 import styles from './HomeHeader.module.css';
 import '../styles/profile-header.css';
+import ph from './ProfileHeader.module.css';
 
 const ProfileHeader = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -69,40 +70,40 @@ const ProfileHeader = () => {
 
   return (
     <>
-      <header className="profile-header">
-        <div className="header-container">
+      <header className={ph['profile-header']}>
+        <div className={ph['header-container']}>
           {/* Logo */}
-          <div className="header-logo">
+          <div className={ph['header-logo']}>
             <Image 
               src="/mahad_alofk2.png" 
               alt="معهد الأفق" 
               width={120} 
               height={50}
-              className="logo-image"
+              className={ph['logo-image']}
             />
           </div>
 
           {/* Desktop Navigation Links - Centered */}
-          <nav className="header-nav desktop-nav">
-            <Link href="/" className={`nav-link1 ${pathname === '/' ? 'active' : ''}`}>الرئيسية</Link>
-            <Link href="/courses" className={`nav-link1 ${(pathname?.startsWith('/courses') || pathname?.startsWith('/course-details')) ? 'active' : ''}`}>برامجنا التدريبية</Link>
-            <Link href="/user/fav" className={`nav-link1 ${pathname?.startsWith('/user/fav') ? 'active' : ''}`}>المفضلة</Link>
-            <Link href="/about" className={`nav-link1 ${pathname?.startsWith('/about') ? 'active' : ''}`}>عنّا</Link>
+          <nav className={clsx(ph['header-nav'], ph['desktop-nav'])}>
+            <Link href="/" className={clsx(ph['nav-link1'], pathname === '/' && ph['active'])}>الرئيسية</Link>
+            <Link href="/courses" className={clsx(ph['nav-link1'], (pathname?.startsWith('/courses') || pathname?.startsWith('/course-details')) && ph['active'])}>برامجنا التدريبية</Link>
+            <Link href="/user/fav" className={clsx(ph['nav-link1'], pathname?.startsWith('/user/fav') && ph['active'])}>المفضلة</Link>
+            <Link href="/about" className={clsx(ph['nav-link1'], pathname?.startsWith('/about') && ph['active'])}>عنّا</Link>
           </nav>
 
           {/* Mobile Hamburger Button */}
           <button 
-            className="hamburger-btn mobile-only"
-            onClick={toggleSidebar}
-            aria-label="فتح القائمة"
-          >
-            <span className="hamburger-line"></span>
-            <span className="hamburger-line"></span>
-            <span className="hamburger-line"></span>
-          </button>
+          className={clsx(ph['hamburger-btn'], ph['mobile-only'])}
+             onClick={toggleSidebar}
+             aria-label="فتح القائمة"
+           >
+          <span className={ph['hamburger-line']}></span>
+          <span className={ph['hamburger-line']}></span>
+          <span className={ph['hamburger-line']}></span>
+           </button>
 
           {/* Profile Menu (reused from HomeHeader for consistency) */}
-          <div className="header-profile" ref={profileMenuRef}>
+          <div className={ph['header-profile']} ref={profileMenuRef}>
             {isLoggedIn ? (
               <div className={styles['profile-menu-container']} onClick={toggleProfileMenu}>
                 <div className={styles['profile-info']}>
@@ -155,19 +156,19 @@ const ProfileHeader = () => {
       </header>
 
       {/* Mobile Sidebar */}
-      <div className={`mobile-sidebar ${isSidebarOpen ? 'open' : ''}`}>
-        <div className="sidebar-overlay" onClick={closeSidebar}></div>
-        <div className="sidebar-content">
-          <div className="sidebar-header">
-            <button className="close-btn" onClick={closeSidebar}>
-              <span>&times;</span>
-            </button>
-          </div>
-          <nav className="sidebar-nav">
-            <Link href="/" className={`sidebar-link ${pathname === '/' ? 'active' : ''}`} onClick={closeSidebar}>الرئيسية</Link>
-            <Link href="/courses" className={`sidebar-link ${(pathname?.startsWith('/courses') || pathname?.startsWith('/course-details')) ? 'active' : ''}`} onClick={closeSidebar}>برامجنا التدريبية</Link>
-            <Link href="/favorites" className={`sidebar-link ${pathname?.startsWith('/favorites') ? 'active' : ''}`} onClick={closeSidebar}>المفضلة</Link>
-            <Link href="/about" className={`sidebar-link ${pathname?.startsWith('/about') ? 'active' : ''}`} onClick={closeSidebar}>عنّا</Link>
+      <div className={clsx(ph['mobile-sidebar'], isSidebarOpen && ph['open'])}>
+        <div className={ph['sidebar-overlay']} onClick={closeSidebar}></div>
+        <div className={ph['sidebar-content']}>
+          <div className={ph['sidebar-header']}>
+            <button className={ph['close-btn']} onClick={closeSidebar}>
+               <span>&times;</span>
+             </button>
+           </div>
+          <nav className={ph['sidebar-nav']}>
+            <Link href="/" className={clsx(ph['sidebar-link'], pathname === '/' && ph['sidebar-active'])} onClick={closeSidebar}>الرئيسية</Link>
+            <Link href="/courses" className={clsx(ph['sidebar-link'], (pathname?.startsWith('/courses') || pathname?.startsWith('/course-details')) && ph['sidebar-active'])} onClick={closeSidebar}>برامجنا التدريبية</Link>
+            <Link href="/favorites" className={clsx(ph['sidebar-link'], pathname?.startsWith('/favorites') && ph['sidebar-active'])} onClick={closeSidebar}>المفضلة</Link>
+            <Link href="/about" className={clsx(ph['sidebar-link'], pathname?.startsWith('/about') && ph['sidebar-active'])} onClick={closeSidebar}>عنّا</Link>
           </nav>
         </div>
       </div>

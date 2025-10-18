@@ -40,7 +40,20 @@ const CheckoutPage: React.FC = () => {
     }, 2000);
   };
 
-  const discountPercentage = Math.round(((courseData.originalPrice - courseData.currentPrice) / courseData.originalPrice) * 100);
+  const discountPercentage = (() => {
+    const isFree = typeof courseData.currentPrice === 'number' ? courseData.currentPrice === 0 : Number(courseData.currentPrice) === 0;
+    const hasDiscount = typeof courseData.originalPrice === 'number'
+      && typeof courseData.currentPrice === 'number'
+      && courseData.originalPrice > 0
+      && courseData.originalPrice > courseData.currentPrice;
+    return hasDiscount ? Math.round(((courseData.originalPrice - courseData.currentPrice) / courseData.originalPrice) * 100) : 0;
+  })();
+  const isFree = typeof courseData.currentPrice === 'number' ? courseData.currentPrice === 0 : Number(courseData.currentPrice) === 0;
+  const hasDiscount = typeof courseData.originalPrice === 'number'
+    && typeof courseData.currentPrice === 'number'
+    && courseData.originalPrice > 0
+    && courseData.originalPrice > courseData.currentPrice;
+  const savings = hasDiscount ? (courseData.originalPrice - courseData.currentPrice) : 0;
 
   return (
     <div className="checkout-container">
@@ -61,9 +74,11 @@ const CheckoutPage: React.FC = () => {
                 alt={courseData.title}
                 className="course-image"
               />
-              <div className="discount-badge">
-                خصم {courseData.discount}
-              </div>
+              {hasDiscount && !isFree && (
+                <div className="discount-badge">
+                  خصم {discountPercentage}%
+                </div>
+              )}
             </div>
             
             <div className="course-details">
@@ -116,19 +131,19 @@ const CheckoutPage: React.FC = () => {
                 <tbody>
                   <tr>
                     <td className="price-label">السعر الأصلي</td>
-                    <td className="price-value original">ج.م {courseData.originalPrice}</td>
+                    <td className="price-value original">{isFree ? 'مجاني' : ('ج.م ' + courseData.originalPrice)}</td>
                   </tr>
                   <tr>
                     <td className="price-label">نسبة الخصم</td>
-                    <td className="price-value discount">{discountPercentage}%</td>
+                    <td className="price-value discount">{isFree ? 'مجاني' : (discountPercentage + '%')}</td>
                   </tr>
                   <tr>
                     <td className="price-label">مبلغ التوفير</td>
-                    <td className="price-value savings">ج.م {courseData.originalPrice - courseData.currentPrice}</td>
+                    <td className="price-value savings">{isFree ? 'مجاني' : ('ج.م ' + savings)}</td>
                   </tr>
                   <tr className="total-row">
                     <td className="price-label total-label">السعر النهائي</td>
-                    <td className="price-value final">ج.م {courseData.currentPrice}</td>
+                    <td className="price-value final">{isFree ? 'مجاني' : ('ج.م ' + courseData.currentPrice)}</td>
                   </tr>
                 </tbody>
               </table>

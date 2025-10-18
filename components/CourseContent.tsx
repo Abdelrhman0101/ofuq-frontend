@@ -462,6 +462,7 @@ const CourseContent: React.FC<CourseContentProps> = ({
         }
 
         .dropdown-content {
+          position: static;
           padding: 8px 0;
         }
 

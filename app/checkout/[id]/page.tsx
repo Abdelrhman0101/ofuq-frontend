@@ -91,9 +91,11 @@ const DynamicCheckoutPage: React.FC = () => {
     );
   }
 
-  const currentPrice = typeof course.price === 'string' ? parseFloat(course.price) : course.price;
-  const originalPrice = currentPrice * 2; // افتراض خصم 50%
-  const discountPercentage = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+  const priceNum = typeof course.price === 'string' ? parseFloat(course.price) : Number(course.price);
+  const isFree = isNaN(priceNum) || priceNum <= 0;
+  const originalPrice = isNaN(priceNum) ? 0 : priceNum * 2; // افتراض خصم 50%
+  const hasDiscount = originalPrice > 0 && priceNum < originalPrice;
+  const discountPercentage = hasDiscount ? Math.round(((originalPrice - priceNum) / originalPrice) * 100) : 0;
 
   const coverRaw =
     (course as any).cover_image_url ||
@@ -121,7 +123,9 @@ const DynamicCheckoutPage: React.FC = () => {
                 alt={course.title}
                 className="course-image"
               />
-              <div className="discount-badge">خصم 50%</div>
+              {hasDiscount && !isFree && (
+                <div className="discount-badge">خصم {discountPercentage}%</div>
+              )}
             </div>
             
             <div className="course-details">
@@ -184,19 +188,19 @@ const DynamicCheckoutPage: React.FC = () => {
                 <tbody>
                   <tr>
                     <td className="price-label">السعر الأصلي</td>
-                    <td className="price-value original">ج.م {originalPrice}</td>
+                    <td className="price-value original">{isFree ? 'مجاني' : ('ج.م ' + originalPrice)}</td>
                   </tr>
                   <tr>
                     <td className="price-label">نسبة الخصم</td>
-                    <td className="price-value discount">{discountPercentage}%</td>
+                    <td className="price-value discount">{isFree ? 'مجاني' : (discountPercentage + '%')}</td>
                   </tr>
                   <tr>
                     <td className="price-label">مبلغ التوفير</td>
-                    <td className="price-value savings">ج.م {originalPrice - currentPrice}</td>
+                    <td className="price-value savings">{isFree ? 'مجاني' : ('ج.م ' + (originalPrice - priceNum))}</td>
                   </tr>
                   <tr className="total-row">
                     <td className="price-label total-label">السعر النهائي</td>
-                    <td className="price-value final">ج.م {currentPrice}</td>
+                    <td className="price-value final">{isFree ? 'مجاني' : ('ج.م ' + priceNum)}</td>
                   </tr>
                 </tbody>
               </table>
