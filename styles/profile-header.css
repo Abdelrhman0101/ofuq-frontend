@@ -113,7 +113,8 @@
   z-index: 1000;
 }
 
-.dropdown-overlay {
+/* Scoped dropdown styles to the profile header page to avoid global collisions */
+.profile-header-page .dropdown-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -123,7 +124,7 @@
   z-index: 1001;
 }
 
-.dropdown-content {
+.profile-header-page .dropdown-content {
   position: absolute;
   top: 70px;
   left: 20px;
@@ -137,7 +138,7 @@
   border: 1px solid #e0e0e0;
 }
 
-.dropdown-item {
+.profile-header-page .dropdown-item {
   display: block;
   padding: 14px 18px; /* زيادة الهوامش الداخلية */
   color: #333;
@@ -153,25 +154,25 @@
   cursor: pointer;
 }
 
-.dropdown-item:last-child {
+.profile-header-page .dropdown-item:last-child {
   border-bottom: none;
 }
 
-.dropdown-item:hover {
+.profile-header-page .dropdown-item:hover {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   transform: translateX(-2px); /* تأثير حركة بسيط */
   box-shadow: inset 3px 0 0 #029CBE; /* خط جانبي ملون */
   color: #019EBB;
 }
 
-.dropdown-item.logout {
+.profile-header-page .dropdown-item.logout {
   color: #dc3545;
   margin-top: 8px; /* زيادة المسافة */
   position: relative;
   overflow: hidden;
 }
 
-.dropdown-item.logout:hover {
+.profile-header-page .dropdown-item.logout:hover {
   background: linear-gradient(135deg, rgba(220, 53, 69, 0.08) 0%, rgba(220, 53, 69, 0.15) 100%);
   transform: translateX(-2px);
   box-shadow: inset 3px 0 0 #dc3545;
@@ -179,7 +180,7 @@
 }
 
 /* تأثير الموجة عند النقر */
-.dropdown-item.logout::before {
+.profile-header-page .dropdown-item.logout::before {
   content: '';
   position: absolute;
   top: 50%;
@@ -192,7 +193,7 @@
   transition: width 0.6s, height 0.6s;
 }
 
-.dropdown-item.logout:active::before {
+.profile-header-page .dropdown-item.logout:active::before {
   width: 300px;
   height: 300px;
 }
