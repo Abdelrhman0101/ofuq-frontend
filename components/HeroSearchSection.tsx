@@ -52,9 +52,9 @@ export default function HeroSearchSection({
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      handleSearch();
+      onSearch?.(inputValue.trim());
     }
   };
 
@@ -72,7 +72,7 @@ export default function HeroSearchSection({
                 placeholder="ابحث عن الكورسات، المدربين، أو المجالات..."
                 value={localSearchQuery}
                 onChange={handleInputChange}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyDown}
                 className="search-input"
               />
               {/* <button 

@@ -91,10 +91,10 @@ function CoursesContent() {
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(course => 
-        course.title.toLowerCase().includes(query) ||
-        course.category.toLowerCase().includes(query) ||
-        course.instructorName.toLowerCase().includes(query)
+      filtered = filtered.filter((course: any) =>
+        String(course?.title ?? '').toLowerCase().includes(query) ||
+        String(course?.category ?? '').toLowerCase().includes(query) ||
+        String(course?.instructorName ?? '').toLowerCase().includes(query)
       );
     }
 

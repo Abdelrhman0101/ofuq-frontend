@@ -3,8 +3,8 @@ import '@/styles/globals.css'
 import '@/styles/course-details.css'
 
 export const metadata: Metadata = {
-  title: 'معهد الأفق التعليمي',
-  description: 'منصة تعليمية متقدمة',
+  title: 'معهد أفق للتعليم عن بعد',
+  description: 'أفق مؤسسة تعليمية رائدة متخصصة في بناء وتقديم برامج دبلوم احترافية في مجالات متنوعة تجمع بين الأصالة والمعاصرة.',
   icons: {
     icon: '/favicon.ico',
   },

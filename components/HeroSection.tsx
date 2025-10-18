@@ -101,8 +101,8 @@ const HeroSection = () => {
               
               {/* Course Stats */}
               <div className={styles['course-stats']}>
-                <span className={styles['course-count']}>300+</span>
-                <span className={styles['course-label']}>كورس ناجح</span>
+                <span className={styles['course-count']}>13+</span>
+                <span className={styles['course-label']}>دورة تدريبية</span>
               </div>
             </div>
           </div>
