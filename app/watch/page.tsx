@@ -173,14 +173,10 @@ function WatchPageContent() {
     // إغلاق popup الأسئلة
     setShowQuizPopup(false);
     
-    // البحث عن الدرس التالي
-    const allLessons = course.chapters.flatMap(chapter => chapter.lessons);
-    const currentLessonIndex = allLessons.findIndex(l => l.id === lesson.id);
-    const nextLesson = allLessons[currentLessonIndex + 1];
-    
+    // استخدام منطق الدرس التالي الموجود
     if (nextLesson) {
       // الانتقال للدرس التالي
-      router.push(`/watch?courseId=${courseId}&chapterId=${nextLesson.chapter_id}&lessonId=${nextLesson.id}`);
+      router.push(`/watch?courseId=${courseId}&chapterId=${nextLesson.chapterId}&lessonId=${nextLesson.id}`);
     } else {
       // هذا آخر درس - عرض الامتحان النهائي
       setShowFinalExam(true);
@@ -319,7 +315,11 @@ function WatchPageContent() {
         courseName={course.title}
         instructorName={course.instructor?.name || "المدرب"}
         studentName="الطالب" // يمكن الحصول عليه من بيانات المستخدم
-        completionDate={new Date()}
+        completionDate={new Date().toLocaleDateString('ar-EG', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })}
         onClose={handleCertificateClose}
       />
     );
@@ -433,11 +433,11 @@ function WatchPageContent() {
           {simulationMode && !loading && (
             <div style={{ marginTop: '24px' }}>
               <SimulationQuiz 
-                onEnd={handleSimulationQuizEnd}
+                onFinish={handleSimulationQuizEnd}
                 isLastLesson={(() => {
-                  if (!course || !lesson) return false;
+                  if (!course || !lesson || !course.chapters) return false;
                   const allLessons = course.chapters.flatMap(chapter => chapter.lessons);
-                  const currentLessonIndex = allLessons.findIndex(l => l.id === lesson.id);
+                  const currentLessonIndex = allLessons.findIndex(l => l?.id === lesson.id);
                   return currentLessonIndex === allLessons.length - 1;
                 })()}
               />
@@ -539,9 +539,9 @@ function WatchPageContent() {
             <SimulationQuiz 
               onFinish={handleSimulationQuizEnd}
               isLastLesson={(() => {
-                if (!course || !lesson) return false;
+                if (!course || !lesson || !course.chapters) return false;
                 const allLessons = course.chapters.flatMap(chapter => chapter.lessons);
-                const currentLessonIndex = allLessons.findIndex(l => l.id === lesson.id);
+                const currentLessonIndex = allLessons.findIndex(l => l?.id === lesson.id);
                 return currentLessonIndex === allLessons.length - 1;
               })()}
             />
