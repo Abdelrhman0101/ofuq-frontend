@@ -14,7 +14,8 @@ interface ReviewData {
 }
 
 interface StudentReviewsProps {
-  courseId: number | string;
+  courseId?: number | string;
+  reviews?: ReviewData[];
   overallRating?: number;
   totalReviews?: number;
   ratingDistribution?: {
@@ -28,6 +29,7 @@ interface StudentReviewsProps {
 
 const StudentReviews: React.FC<StudentReviewsProps> = ({
   courseId,
+  reviews: providedReviews,
   overallRating = 0,
   totalReviews = 0,
   ratingDistribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
@@ -52,42 +54,48 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
     const loadData = async () => {
       try {
         setLoading(true);
-        
-        // Load reviews
-        const reviewsData = await getCourseReviews(courseId);
-        
-        // Convert API reviews to component format
-        const formattedReviews: ReviewData[] = reviewsData.map((review: Review) => ({
-          id: review.id.toString(),
-          name: review.user.name,
-          avatar: '/profile.jpg', // Default avatar
-          rating: review.rating,
-          date: new Date(review.created_at).toLocaleDateString('ar-EG'),
-          message: review.comment
-        }));
-        
+
+        let formattedReviews: ReviewData[] = [];
+
+        if (providedReviews && providedReviews.length > 0) {
+          formattedReviews = providedReviews;
+        } else if (courseId !== undefined && courseId !== null) {
+          const apiReviews = await getCourseReviews(courseId);
+
+          const mapped: ReviewData[] = apiReviews.map((review: Review) => ({
+            id: review.id.toString(),
+            name: review.user.name,
+            avatar: '/profile.jpg',
+            rating: review.rating,
+            date: new Date(review.created_at).toLocaleDateString('ar-EG'),
+            message: review.comment
+          }));
+
+          formattedReviews = mapped;
+        }
+
         setReviews(formattedReviews);
-        
-        // Calculate actual statistics from real data
+
         const totalCount = formattedReviews.length;
-        const avgRating = totalCount > 0 
-          ? formattedReviews.reduce((sum, review) => sum + review.rating, 0) / totalCount 
+        const avgRating = totalCount > 0
+          ? formattedReviews.reduce((sum, review) => sum + review.rating, 0) / totalCount
           : 0;
-        
-        // Calculate rating distribution
+
         const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
         formattedReviews.forEach(review => {
           distribution[review.rating as keyof typeof distribution]++;
         });
-        
+
         setActualTotalReviews(totalCount);
         setActualOverallRating(Math.round(avgRating * 10) / 10);
         setActualRatingDistribution(distribution);
-        
-        // Check enrollment status
-        const enrollments = await getMyEnrollments();
-        setIsEnrolled(enrollments.includes(Number(courseId)));
-        
+
+        if (courseId !== undefined && courseId !== null) {
+          const enrollments = await getMyEnrollments();
+          setIsEnrolled(enrollments.includes(Number(courseId)));
+        } else {
+          setIsEnrolled(false);
+        }
       } catch (error) {
         console.error('Error loading reviews data:', error);
       } finally {
@@ -96,7 +104,7 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
     };
 
     loadData();
-  }, [courseId]);
+  }, [courseId, providedReviews]);
 
   const renderStars = (rating: number, size: 'small' | 'large' = 'small') => {
     const stars = [];
@@ -153,6 +161,12 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
 
     if (!isEnrolled) {
       alert('يجب أن تكون مشتركاً في الكورس لكتابة تقييم');
+      return;
+    }
+
+    // Ensure courseId is present before submitting
+    if (courseId === undefined || courseId === null) {
+      alert('لا يمكن إرسال التقييم بدون معرف الكورس');
       return;
     }
 
