@@ -246,3 +246,13 @@ export const deleteLessonAdmin = async (lessonId: number): Promise<void> => {
     throw new Error(message);
   }
 };
+
+export const getChapterLessons = async (chapterId: number): Promise<Lesson[]> => {
+  try {
+    const res = await apiClient.get(`/admin/chapters/${chapterId}/lessons`);
+    const data = (res as any)?.data?.data ?? (res as any)?.data ?? [];
+    return Array.isArray(data) ? data : [];
+  } catch (err: any) {
+    throw new Error(err?.message || 'فشل في جلب الدروس');
+  }
+};

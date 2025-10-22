@@ -1,442 +1,648 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import '../../../styles/globals.css';
-import '../../../styles/courses.css';
-import '../../../styles/modern-course-details.css';
-import '../../../styles/toast.css';
-import './courses.css';
-
-import Header from '@/components/Header';
-import Sidebar from '@/components/Sidebar';
+import { useState, useEffect } from 'react';
 import Toast from '@/components/Toast';
-import { Course, CourseCreationStep, Instructor } from '@/types/course';
-import { getCourses, getAdminCourse } from '@/utils/courseService';
-import { Category } from '@/utils/categoryService';
+import '@/styles/admin-courses.css';
 
-import HeroSection from '@/components/courses/HeroSection';
-import CourseCreationNav from '@/components/courses/CourseCreationNav';
-import BasicInfoStep from '@/components/courses/BasicInfoStep';
-import ContentManagementStep from '@/components/courses/ContentManagementStep';
-import CoursesList from '@/components/courses/CoursesList';
-import CourseDetails from '@/components/courses/CourseDetails';
-import ReviewStep from '@/components/courses/ReviewStep';
+interface Category {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  instructor_id: number;
+  cover_image?: string;
+  video_url?: string | null;
+  is_free: boolean;
+  status: 'draft' | 'published' | 'archived';
+  created_at?: string;
+  updated_at?: string;
+  duration?: number;
+  courses_count?: number;
+  rating?: number | string;
+  students_count?: number;
+}
 
-export default function Courses() {
-  // State for course management
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
-  // State for course creation
-  const [showCreateCourse, setShowCreateCourse] = useState(false);
-  const [currentStep, setCurrentStep] = useState<CourseCreationStep>('basic-info');
-  
-  // State for course details view
-  const [showCourseDetails, setShowCourseDetails] = useState(false);
-  const [selectedCourseForView, setSelectedCourseForView] = useState<string | null>(null);
-  const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set());
-  
-  // State for filtering
-  const [courseFilter, setCourseFilter] = useState<'all' | 'published' | 'draft'>('all');
-  const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
-  
-  // State for basic course info
-  const [courseBasicInfo, setCourseBasicInfo] = useState({
-    title: '',
-    description: '',
-    price: 0,
-    isFree: true,
-    coverImage: null as File | null,
-    duration: 0,
-    instructor: undefined as Instructor | undefined,
-    category: undefined as Category | undefined
-  });
+interface Course {
+  id: number;
+  category_id: number;
+  title: string;
+  description?: string;
+  price?: number;
+  instructor_id?: number;
+  cover_image?: string;
+  video_url?: string | null;
+  is_free?: boolean;
+  status?: "draft" | "published" | "archived";
+  duration?: number;
+  order?: number;
+  created_at?: string;
+  updated_at?: string;
+}
 
-  // Toast state
-  const [toastVisible, setToastVisible] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info' | 'confirm'>('info');
+export default function AdminCoursesPage() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [showCourseForm, setShowCourseForm] = useState<{ categoryId: number } | null>(null);
+  const [categoryDetails, setCategoryDetails] = useState<Category | null>(null);
+  const [categoryCourses, setCategoryCourses] = useState<Course[]>([]);
 
-  // Toast functions
-  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' | 'confirm') => {
-    setToastMessage(message);
-    setToastType(type);
-    setToastVisible(true);
-    
-    // Auto-hide success toasts after 3 seconds
-    if (type === 'success') {
-      setTimeout(() => {
-        setToastVisible(false);
-      }, 3000);
-    }
-  };
+  // Toast states
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info' | 'confirm'>('info');
 
-  const closeToast = () => {
-    setToastVisible(false);
-  };
+  // Form states
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    price: '',
+    instructor_id: '',
+    is_free: false,
+    status: 'draft' as Category['status']
+  });
 
-  // Initialize with courses from API
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const fetchedCourses = await getCourses();
-        
-        // Transform API courses to match our Course interface
-        const transformedCourses: Course[] = fetchedCourses.map(course => ({
-          id: course.id.toString(),
-          title: course.title,
-          description: course.description,
-          categoryId: course.category_id?.toString() || '',
-          price: course.price,
-          isFree: course.is_free,
-          coverImage: course.cover_image,
-          status: course.status,
-          createdAt: new Date(course.created_at || Date.now()),
-          chapters: [], // Will be populated when needed
-          instructor: course.instructor ? {
-            id: course.instructor.id,
-            name: course.instructor.name,
-            profileImage: course.instructor.image,
-            bio: course.instructor.bio,
-            specialization: course.instructor.title
-          } : undefined,
-          category: course.category
-        }));
-        
-        setCourses(transformedCourses);
-      } catch (err) {
-        console.error('Error fetching courses:', err);
-        setError('فشل في تحميل الكورسات. الرجاء المحاولة مرة أخرى.');
-        showToast('فشل في تحميل الكورسات', 'error');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const [courseFormData, setCourseFormData] = useState({
+    title: '',
+    description: '',
+    price: '',
+    instructor_id: '',
+    is_free: false,
+    status: 'draft' as Course['status'],
+    duration: ''
+  });
 
-    fetchCourses();
-  }, []);
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
-  // Load full admin course details when selecting for edit
-  useEffect(() => {
-    const loadAdminCourse = async () => {
-      if (!selectedCourseId) return;
-      try {
-        const adminCourse = await getAdminCourse(selectedCourseId);
-        if (!adminCourse) return;
-        
-        // --- [START] --- هذا هو الجزء الذي تم إصلاحه ---
-        const chapters = (adminCourse.chapters || []).map((ch: any) => ({
-          id: String(ch.id),
-          title: String(ch.title ?? ''),
-          description: String(ch.description ?? ''),
-          order: Number(ch.order ?? 1),
-          lessons: (ch.lessons || []).map((l: any) => ({
-            id: String(l.id),
-            title: String(l.title ?? ''),
-            description: String(l.content ?? ''),
-            videoUrl: l.video_url ?? undefined,
-            isVideoPublic: Boolean(l.is_visible ?? false),
-            attachments: l.attachments || [], // تمرير البيانات كما هي
-            duration: l.duration ?? undefined, // تمرير البيانات كما هي
-            order: Number(l.order ?? 1),
-            resources: l.resources || [], // تمرير البيانات كما هي
-            
-            // [الإصلاح]: قراءة بيانات الاختبار 'quiz' القادمة من الباك إند
-            // بدلاً من حذفها وتعيين 'quiz: undefined'
-            quiz: l.quiz, 
-          })),
-        }));
-        // --- [END] --- نهاية الجزء الذي تم إصلاحه ---
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' | 'confirm' = 'info') => {
+    setToastMessage(message);
+    setToastType(type);
+    setToastVisible(true);
+  };
 
-        setCourses(prev => prev.map(c => (
-          c.id === selectedCourseId
-            ? { ...c, chapters, chapters_count: chapters.length }
-            : c
-        )));
-      } catch (err) {
-        console.error('Error loading admin course details:', err);
-        showToast('فشل في تحميل تفاصيل الكورس', 'error');
-      }
-    };
-    loadAdminCourse();
-  }, [selectedCourseId]);
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/admin/categories');
+      if (!response.ok) throw new Error('فشل في جلب البيانات');
+      const data = await response.json();
+      setCategories(data.data || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'حدث خطأ غير متوقع');
+      showToast('فشل في جلب البيانات', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // useEffect to handle navigation after selectedCourseId updates
-  useEffect(() => {
-    // This effect runs whenever selectedCourseId changes.
-    // If we have a new course ID and we are still on the first step,
-    // it means we are ready to move to the next step.
-    if (selectedCourseId && currentStep === 'basic-info') {
-      setCurrentStep('content-management');
-    }
-  }, [selectedCourseId, currentStep]); // Dependency array
+  const fetchCategoryCourses = async (categoryId: number) => {
+    try {
+      const response = await fetch(`/api/admin/categories/${categoryId}/courses`);
+      if (!response.ok) throw new Error('فشل في جلب المقررات');
+      const data = await response.json();
+      setCategoryCourses(data.data || []);
+    } catch (err) {
+      showToast('فشل في جلب المقررات', 'error');
+    }
+  };
 
-  // Function to close course details
-  const closeCourseDetails = () => {
-    setShowCourseDetails(false);
-    setSelectedCourseForView(null);
-    setExpandedChapters(new Set());
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('price', formData.price);
+      formDataToSend.append('instructor_id', formData.instructor_id);
+      formDataToSend.append('is_free', formData.is_free ? '1' : '0');
+      formDataToSend.append('status', formData.status);
 
-  // Handle Basic Course Creation - Updated to receive course data from API
-  const handleCreateBasicCourse = (courseData: any) => {
-    // The courseData now comes from the API response with the actual course ID
-    const newCourse: Course = {
-      id: courseData.id.toString(),
-      title: courseData.title,
-      description: courseData.description,
-      categoryId: courseData.category_id?.toString() || '',
-      price: courseData.price,
-      isFree: courseData.is_free,
-      coverImage: courseData.cover_image,
-      status: courseData.status || 'draft',
-      createdAt: new Date(courseData.created_at || Date.now()),
-      chapters: [],
-      instructor: courseData.instructor
-    };
+      let response;
+      if (editingCategory) {
+        formDataToSend.append('_method', 'PUT');
+        response = await fetch(`/api/admin/categories/${editingCategory.id}`, {
+          method: 'POST',
+          body: formDataToSend,
+        });
+      } else {
+        response = await fetch('/api/admin/categories', {
+          method: 'POST',
+          body: formDataToSend,
+        });
+      }
 
-    setCourses(prev => [...prev, newCourse]);
-    setSelectedCourseId(newCourse.id);
-    showToast('تم إنشاء الكورس بنجاح!', 'success');
-  };
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'فشل في العملية');
+      }
 
-  // Navigation Steps
-  const steps = [
-    { id: 'basic-info', title: '1- معلومات الكورس', description: 'العنوان والوصف والسعر' },
-    { id: 'content-management', title: '2- إدارة المحتوى', description: 'الفصول والدروس' },
-    { id: 'review', title: '3- المراجعة النهائية', description: 'مراجعة ونشر الكورس' }
-  ];
+      const result = await response.json();
+      showToast(result.message || (editingCategory ? 'تم التعديل بنجاح' : 'تم إنشاء الدبلوم بنجاح'), 'success');
+      
+      // Reset form and refresh data
+      setFormData({
+        title: '',
+        description: '',
+        price: '',
+        instructor_id: '',
+        is_free: false,
+        status: 'draft'
+      });
+      setShowAddForm(false);
+      setEditingCategory(null);
+      fetchCategories();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'حدث خطأ غير متوقع', 'error');
+    }
+  };
 
-  // Handle content step navigation
-  const handleContentStepNext = () => {
-    setCurrentStep('review');
-  };
+  const handleCourseSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!showCourseForm) return;
 
-  const handleContentStepPrev = () => {
-    setCurrentStep('basic-info');
-  };
+    try {
+      const courseData = {
+        title: courseFormData.title,
+        description: courseFormData.description,
+        price: Number(courseFormData.price) || 0,
+        instructor_id: Number(courseFormData.instructor_id) || undefined,
+        is_free: courseFormData.is_free,
+        status: courseFormData.status,
+        duration: Number(courseFormData.duration) || 0
+      };
 
-  const handleReviewPrev = () => {
-    setCurrentStep('content-management');
-  };
+      const response = await fetch(`/api/admin/categories/${showCourseForm.categoryId}/courses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(courseData),
+      });
 
-  const handleSaveDraft = () => {
-    const courseToSave = currentCourse || workingCourse;
-    if (courseToSave) {
-      if (currentCourse) {
-        // Editing existing course
-        const updatedCourses = courses.map(course =>
-          course.id === currentCourse.id
-            ? { ...course, status: 'draft' as const }
-            : course
-        );
-        setCourses(updatedCourses);
-      } else if (workingCourse) {
-        // Saving new course as draft - add to courses list
-        const draftCourse = { ...workingCourse, status: 'draft' as const };
-        setCourses(prevCourses => [...prevCourses, draftCourse]);
-      }
-      resetCourseCreation();
-      showToast('تم حفظ الكورس كمسودة!', 'success');
-    }
-  };
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'فشل في إنشاء المقرر');
+      }
 
-  const handlePublish = () => {
-    const courseToPublish = currentCourse || workingCourse;
-    if (courseToPublish) {
-      if (currentCourse) {
-        // Editing existing course
-        const updatedCourses = courses.map(course =>
-          course.id === currentCourse.id
-            ? { ...course, status: 'published' as const }
-            : course
-        );
-        setCourses(updatedCourses);
-      } else if (workingCourse) {
-        // Publishing new course - add to courses list
-        const publishedCourse = { ...workingCourse, status: 'published' as const };
-        setCourses(prevCourses => [...prevCourses, publishedCourse]);
-      }
-      resetCourseCreation();
-      showToast('تم نشر الكورس بنجاح!', 'success');
-    }
-  };
+      const result = await response.json();
+      showToast(result.message || 'تم إنشاء المقرر بنجاح', 'success');
+      
+      // Reset form and refresh data
+      setCourseFormData({
+        title: '',
+        description: '',
+        price: '',
+        instructor_id: '',
+        is_free: false,
+        status: 'draft',
+        duration: ''
+      });
+      setShowCourseForm(null);
+      fetchCategories(); // Refresh to update courses count
+      if (categoryDetails) {
+        fetchCategoryCourses(categoryDetails.id);
+      }
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'حدث خطأ غير متوقع', 'error');
+    }
+  };
 
-  // Reset course creation
-  const resetCourseCreation = () => {
-    setShowCreateCourse(false);
-    setCurrentStep('basic-info');
-    setSelectedCourseId(null);
-    setCourseBasicInfo({
-      title: '',
-      description: '',
-      price: 0,
-      isFree: true,
-      coverImage: null,
-      duration: 0,
-      instructor: undefined,
-      category: undefined
-    });
-  };
+  const handleDelete = async (id: number) => {
+    if (!confirm('هل أنت متأكد من حذف هذا الدبلوم؟')) return;
 
-  // State for working course during creation
-  const [workingCourse, setWorkingCourse] = useState<Course | null>(null);
+    try {
+      const response = await fetch(`/api/admin/categories/${id}`, {
+        method: 'DELETE',
+      });
 
-  // Get current course being edited
-  const currentCourse = selectedCourseId ? courses.find((c) => c.id === selectedCourseId) : null;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'فشل في الحذف');
+      }
 
-  // Update working course when basic info changes or when switching to content management
-  useEffect(() => {
-    if (showCreateCourse && currentStep !== 'basic-info' && !currentCourse) {
-      if (!workingCourse) {
-        // Create initial working course from basic info
-        setWorkingCourse({
-          id: 'temp-' + Date.now(),
-          title: courseBasicInfo.title,
-          description: courseBasicInfo.description,
-          categoryId: courseBasicInfo.category?.id.toString() || '',
-          price: courseBasicInfo.price,
-          isFree: courseBasicInfo.isFree,
-          coverImage: courseBasicInfo.coverImage || undefined,
-          status: 'draft' as const,
-          createdAt: new Date(),
-          chapters: [],
-          instructor: courseBasicInfo.instructor
-        });
-      }
-    } else if (currentCourse) {
-      // Use the real course if editing
-      setWorkingCourse(currentCourse);
-    } else if (!showCreateCourse) {
-      // Clear working course when not in creation mode
-      setWorkingCourse(null);
-    }
-  }, [showCreateCourse, currentStep, currentCourse, courseBasicInfo]);
+      const result = await response.json();
+      showToast(result.message || 'تم حذف الدبلوم بنجاح', 'success');
+      fetchCategories();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'فشل في حذف الدبلوم', 'error');
+    }
+  };
 
-  // Get the course to display (either real course or working course)
-  const displayCourse = currentCourse || workingCourse;
+  const handleEdit = (category: Category) => {
+    setEditingCategory(category);
+    setFormData({
+      title: category.title,
+      description: category.description,
+      price: category.price.toString(),
+      instructor_id: category.instructor_id.toString(),
+      is_free: category.is_free,
+      status: category.status
+    });
+    setShowAddForm(true);
+  };
 
-  // Filter courses based on selected filter
-  const filteredCourses = courses.filter((course) => {
-    if (courseFilter === 'all') return true;
-    return course.status === courseFilter;
-  });
+  const handleViewDetails = async (category: Category) => {
+    setCategoryDetails(category);
+    await fetchCategoryCourses(category.id);
+  };
 
-  const selectedCourse = courses.find(course => course.id === selectedCourseForView);
+  const formatPrice = (price: number) => {
+    return `${price.toLocaleString()} ر.س`;
+  };
 
-  return (
-    <div className="courses-page">
-      <Header />
-      <div className="courses-content">
-        <Sidebar />
-        <main className="courses-main">
-          {/* Hero Section */}
-          <HeroSection
-            courseFilter={courseFilter}
-            setCourseFilter={setCourseFilter}
-            setShowCreateCourse={setShowCreateCourse}
-             showCreateCourse={showCreateCourse}
-            courses={courses}
-            viewMode={viewMode}
-          	 setViewMode={setViewMode}
-          />
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'published': return 'منشور';
+      case 'draft': return 'مسودة';
+      case 'archived': return 'مؤرشف';
+      default: return 'نشط';
+    }
+  };
 
-          {/* Course Creation Navigation */}
-          {showCreateCourse && (
-            <CourseCreationNav 
-              currentStep={currentStep} 
-              currentCourse={displayCourse} 
-              resetCourseCreation={resetCourseCreation}
-              steps={[
-                { id: 'basic-info', title: 'المعلومات الأساسية', description: 'عنوان الكورس والوصف' },
-                { id: 'content-management', title: 'إدارة المحتوى', description: 'الفصول والدروس' },
-                { id: 'review', title: 'المراجعة والنشر', description: 'مراجعة نهائية ونشر الكورس' }
-              ]}
-              setCurrentStep={setCurrentStep}
-            />
-          )}
+  if (loading) return <div className="loading">جاري التحميل...</div>;
+  if (error) return <div className="error">خطأ: {error}</div>;
 
-          {/* Course Creation Steps Content */}
-          {showCreateCourse && (
-            <div className="course-creation-content">
-              {currentStep === 'basic-info' && (
-                <BasicInfoStep
-                  courseBasicInfo={courseBasicInfo}
-                  setCourseBasicInfo={setCourseBasicInfo}
-                  onNext={() => setCurrentStep('content-management')}
-                />
-              )}
-              {currentStep === 'content-management' && displayCourse && (
-                <ContentManagementStep 
-                  course={displayCourse} 
-                  setCourses={(updateFn) => {
-                    // Update working course directly for temporary course
-                    if (displayCourse.id.startsWith('temp-')) {
-                      if (typeof updateFn === 'function') {
-                        const updatedCourses = updateFn([displayCourse]);
-                        setWorkingCourse(updatedCourses[0]);
-                      } else {
-                        // updateFn is Course[] array
-                       setWorkingCourse(updateFn[0]);
-                      }
-                    } else {
-                     // Update courses state for real courses
-                      setCourses(updateFn);
-                    }
-                  }}
-                 onNext={handleContentStepNext} 
-                  onPrev={handleContentStepPrev} 
-                />
-              )}
-              {currentStep === 'review' && displayCourse && (
-                <ReviewStep
-                  currentCourse={displayCourse}
-                  courseBasicInfo={courseBasicInfo}
-            	   onPrev={handleReviewPrev}
-            	   onSaveDraft={handleSaveDraft}
-                  onPublish={handlePublish}
-            	 />
-             )}
-            </div>
-         )}
+  return (
+    <div className="admin-courses-container">
+      <div className="admin-courses-header">
+        <h1 className="admin-courses-title">إدارة الدبلومات</h1>
+        <p className="admin-courses-subtitle">إدارة وتنظيم الدبلومات والمقررات التعليمية</p>
+      </div>
 
-          {/* Courses List */}
-          {!showCreateCourse && (
-            <CoursesList
-              courses={filteredCourses}
-              courseFilter={courseFilter}
-              viewMode={viewMode}
-              setCourses={setCourses}
-              setSelectedCourseId={setSelectedCourseId}
-              setCurrentStep={(step: string) => setCurrentStep(step as CourseCreationStep)}
-              setShowCreateCourse={setShowCreateCourse}
-        	   setSelectedCourseForView={setSelectedCourseForView}
-              setShowCourseDetails={setShowCourseDetails}
-            />
-          )}
+      <div className="admin-courses-actions">
+        <button 
+          className="btn-primary"
+          onClick={() => {
+            setShowAddForm(true);
+            setEditingCategory(null);
+            setFormData({
+              title: '',
+              description: '',
+              price: '',
+              instructor_id: '',
+              is_free: false,
+              status: 'draft'
+            });
+          }}
+        >
+          + إضافة دبلوم جديد
+        </button>
+      </div>
 
-          {/* Course Details Modal */}
-  	 	 {showCourseDetails && selectedCourse && (
-            <CourseDetails
-              course={selectedCourse}
-              onClose={closeCourseDetails}
-              isClient={true}
-            />
-          )}
-        </main>
-      </div>
-      
-      {/* Toast Component */}
-      <Toast
-        message={toastMessage}
-        type={toastType}
-        isVisible={toastVisible}
-        onClose={closeToast}
-      />
-    </div>
-  );
+      {/* Add/Edit Form */}
+      {showAddForm && (
+        <div className="modal-overlay" onClick={() => setShowAddForm(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{editingCategory ? 'تعديل الدبلوم' : 'إضافة دبلوم جديد'}</h2>
+              <button className="close-btn" onClick={() => setShowAddForm(false)}>×</button>
+            </div>
+            <form onSubmit={handleSubmit} className="course-form">
+              <div className="form-section">
+                <h3 className="form-section-title">معلومات الدبلوم الأساسية</h3>
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label htmlFor="title" className="form-label">العنوان</label>
+                    <input
+                      type="text"
+                      id="title"
+                      className="form-input"
+                      value={formData.title}
+                      onChange={(e) => setFormData({...formData, title: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="price" className="form-label">السعر</label>
+                    <input
+                      type="number"
+                      id="price"
+                      className="form-input"
+                      value={formData.price}
+                      onChange={(e) => setFormData({...formData, price: e.target.value})}
+                      min="0"
+                    />
+                  </div>
+                  <div className="form-group form-grid-full">
+                    <label htmlFor="description" className="form-label">الوصف</label>
+                    <textarea
+                      id="description"
+                      className="form-textarea"
+                      value={formData.description}
+                      onChange={(e) => setFormData({...formData, description: e.target.value})}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="instructor_id" className="form-label">معرف المدرب</label>
+                    <input
+                      type="number"
+                      id="instructor_id"
+                      className="form-input"
+                      value={formData.instructor_id}
+                      onChange={(e) => setFormData({...formData, instructor_id: e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="status" className="form-label">الحالة</label>
+                    <select
+                      id="status"
+                      className="form-select"
+                      value={formData.status}
+                      onChange={(e) => setFormData({...formData, status: e.target.value as Category['status']})}
+                    >
+                      <option value="draft">مسودة</option>
+                      <option value="published">منشور</option>
+                      <option value="archived">مؤرشف</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={formData.is_free}
+                        onChange={(e) => setFormData({...formData, is_free: e.target.checked})}
+                      />
+                      مجاني
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div className="form-actions">
+                <button type="submit" className="btn-primary">
+                  {editingCategory ? 'تحديث' : 'إضافة'}
+                </button>
+                <button type="button" className="btn-secondary" onClick={() => setShowAddForm(false)}>
+                  إلغاء
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Course Form */}
+      {showCourseForm && (
+        <div className="modal-overlay" onClick={() => setShowCourseForm(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>إضافة مقرر جديد</h2>
+              <button className="close-btn" onClick={() => setShowCourseForm(null)}>×</button>
+            </div>
+            <form onSubmit={handleCourseSubmit} className="course-form">
+              <div className="form-section">
+                <h3 className="form-section-title">معلومات المقرر</h3>
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label htmlFor="course-title" className="form-label">عنوان المقرر</label>
+                    <input
+                      type="text"
+                      id="course-title"
+                      className="form-input"
+                      value={courseFormData.title}
+                      onChange={(e) => setCourseFormData({...courseFormData, title: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="course-price" className="form-label">سعر المقرر</label>
+                    <input
+                      type="number"
+                      id="course-price"
+                      className="form-input"
+                      value={courseFormData.price}
+                      onChange={(e) => setCourseFormData({...courseFormData, price: e.target.value})}
+                      min="0"
+                    />
+                  </div>
+                  <div className="form-group form-grid-full">
+                    <label htmlFor="course-description" className="form-label">وصف المقرر</label>
+                    <textarea
+                      id="course-description"
+                      className="form-textarea"
+                      value={courseFormData.description}
+                      onChange={(e) => setCourseFormData({...courseFormData, description: e.target.value})}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="course-instructor" className="form-label">معرف المدرب</label>
+                    <input
+                      type="number"
+                      id="course-instructor"
+                      className="form-input"
+                      value={courseFormData.instructor_id}
+                      onChange={(e) => setCourseFormData({...courseFormData, instructor_id: e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="course-duration" className="form-label">المدة (بالساعات)</label>
+                    <input
+                      type="number"
+                      id="course-duration"
+                      className="form-input"
+                      value={courseFormData.duration}
+                      onChange={(e) => setCourseFormData({...courseFormData, duration: e.target.value})}
+                      min="0"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="course-status" className="form-label">حالة المقرر</label>
+                    <select
+                      id="course-status"
+                      className="form-select"
+                      value={courseFormData.status}
+                      onChange={(e) => setCourseFormData({...courseFormData, status: e.target.value as Course['status']})}
+                    >
+                      <option value="draft">مسودة</option>
+                      <option value="published">منشور</option>
+                      <option value="archived">مؤرشف</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={courseFormData.is_free}
+                        onChange={(e) => setCourseFormData({...courseFormData, is_free: e.target.checked})}
+                      />
+                      مقرر مجاني
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div className="form-actions">
+                <button type="submit" className="btn-primary">
+                  إضافة المقرر
+                </button>
+                <button type="button" className="btn-secondary" onClick={() => setShowCourseForm(null)}>
+                  إلغاء
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Category Details Modal */}
+      {categoryDetails && (
+        <div className="modal-overlay" onClick={() => setCategoryDetails(null)}>
+          <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>تفاصيل الدبلوم: {categoryDetails.title}</h2>
+              <button className="close-btn" onClick={() => setCategoryDetails(null)}>×</button>
+            </div>
+            <div className="category-details">
+              <div className="details-info">
+                <p><strong>الوصف:</strong> {categoryDetails.description}</p>
+                <p><strong>السعر:</strong> {formatPrice(categoryDetails.price)}</p>
+                <p><strong>الحالة:</strong> {getStatusText(categoryDetails.status)}</p>
+                <p><strong>عدد المقررات:</strong> {categoryDetails.courses_count || 0}</p>
+                <p><strong>عدد الطلاب:</strong> {categoryDetails.students_count || 0}</p>
+                <p><strong>التقييم:</strong> {categoryDetails.rating || 'غير متوفر'}</p>
+              </div>
+              
+              <div className="courses-section">
+                <div className="section-header">
+                  <h3>المقررات ({categoryCourses.length})</h3>
+                  <button 
+                    className="btn-primary btn-sm"
+                    onClick={() => window.location.href = `/admin/course-management?categoryId=${categoryDetails.id}`}
+                  >
+                    + إضافة مقرر
+                  </button>
+                </div>
+                
+                {categoryCourses.length > 0 ? (
+                  <div className="courses-list">
+                    {categoryCourses.map((course) => (
+                      <div key={course.id} className="course-item">
+                        <div className="course-info">
+                          <h4>{course.title}</h4>
+                          <p>{course.description}</p>
+                          <div className="course-meta">
+                            <span>السعر: {course.price ? formatPrice(course.price) : 'مجاني'}</span>
+                            <span>المدة: {course.duration || 0} ساعة</span>
+                            <span>الحالة: {getStatusText(course.status || 'draft')}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <p>لا توجد مقررات في هذا الدبلوم بعد</p>
+                    <button 
+                      className="btn-primary"
+                      onClick={() => window.location.href = `/admin/course-management?categoryId=${categoryDetails.id}`}
+                    >
+                      إضافة أول مقرر
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Categories Table */}
+      <div className="courses-table-container">
+        {categories.length > 0 ? (
+          <table className="courses-table">
+            <thead>
+              <tr>
+                <th>المعرف</th>
+                <th>العنوان</th>
+                <th>السعر</th>
+                <th>عدد المقررات</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {categories.map((category) => (
+                <tr key={category.id}>
+                  <td>{category.id}</td>
+                  <td>
+                    <div className="course-title">{category.title}</div>
+                  </td>
+                  <td>
+                    <div className="course-price">{formatPrice(category.price)}</div>
+                  </td>
+                  <td>{category.courses_count || 0}</td>
+                  <td>
+                    <span className={`course-status status-${category.status}`}>
+                      {getStatusText(category.status)}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="table-actions">
+                      <button
+                        className="btn-small btn-view"
+                        onClick={() => handleViewDetails(category)}
+                        title="عرض التفاصيل"
+                      >
+                        عرض
+                      </button>
+                      <button
+                        className="btn-small btn-details"
+                        onClick={() => window.location.href = `/admin/course-management?categoryId=${category.id}`}
+                        title="إضافة مقرر"
+                      >
+                        + مقرر
+                      </button>
+                      <button
+                        className="btn-small btn-edit"
+                        onClick={() => handleEdit(category)}
+                        title="تعديل"
+                      >
+                        تعديل
+                      </button>
+                      <button
+                        className="btn-small btn-delete"
+                        onClick={() => handleDelete(category.id)}
+                        title="حذف"
+                      >
+                        حذف
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="empty-state">
+            <h3>لا توجد دبلومات</h3>
+            <p>لم يتم إنشاء أي دبلومات بعد. ابدأ بإضافة دبلوم جديد.</p>
+            <button 
+              className="btn-primary"
+              onClick={() => {
+                setShowAddForm(true);
+                setEditingCategory(null);
+              }}
+            >
+              إضافة أول دبلوم
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Toast Component */}
+      <Toast
+        message={toastMessage}
+        type={toastType}
+        isVisible={toastVisible}
+        onClose={() => setToastVisible(false)}
+        duration={4000}
+      />
+    </div>
+  );
 }

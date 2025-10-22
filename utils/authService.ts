@@ -195,7 +195,12 @@ export const signin = async (data: SigninData): Promise<AuthResponse> => {
     if (typeof window !== 'undefined') {
       try {
         console.log('[Signin] Storing auth token and user in localStorage');
-        window.localStorage?.setItem('auth_token', result.access_token);
+        const token = (result.access_token ?? (result as any).token) as string | undefined;
+        if (token) {
+          window.localStorage?.setItem('auth_token', token);
+        } else {
+          console.warn('[Signin] No token in response (expected access_token or token)');
+        }
         window.localStorage?.setItem('user_data', JSON.stringify(result.user));
         console.log('[Signin] Storage complete');
       } catch (e) {

@@ -65,6 +65,10 @@ const LessonQuestionManager: React.FC<LessonQuestionManagerProps> = ({
   const generateId = () => `question_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
   const handleAddNewQuestion = () => {
+    if (questions.length >= 1) {
+      showToast('يمكن إضافة سؤال واحد فقط لهذا الدرس', 'error');
+      return;
+    }
     setFormData({
       text: '',
       options: ['', '', '', ''],
@@ -138,6 +142,10 @@ const LessonQuestionManager: React.FC<LessonQuestionManagerProps> = ({
         );
       } else {
         // Add a new question in local state
+        if (questions.length >= 1) {
+          showToast('لا يمكن إضافة أكثر من سؤال واحد لهذا الدرس', 'error');
+          return;
+        }
         setIsCreating(true);
         const tempQuestionId = `temp-question-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         const questionForState: Question = {

@@ -20,7 +20,7 @@
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #028FAF 0%, #025a6b 100%);
   border: none;
   color: white;
   cursor: pointer;
@@ -36,7 +36,7 @@
 .scroll-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  background: linear-gradient(135deg, #025a6b 0%, #028FAF 100%);
 }
 
 .scroll-btn:active {

@@ -44,7 +44,7 @@ export const updateChapter = async (chapterId: number, data: UpdateChapterData):
     return response.data.data;
   } catch (error: any) {
     console.error('Error updating chapter:', error);
-    let message = 'فشل في تحديث الفصل';
+    let message = 'فشل في تحديث الوحدة';
     if (error.response) {
       if (error.response.status === 422 && error.response.data?.errors) {
         const errors = error.response.data.errors;
@@ -66,7 +66,7 @@ export const deleteChapter = async (chapterId: number): Promise<void> => {
     await apiClient.delete(`/admin/chapters/${chapterId}`);
   } catch (error: any) {
     console.error('Error deleting chapter:', error);
-    let message = 'فشل في حذف الفصل';
+    let message = 'فشل في حذف الوحدة';
     if (error.response?.data?.message) {
       message = error.response.data.message;
     }
@@ -93,7 +93,7 @@ export const createChapter = async (courseId: number, chapterData: CreateChapter
   } catch (error: any) {
     console.error('Error creating chapter:', error);
     
-    let message = 'فشل في إنشاء الفصل';
+    let message = 'فشل في إنشاء الوحدة';
     
     if (error.response) {
       if (error.response.status === 422 && error.response.data?.errors) {
@@ -109,5 +109,15 @@ export const createChapter = async (courseId: number, chapterData: CreateChapter
     }
     
     throw new Error(message);
+  }
+};
+
+export const getCourseChapters = async (courseId: number): Promise<Chapter[]> => {
+  try {
+    const res = await apiClient.get(`/admin/courses/${courseId}/chapters`);
+    const data = (res as any)?.data?.data ?? (res as any)?.data ?? [];
+    return Array.isArray(data) ? data : [];
+  } catch (err: any) {
+    throw new Error(err?.message || 'فشل في جلب الوحدات');
   }
 };

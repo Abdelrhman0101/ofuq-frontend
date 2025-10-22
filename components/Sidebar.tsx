@@ -54,7 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
               onClick={handleNavigate}
             >
               <span className={styles['nav-icon']}>📚</span>
-              <span>إدارة الكورسات</span>
+              <span>إدارة المقررات</span>
             </Link>
           </li>
 

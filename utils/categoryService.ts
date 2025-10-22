@@ -4,6 +4,7 @@ import apiClient from './apiClient';
 export interface Category {
   id: number;
   name: string;
+  price?: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -15,10 +16,12 @@ export interface CategoryResponse {
 
 export interface CreateCategoryData {
   name: string;
+  price?: number;
 }
 
 export interface UpdateCategoryData {
   name: string;
+  price?: number;
 }
 
 // جلب جميع الأقسام - Get all categories
@@ -92,8 +95,10 @@ export const createCategory = async (data: CreateCategoryData): Promise<Category
         const validationErrors = error.response.data?.errors;
         if (validationErrors?.name) {
           message = validationErrors.name[0];
+        } else if (validationErrors?.price) {
+          message = validationErrors.price[0];
         } else {
-          message = 'بيانات غير صحيحة. يرجى التحقق من اسم القسم.';
+          message = 'بيانات غير صحيحة. يرجى التحقق من اسم القسم والسعر.';
         }
       } else if (error.response.status === 419) {
         message = 'انتهت صلاحية الجلسة. يرجى تحديث الصفحة والمحاولة مرة أخرى.';
@@ -140,8 +145,10 @@ export const updateCategory = async (id: number, data: UpdateCategoryData): Prom
         const validationErrors = error.response.data?.errors;
         if (validationErrors?.name) {
           message = validationErrors.name[0];
+        } else if (validationErrors?.price) {
+          message = validationErrors.price[0];
         } else {
-          message = 'بيانات غير صحيحة. يرجى التحقق من اسم القسم.';
+          message = 'بيانات غير صحيحة. يرجى التحقق من اسم القسم والسعر.';
         }
       } else if (error.response.status === 419) {
         message = 'انتهت صلاحية الجلسة. يرجى تحديث الصفحة والمحاولة مرة أخرى.';

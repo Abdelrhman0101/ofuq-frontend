@@ -12,7 +12,7 @@ export default function AdminDashboard() {
       
       <div className="dashboard-stats">
         <div className="stat-card">
-          <h3>إجمالي الكورسات</h3>
+          <h3>إجمالي المقررات</h3>
           <p className="stat-number">12</p>
         </div>
         <div className="stat-card">
@@ -24,7 +24,7 @@ export default function AdminDashboard() {
           <p className="stat-number">15,000 ج.م</p>
         </div>
         <div className="stat-card">
-          <h3>الكورسات المنشورة</h3>
+          <h3>المقررات المنشورة</h3>
           <p className="stat-number">8</p>
         </div>
       </div>
@@ -33,8 +33,8 @@ export default function AdminDashboard() {
         <h2>الإجراءات السريعة</h2>
         <div className="actions-grid">
           <a href="/admin/courses" className="action-card">
-            <h3>إدارة الكورسات</h3>
-            <p>إضافة وتعديل الكورسات</p>
+            <h3>إدارة المقررات</h3>
+            <p>إضافة وتعديل المقررات</p>
           </a>
           <a href="/admin/students" className="action-card">
             <h3>إدارة الطلاب</h3>
