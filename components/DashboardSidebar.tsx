@@ -54,7 +54,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen = false, onC
         <div className="logo-container">
           <Image
             src="/mahad_alofk2.png"
-            alt="معهد الأفق للتعليم عن بعد"
+            alt="منصة أفق للتعليم عن بعد"
             width={200}
             height={110}
             className="sidebar-logo"

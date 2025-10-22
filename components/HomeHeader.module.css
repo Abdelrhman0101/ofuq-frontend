@@ -11,6 +11,7 @@
   position: relative;
   z-index: 100;
   height: 80px;
+  direction: rtl;
 }
 
 .header-container {
@@ -33,7 +34,8 @@
 }
 
 .logo-image {
-  height: 130px;
+  padding: 10px 0;
+  height: 80px;
   width: auto;
   object-fit: contain;
 }
@@ -157,6 +159,18 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.sidebar-auth {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar-auth .auth-btn {
+  width: 100%;
+  text-align: center;
 }
 
 .sidebar-link {
@@ -389,6 +403,10 @@
     gap: 10px;
   }
 
+  .mobile-hide {
+    display: none;
+  }
+
   .auth-btn {
     padding: 8px 16px;
     font-size: 13px;
@@ -402,6 +420,10 @@
   .hero-placeholder p {
     font-size: 18px;
   }
+    .logo-image {
+    /* height: 50px; */
+    margin-left: 10px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -414,7 +436,8 @@
   }
 
   .logo-image {
-    height: 80px;
+    /* height: 50px; */
+    margin-left: 10px;
   }
 
   .auth-btn {

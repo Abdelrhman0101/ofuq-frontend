@@ -8,18 +8,23 @@
   padding: 20px;
   font-family: 'Cairo', sans-serif;
   position: relative;
+  direction: rtl;
+  unicode-bidi: isolate;
+  flex-direction: column;
 }
 
 .authFooterLinks {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  position: static;
+  bottom: auto;
+  left: auto;
+  transform: none;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   color: white;
   font-size: 14px;
+  margin-top: 16px;
 }
 
 .footerLink {

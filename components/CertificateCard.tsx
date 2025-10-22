@@ -53,7 +53,7 @@ const CertificateCard: React.FC<CertificateCardProps> = ({
     if (navigator.share && (certificateImage || downloadUrl)) {
       navigator.share({
         title: `شهادة إتمام ${courseName}`,
-        text: `حصلت على شهادة إتمام دورة ${courseName} من معهد الأفق`,
+        text: `حصلت على شهادة إتمام دورة ${courseName} من منصة الأفق`,
         url
       }).catch(console.error);
     } else {

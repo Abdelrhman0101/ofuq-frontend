@@ -40,9 +40,9 @@ const HeroSection = () => {
   const handleHeroSearch = () => {
     const q = heroSearch.trim();
     if (q) {
-      router.push(`/courses?search=${encodeURIComponent(q)}`);
+      router.push(`/diploms?search=${encodeURIComponent(q)}`);
     } else {
-      router.push('/courses');
+      router.push('/diploms');
     }
   };
 

@@ -76,7 +76,7 @@ const ProfileHeader = () => {
             <Link href="/">
               <Image 
                 src="/mahad_alofk2.png" 
-                alt="معهد افق" 
+                alt="منصة أفق" 
                 width={120} 
                 height={50}
                 className={ph['logo-image']}
@@ -87,7 +87,8 @@ const ProfileHeader = () => {
           {/* Desktop Navigation Links - Centered */}
           <nav className={clsx(ph['header-nav'], ph['desktop-nav'])}>
             <Link href="/" className={clsx(ph['nav-link1'], pathname === '/' && ph['active'])}>الرئيسية</Link>
-            <Link href="/courses" className={clsx(ph['nav-link1'], (pathname?.startsWith('/courses') || pathname?.startsWith('/course-details')) && ph['active'])}>برامجنا التدريبية</Link>
+            <Link href="/diploms" className={clsx(ph['nav-link1'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && ph['active'])}>دبلومات منصة أفق</Link>
+            <Link href="/community" className={clsx(ph['nav-link1'], pathname?.startsWith('/community') && ph['active'])}>مجتمع أفق</Link>
             <Link href="/user/fav" className={clsx(ph['nav-link1'], pathname?.startsWith('/user/fav') && ph['active'])}>المفضلة</Link>
             <Link href="/about" className={clsx(ph['nav-link1'], pathname?.startsWith('/about') && ph['active'])}>عنّا</Link>
           </nav>
@@ -167,7 +168,8 @@ const ProfileHeader = () => {
            </div>
           <nav className={ph['sidebar-nav']}>
             <Link href="/" className={clsx(ph['sidebar-link'], pathname === '/' && ph['sidebar-active'])} onClick={closeSidebar}>الرئيسية</Link>
-            <Link href="/courses" className={clsx(ph['sidebar-link'], (pathname?.startsWith('/courses') || pathname?.startsWith('/course-details')) && ph['sidebar-active'])} onClick={closeSidebar}>برامجنا التدريبية</Link>
+            <Link href="/diploms" className={clsx(ph['sidebar-link'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && ph['sidebar-active'])} onClick={closeSidebar}>دبلومات منصة أفق</Link>
+            <Link href="/community" className={clsx(ph['sidebar-link'], pathname?.startsWith('/community') && ph['sidebar-active'])} onClick={closeSidebar}>مجتمع أفق</Link>
             <Link href="/favorites" className={clsx(ph['sidebar-link'], pathname?.startsWith('/favorites') && ph['sidebar-active'])} onClick={closeSidebar}>المفضلة</Link>
             <Link href="/about" className={clsx(ph['sidebar-link'], pathname?.startsWith('/about') && ph['sidebar-active'])} onClick={closeSidebar}>عنّا</Link>
           </nav>

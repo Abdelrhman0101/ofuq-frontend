@@ -8,20 +8,21 @@ interface HeroSearchSectionProps {
   onFilterChange?: (filter: string) => void;
   searchQuery?: string;
   activeFilter?: string;
+  title?: string;
 }
 
 export default function HeroSearchSection({ 
   onSearch, 
   onFilterChange, 
   searchQuery = '', 
-  activeFilter = 'الكل' 
+  activeFilter = 'الكل',
+  title
 }: HeroSearchSectionProps) {
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
   const [localActiveFilter, setLocalActiveFilter] = useState(activeFilter);
+  const [expanded, setExpanded] = useState(false);
 
-  // const filters = ['الكل', 'الأحدث', 'اللغة', 'المستوى', 'المجال'];
-
-  // Update local state when props change
+  // تحديث الحالة عند تغيّر القيم القادمة من الأعلى
   useEffect(() => {
     setLocalSearchQuery(searchQuery);
   }, [searchQuery]);
@@ -31,25 +32,15 @@ export default function HeroSearchSection({
   }, [activeFilter]);
 
   const handleSearch = () => {
-    if (onSearch) {
-      onSearch(localSearchQuery);
-    }
+    const q = localSearchQuery.trim();
+    if (onSearch) onSearch(q);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setLocalSearchQuery(value);
-    // Real-time search
-    if (onSearch) {
-      onSearch(value);
-    }
-  };
-
-  const handleFilterClick = (filter: string) => {
-    setLocalActiveFilter(filter);
-    if (onFilterChange) {
-      onFilterChange(filter);
-    }
+    // بحث لحظي
+    if (onSearch) onSearch(value);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -58,44 +49,63 @@ export default function HeroSearchSection({
     }
   };
 
-  return (
-    <section className="hero-search-section">
-      <div className="hero-background">
-        <div className="hero-overlay"></div>
-        <div className="hero-content">
-          <h1 className="hero-title">برامجنا المميزة</h1>
-          
-          <div className="search-container">
-            <div className="search-box" >
-              <input
-                type="text"
-                placeholder="ابحث عن الكورسات، المدربين، أو المجالات..."
-                value={localSearchQuery}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                className="search-input"
-              />
-              {/* <button 
-                onClick={handleSearch}
-                className="search-button"
-              >
-                بحث
-              </button> */}
-            </div>
-          </div>
+  const handleLaunch = () => {
+    // توسعة الواجهة وإظهار الفلتر الذكي والعنوان وشريط البحث
+    setExpanded(true);
+  };
 
-          {/* <div className="filters-container">
-            {filters.map((filter) => (
-              <button
-                key={filter}
-                onClick={() => handleFilterClick(filter)}
-                className={`filter-button ${localActiveFilter === filter ? 'active' : ''}`}
-              >
-                {filter}
-                <span className="dropdown-arrow">▼</span>
-              </button>
-            ))}
-          </div> */}
+  return (
+    <section className={`hero-search-section ${expanded ? 'expanded' : 'collapsed'}`}>
+      <div className="hero-background">
+        {/* الفلتر الأساسي يُفعل تدريجيًا عند التوسّع */}
+        <div className="hero-overlay" />
+
+        {/* طبقة Aurora الذكية */}
+        <div className="aurora">
+          <span className="aurora-dot aurora-dot-1" />
+          <span className="aurora-dot aurora-dot-2" />
+          <span className="aurora-dot aurora-dot-3" />
+        </div>
+
+        <div className="hero-content">
+          {!expanded && (
+            <button 
+              className="search-launcher" 
+              onClick={handleLaunch}
+              aria-label="ابدأ البحث"
+              title="ابدأ البحث"
+            >
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          )}
+
+          {expanded && (
+            <>
+              <h1 className="hero-title"><span className="title-chip"><span className="title-icon"></span>{title ?? 'برامجنا التدريبية'}</span></h1>
+
+              <div className="search-container">
+                <div className="search-box">
+                  <input
+                    type="text"
+                    placeholder="ابحث عن الكورسات، المدربين، أو المجالات..."
+                    value={localSearchQuery}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    className="search-input"
+                  />
+                  <button 
+                    onClick={handleSearch}
+                    className="search-button"
+                    aria-label="بحث"
+                  >
+                    بحث
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </section>

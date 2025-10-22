@@ -28,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
     <aside className={`${styles.sidebar} ${isMobileOpen ? styles.open : ''}`}>
       <div className={styles['sidebar-header']}>
         <div className={styles['sidebar-logo']}>
-          <img src="/mahad_alofk2.png" alt="معهد الأفق للتعليم عن بعد" />
+          <img src="/mahad_alofk2.png" alt="منصة أفق للتعليم عن بعد" />
         </div>
         <h2 className={styles['sidebar-title']}>لوحة الإدارة</h2>
         <p className={styles['sidebar-subtitle']}>إدارة المنصة والمحتوى</p>
@@ -156,7 +156,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
       </nav>
 
       <div className={styles['sidebar-footer']}>
-        <p className={styles['footer-text']}>© معهد الأفق للتعليم عن بعد</p>
+        <p className={styles['footer-text']}>© منصة أفق للتعليم عن بعد</p>
       </div>
     </aside>
   );

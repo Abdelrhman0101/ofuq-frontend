@@ -122,7 +122,7 @@ export default function HomePage() {
         <section className="contact-section" aria-labelledby="contact-heading">
           <div className="contact-container">
             <div className="contact-logo" aria-hidden="true">
-              <img src="/mahad_alofk2.png" alt="معهد الأفق للتعليم عن بعد" />
+              <img src="/mahad_alofk2.png" alt="منصة أفق للتعليم عن بعد" />
             </div>
             <div className="contact-content">
               <h2 id="contact-heading" className="contact-title">تواصل معنا</h2>

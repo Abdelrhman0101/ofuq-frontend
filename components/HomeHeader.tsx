@@ -67,7 +67,7 @@ const HomeHeader = () => {
 
   return (
     <>
-      <header className={styles['home-header']}>
+      <header className={styles['home-header']} dir="rtl">
         <div className={styles['header-container']}>
           {/* Logo and Navigation Group */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -76,7 +76,7 @@ const HomeHeader = () => {
               <Link href="/">
                 <Image 
                   src="/mahad_alofk2.png" 
-                  alt="معهد افق" 
+                  alt="منصة أفق" 
                   width={120} 
                   height={50}
                   className={styles['logo-image']}
@@ -87,9 +87,9 @@ const HomeHeader = () => {
             {/* Desktop Navigation Links */}
             <nav className={clsx(styles['header-nav'], styles['desktop-nav'])}>
               <Link href="/" className={clsx(styles['nav-link'], pathname === '/' && styles['active'])}>الرئيسية</Link>
-              <Link href="/courses" className={clsx(styles['nav-link'], (pathname?.startsWith('/courses') || pathname?.startsWith('/course-details')) && styles['active'])}>برامجنا التدريبية</Link>
+              <Link href="/diploms" className={clsx(styles['nav-link'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && styles['active'])}>دبلومات منصة أفق</Link>
+              <Link href="/community" className={clsx(styles['nav-link'], pathname?.startsWith('/community') && styles['active'])}>مجتمع أفق</Link>
               <Link href="/about" className={clsx(styles['nav-link'], pathname?.startsWith('/about') && styles['active'])}>عنّا</Link>
-
             </nav>
           </div>
 
@@ -105,7 +105,7 @@ const HomeHeader = () => {
           </button>
 
           {/* Auth / Profile */}
-          <div className={styles['header-auth']} ref={profileMenuRef}>
+          <div className={clsx(styles['header-auth'], !isLoggedIn && styles['mobile-hide'])} ref={profileMenuRef}>
             {isLoggedIn ? (
               <div className={styles['profile-menu-container']} onClick={toggleProfileMenu}>
                 <div className={styles['profile-info']}>
@@ -168,9 +168,18 @@ const HomeHeader = () => {
           </div>
           <nav className={styles['sidebar-nav']}>
             <Link href="/" className={clsx(styles['sidebar-link'], pathname === '/' && styles['active'])} onClick={closeSidebar}>الرئيسية</Link>
-            <Link href="/courses" className={clsx(styles['sidebar-link'], (pathname?.startsWith('/courses') || pathname?.startsWith('/course-details')) && styles['active'])} onClick={closeSidebar}>برامجنا التدريبية</Link>
+            <Link href="/diploms" className={clsx(styles['sidebar-link'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && styles['active'])} onClick={closeSidebar}>دبلومات منصة أفق</Link>
+            <Link href="/community" className={clsx(styles['sidebar-link'], pathname?.startsWith('/community') && styles['active'])} onClick={closeSidebar}>مجتمع أفق</Link>
             <Link href="/about" className={clsx(styles['sidebar-link'], pathname?.startsWith('/about') && styles['active'])} onClick={closeSidebar}>عنّا</Link>
           </nav>
+
+          {!isLoggedIn && (
+            <div className={styles['sidebar-auth']}>
+              <Link href="/auth" className={clsx(styles['auth-btn'], styles['login-btn1'])} onClick={closeSidebar}>تسجيل دخول</Link>
+              <Link href="/auth" className={clsx(styles['auth-btn'], styles['signup-btn'])} onClick={closeSidebar}>إنشاء حساب</Link>
+            </div>
+          )}
+
         </div>
       </div>
     </>

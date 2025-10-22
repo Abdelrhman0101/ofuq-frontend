@@ -1,6 +1,7 @@
 // Authentication service for handling API calls
 import apiClient from './apiClient';
 
+
 export interface User {
   id: number;
   name: string;
@@ -20,10 +21,14 @@ export interface SignupData {
   email: string;
   password: string;
   password_confirmation: string;
+  // جديد: إضافة الحقول المطلوبة
+  phone?: string;
+  nationality?: string;
 }
 
 export interface SigninData {
-  email: string;
+  // تغيير: مفتاح موحد login لقبول البريد أو الهاتف
+  login: string; // يمكن أن يكون بريدًا إلكترونيًا أو رقم هاتف كامل مع كود الدولة
   password: string;
 }
 
@@ -180,7 +185,7 @@ export const uploadProfilePicture = async (file: File): Promise<{ message: strin
 // Signin function
 export const signin = async (data: SigninData): Promise<AuthResponse> => {
   try {
-    console.log('[Signin] Preparing request payload', { email: data.email });
+    console.log('[Signin] Preparing request payload', { login: data.login });
     const response = await apiClient.post('/login', data);
     const result = response.data;
 

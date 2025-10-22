@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import '../styles/auth.css';
+import styles from './ForgotPasswordForm.module.css';
 import VerificationCodeForm from './VerificationCodeForm';
 
 interface ForgotPasswordFormProps {
@@ -36,30 +36,30 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToLogin }
   }
 
   return (
-    <div className="auth-form-container">
+    <div className={styles.authFormContainer}>
       {/* Logo */}
-      <div className="auth-form-logo">
-        <img src="/mahad_alofk2.png" alt="معهد الأفق للتعليم عن بعد" />
+      <div className={styles.authFormLogo}>
+        <img src="/logo.png" alt="منصة أفق للتعليم عن بعد" />
       </div>
 
       {/* Form Content Container */}
-      <div className="form-content forgot-password-content">
+      <div className={styles.formContent}>
         {/* Title */}
-        <h1 className="forgot-password-title">إعادة تعيين كلمة السر</h1>
+        <h1 className={styles.forgotPasswordTitle}>إعادة تعيين كلمة السر</h1>
         
         {/* Subtitle */}
-        <p className="forgot-password-subtitle">
+        <p className={styles.forgotPasswordSubtitle}>
           أدخل عنوان البريد الإلكتروني المرتبط بحسابك وسنرسل لك تعليمات
           لإعادة تعيين كلمة السر
         </p>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="forgot-password-form">
-          <div className="form-field">
-            <label className="form-label">البريد الإلكتروني</label>
+        <form onSubmit={handleSubmit} className={styles.forgotPasswordForm}>
+          <div className={styles.formField}>
+            <label className={styles.formLabel}>البريد الإلكتروني</label>
             <input
               type="email"
-              className="form-input"
+              className={styles.formInput}
               placeholder="اكتب بريدك الإلكتروني..."
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -67,13 +67,13 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToLogin }
             />
           </div>
 
-          <button type="submit" className="reset-btn">
+          <button type="submit" className={styles.resetBtn}>
             إرسال رابط إعادة التعيين
           </button>
         </form>
 
         {/* Back to Login Link */}
-        <div className="back-to-login">
+        <div className={styles.backToLogin}>
           <a href="#" onClick={(e) => { e.preventDefault(); onBackToLogin?.(); }}>
             الرجوع إلى تسجيل الدخول
           </a>

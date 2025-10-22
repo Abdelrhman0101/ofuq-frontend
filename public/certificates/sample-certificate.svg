@@ -31,7 +31,7 @@
   <line x1="120" y1="490" x2="280" y2="490" stroke="#333" stroke-width="1"/>
   <text x="200" y="510" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#666">د. محمد أحمد</text>
   
-  <text x="600" y="480" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#333">مدير المعهد</text>
+  <text x="600" y="480" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#333">مدير المنصة</text>
   <line x1="520" y1="490" x2="680" y2="490" stroke="#333" stroke-width="1"/>
   <text x="600" y="510" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#666">أ. سارة محمود</text>
   
@@ -41,5 +41,5 @@
   <!-- Decorative seal -->
   <circle cx="700" cy="450" r="40" fill="none" stroke="#019EBB" stroke-width="3"/>
   <circle cx="700" cy="450" r="35" fill="none" stroke="#019EBB" stroke-width="1"/>
-  <text x="700" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#019EBB">معهد الأفق</text>
+  <text x="700" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#019EBB">منصة الأفق</text>
 </svg>

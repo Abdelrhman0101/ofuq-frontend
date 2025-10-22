@@ -31,19 +31,16 @@
 
 /* Logo inside form */
 .auth-form-logo {
-  margin-top: 0;
-  margin-bottom: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .auth-form-logo img {
-  max-height: 150px;
+  max-height: 110px;
   width: auto;
   object-fit: contain;
   display: block;
-  margin: 0 auto;
 }
 
 /* Tab Switch Buttons */

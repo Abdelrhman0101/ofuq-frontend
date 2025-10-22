@@ -39,13 +39,13 @@ export default function AboutPage() {
       <div className="about-container">
         {/* Header Section */}
         <div className="about-header">
-          <h1 className="about-title">معهد <span className="brand-accent">أفق</span> للتعليم عن بعد</h1>
+          <h1 className="about-title">منصة <span className="brand-accent">أفق</span> للتعليم عن بعد</h1>
         </div>
 
-        {/* تعريف المعهد */}
+        {/* تعريف المنصة */}
         <div className="hero-section content-section">
           <div className="hero-text">
-            <h2 className="section-title">تعريف المعهد:</h2>
+            <h2 className="section-title">تعريف المنصة:</h2>
             <p className="section-content">
               أفق مؤسسة تعليمية رائدة متخصصة في بناء وتقديم برامج دبلوم احترافية في مجالات متنوعة تجمع بين الأصالة والمعاصرة. تأسست الشركة لسد الفجوة بين التعليم النظري والممارسة العملية من خلال مناهج علمية مبتكرة ومتكاملة تواكب احتياجات سوق العمل وتحديات العصر.
             </p>
@@ -54,7 +54,7 @@ export default function AboutPage() {
             </p>
           </div>
           <div className="hero-image">
-            <img src="/mahad_alofk2.png" alt="معهد الأفق التعليمي" />
+            <img src="/mahad_alofk2.png" alt="منصة الأفق التعليمية" />
           </div>
         </div>
 

@@ -1,0 +1,238 @@
+/* Footer Module Styles - scoped to Footer component */
+.footer {
+  background-color: #000000;
+  color: #fff;
+  padding: 40px 20px 20px;
+  font-family: 'Arial', sans-serif;
+  direction: rtl;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  margin-bottom: 30px;
+}
+
+.footer-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.logo-card {
+  background: #ffffff;
+  border: 1px solid rgba(65,66,208,0.45);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 0 0 2px rgba(65,66,208,0.18), 0 12px 26px rgba(65,66,208,0.30);
+  overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.logo-card:hover {
+  box-shadow: 0 0 0 2px rgba(65,66,208,0.28), 0 14px 30px rgba(65,66,208,0.36);
+}
+
+.footer-logo {
+
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+}
+
+
+.footer-description {
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.8;
+  margin: 0;
+  text-align: justify;
+  direction: rtl;
+  text-justify: inter-word;
+  opacity: 0.95;
+}
+
+.footer-title {
+  color: #4142D0;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: right;
+  position: relative;
+  padding-bottom: 8px;
+}
+
+.footer-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0; /* rtl alignment */
+  width: 0%;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #4142D0 0%, #6a6cf0 100%);
+  transition: width 0.3s ease;
+}
+
+.footer-title:hover::after {
+  width: 40%;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-size: 14px;
+  direction: rtl;
+}
+
+.contact-icon {
+  color: #fff;
+  flex-shrink: 0;
+}
+
+/* Social icons row under contact info */
+.social-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+  justify-content: flex-start; /* align to right in RTL */
+  flex-direction: row; /* keep DOM order, rely on RTL */
+}
+
+.social-icon {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(65,66,208,0.18), rgba(65,66,208,0.05));
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.social-icon:hover {
+  background: linear-gradient(180deg, rgba(65,66,208,0.35), rgba(65,66,208,0.12));
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-link {
+  color: #fff;
+  text-decoration: none;
+  font-size: 14px;
+  text-align: right;
+  transition: color 0.3s ease, transform 0.25s ease;
+}
+
+.footer-link:hover {
+  color: #b5b7ff;
+  transform: translateX(-4px);
+}
+
+/* Diplomas list */
+.footer-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-item {
+  position: relative;
+  padding-right: 14px;
+  color: #fff;
+  opacity: 0.9;
+  text-align: right;
+}
+
+.footer-item::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4142D0;
+  box-shadow: 0 0 0 2px rgba(65,66,208,0.15);
+}
+
+.footer-bottom {
+  border-top: 1px solid #333;
+  padding-top: 20px;
+  text-align: center;
+}
+
+.copyright {
+  color: #fff;
+  font-size: 14px;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+  
+  .footer {
+    padding: 30px 15px 15px;
+  }
+}
+
+/* Phone formatting */
+.phone-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-direction: row; /* rely on RTL for right-to-left flow */
+}
+
+.phone-number {
+  direction: ltr;
+  unicode-bidi: embed;
+  text-align: left;
+}
+
+.phone-plus {
+  direction: ltr;
+}
+
+.whatsapp {
+  color: #25D366;
+}
+   
+ 

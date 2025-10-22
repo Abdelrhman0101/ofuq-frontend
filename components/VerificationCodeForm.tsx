@@ -86,7 +86,7 @@ const VerificationCodeForm: React.FC<VerificationCodeFormProps> = ({
     <div className="auth-form-container">
       {/* Logo */}
       <div className="auth-form-logo">
-        <img src="/mahad_alofk2.png" alt="معهد الأفق للتعليم عن بعد" />
+        <img src="/mahad_alofk2.png" alt="منصة أفق للتعليم عن بعد" />
       </div>
 
       {/* Form Content Container */}
