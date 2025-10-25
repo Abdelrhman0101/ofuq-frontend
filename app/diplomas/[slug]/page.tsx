@@ -100,7 +100,7 @@ export default function DiplomaDetailsPage() {
     const loggedIn = isAuthenticated();
     if (!loggedIn) {
       setEnrollStatus({ type: 'error', message: 'يرجى تسجيل الدخول لإتمام التسجيل' });
-      router.push('/auth/login');
+      router.push('/auth');
       return;
     }
     setIsEnrollmentModalOpen(true);
