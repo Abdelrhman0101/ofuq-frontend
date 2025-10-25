@@ -1,65 +1,59 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import HomeHeader from '../components/HomeHeader';
 import HeroSection from '../components/HeroSection';
-import CourseCard from '../components/CourseCard';
+import DiplomaCard from '../components/DiplomaCard';
 import ValuesSection from '../components/ValuesSection';
 import TestimonialsSlider from '../components/TestimonialsSlider';
 import Footer from '../components/Footer';
 import ScrollToTop from '../components/ScrollToTop';
 import SocialMediaFloat from '../components/SocialMediaFloat';
-import { getFeaturedCourses, Course } from '../utils/courseService';
+import { getPublicDiplomas, Diploma } from '../utils/categoryService';
 import { getBackendAssetUrl } from '../utils/url';
 import '../styles/contact-section.css';
 
 export default function HomePage() {
-  const [featuredCourses, setFeaturedCourses] = useState<Course[]>([]);
+  const [featuredDiplomas, setFeaturedDiplomas] = useState<Diploma[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadFeaturedCourses = async () => {
+    const loadFeaturedDiplomas = async () => {
       try {
         setLoading(true);
-        const courses = await getFeaturedCourses();
-        setFeaturedCourses(courses);
+        const diplomas = await getPublicDiplomas();
+        setFeaturedDiplomas((diplomas || []).slice(0, 3)); // عرض 3 دبلومات فقط
       } catch (err) {
-        console.error('Error loading featured courses:', err);
-        setError('فشل في تحميل الكورسات المميزة');
+        console.error('Error loading featured diplomas:', err);
+        setError('فشل في تحميل الدبلومات');
       } finally {
         setLoading(false);
       }
     };
 
-    loadFeaturedCourses();
+    loadFeaturedDiplomas();
   }, []);
 
-  // Transform API course data to match CourseCard props
-  const transformCourseData = (course: Course) => {
-    // Skip courses without valid ID
-    if (!course?.id) {
-      console.warn('Course without valid ID found:', course);
+  // تحويل بيانات الدبلومة لتتوافق مع خصائص DiplomaCard
+  const transformDiplomaData = (diploma: Diploma) => {
+    if (!diploma?.id) {
+      console.warn('Diploma without valid ID found:', diploma);
       return null;
     }
-    
-    const coverRaw = (course as any).cover_image_url || course.cover_image || '';
-    const instructorRaw = (course?.instructor as any)?.image || (course?.instructor as any)?.profileImage || '';
-    const image = getBackendAssetUrl(coverRaw || instructorRaw) || '/banner.jpg';
-    const instructorAvatar = getBackendAssetUrl(instructorRaw) || '/profile.jpg';
+
+    const coverImage = getBackendAssetUrl(diploma.cover_image_url || '') || '/banner.jpg';
 
     return {
-      id: course.id.toString(),
-      title: course.title || 'عنوان غير متوفر',
-      image,
-      category: course?.category?.name || 'عام',
-      rating: parseFloat(String(course.rating ?? '4.5')),
-      studentsCount: course.students_count || 0,
-      duration: course.duration ? `${course.duration} ساعة` : '30 ساعة',
-      lessonsCount: course.chapters_count || 0,
-      instructorName: course?.instructor?.name || 'مدرب',
-      instructorAvatar,
-      price: Number(course?.price ?? '0')
+      id: diploma.id.toString(),
+      name: diploma.name || 'اسم غير متوفر',
+      description: diploma.description || '',
+      image: coverImage,
+      price: Number(diploma?.price ?? 0),
+      isFree: Boolean(diploma.is_free),
+      slug: diploma.slug,
+      coursesCount: diploma.courses_count || 0,
     };
   };
 
@@ -69,43 +63,43 @@ export default function HomePage() {
       <HeroSection />
       
       <main>
-        {/* Popular Courses Section */}
+        {/* Popular Diplomas Section */}
         <section className="popular-courses-section">
           <div className="popular-courses-container">
             <div className="popular-courses-header">
               <div className="popular-courses-left">
                 <div className="popular-badge">برامجنا المميزة</div>
-                <h2 className="popular-title">اكتشف مجموعة واسعة من الكورسات التعليمية</h2>
+                <h2 className="popular-title">اكتشف مجموعة واسعة من الدبلومات التعليمية</h2>
               </div>
-              <button className="view-all-btn">
+              <Link href="/diploms" className="view-all-btn">
                 عرض الكل
                 <div className="arrow-circle">
                   <svg viewBox="0 0 24 24">
                     <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
                   </svg>
                 </div>
-              </button>
+              </Link>
             </div>
             
             <div className="courses-grid">
               {loading ? (
                 <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px' }}>
-                  جاري تحميل الكورسات المميزة...
+                  جاري تحميل الدبلومات...
                 </div>
               ) : error ? (
                 <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#e74c3c' }}>
                   {error}
                 </div>
-              ) : featuredCourses.length > 0 ? (
-                featuredCourses
-                  .map(transformCourseData)
-                  .filter(course => course !== null)
-                  .map((course) => (
-                    <CourseCard key={course.id} {...course} />
+              ) : featuredDiplomas.length > 0 ? (
+                featuredDiplomas
+                  .map(transformDiplomaData)
+                  .filter((diploma) => diploma !== null)
+                  .map((diploma: any) => (
+                    <DiplomaCard key={diploma.id} {...diploma} />
                   ))
               ) : (
                 <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px' }}>
-                  لا توجد كورسات مميزة حالياً
+                  لا توجد دبلومات مميزة حالياً
                 </div>
               )}
             </div>
