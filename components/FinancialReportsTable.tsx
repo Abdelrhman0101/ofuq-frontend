@@ -144,14 +144,17 @@ const FinancialReportsTable = () => {
         <table className="financial-table">
           <thead>
             <tr>
-              <th onClick={() => handleSort('studentId')} className="sortable">
-               ID
-                {sortBy === 'studentId' && (
-                  <span className={`sort-arrow ${sortOrder}`}>
-                    {sortOrder === 'asc' ? '↑' : '↓'}
-                  </span>
+-              <th onClick={() => handleSort('studentId')} className="sortable">
+-               ID
+-                {sortBy === 'studentId' && (
+-                  <span className={`sort-arrow ${sortOrder}`}>
+-                    {sortOrder === 'asc' ? '↑' : '↓'}
+-                  </span>
                 )}
-              </th>
+-              </th>
++              <th>
++                الترقيم
++              </th>
               <th onClick={() => handleSort('accountName')} className="sortable">
                 اسم الحساب
                 {sortBy === 'accountName' && (
@@ -187,15 +190,16 @@ const FinancialReportsTable = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredAndSortedPayments.map((payment) => (
-              <tr key={payment.id}>
-                <td>{payment.studentId}</td>
-                <td>{payment.accountName}</td>
-                <td>{payment.courseName}</td>
-                <td className="amount">{payment.amountPaid.toLocaleString()} جنيه</td>
-                <td>{new Date(payment.paymentDate).toLocaleDateString('en-US')}</td>
-              </tr>
-            ))}
++            {filteredAndSortedPayments.map((payment, index) => (
+               <tr key={payment.id}>
+-                <td>{payment.studentId}</td>
++                <td>{index + 1}</td>
+                 <td>{payment.accountName}</td>
+                 <td>{payment.courseName}</td>
+                 <td className="amount">{payment.amountPaid.toLocaleString()} جنيه</td>
+                 <td>{new Date(payment.paymentDate).toLocaleDateString('en-US')}</td>
+               </tr>
+             ))}
           </tbody>
         </table>
 

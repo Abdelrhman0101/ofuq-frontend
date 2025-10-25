@@ -6,7 +6,7 @@ import Toast from "@/components/Toast";
 import styles from "./AdminDiplomaCourses.module.css";
 import "@/styles/toast.css";
 import { getAdminCategory, type Diploma } from "@/utils/categoryService";
-import { getCourses, getAllCourses, type Course } from "@/utils/courseService";
+import { getCourses, getAllCourses, deleteCourse, type Course } from "@/utils/courseService";
 import { getBackendAssetUrl } from "@/utils/url";
 import { deleteCategory } from "@/utils/categoryService";
 
@@ -42,8 +42,16 @@ export default function AdminDiplomaPage() {
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState<"success" | "error" | "warning" | "info" | "confirm">("info");
   // Provide confirm handlers
+  const [pendingDeleteCourseId, setPendingDeleteCourseId] = useState<number | null>(null);
+  const [isDeletingCourseId, setIsDeletingCourseId] = useState<number | null>(null);
   const confirmDeleteDiploma = () => {
     setToastMessage("هل أنت متأكد من حذف هذه الدبلومة؟ سيتم فك ارتباط المقررات بها.");
+    setToastType("confirm");
+    setToastVisible(true);
+  };
+  const confirmDeleteCourse = (courseId: number) => {
+    setPendingDeleteCourseId(courseId);
+    setToastMessage("هل أنت متأكد من حذف هذا المقرر؟");
     setToastType("confirm");
     setToastVisible(true);
   };
@@ -61,6 +69,25 @@ export default function AdminDiplomaPage() {
       setToastVisible(true);
     } finally {
       setIsDeleting(false);
+    }
+  };
+  const performDeleteCourse = async () => {
+    if (!pendingDeleteCourseId) return;
+    const courseId = pendingDeleteCourseId;
+    try {
+      setIsDeletingCourseId(courseId);
+      await deleteCourse(courseId);
+      setCourses((prev) => prev.filter((c) => Number(c.id) !== Number(courseId)));
+      setToastType("success");
+      setToastMessage("تم حذف المقرر بنجاح");
+      setToastVisible(true);
+    } catch (err: any) {
+      setToastType("error");
+      setToastMessage(err?.message || "فشل في حذف المقرر");
+      setToastVisible(true);
+    } finally {
+      setIsDeletingCourseId(null);
+      setPendingDeleteCourseId(null);
     }
   };
 
@@ -193,6 +220,13 @@ export default function AdminDiplomaPage() {
                       <button className={styles.btnAction} onClick={() => router.push(`/course-details/${course.id}`)}>عرض</button>
                       <button className={styles.btnAction} onClick={() => router.push(`/admin/diplomas/${diplomaId}/courses/${course.id}/chapters`)}>إدارة الفصول</button>
                       <button className={styles.btnAction} onClick={() => router.push(`/admin/courses/${course.id}`)}>تعديل</button>
+                      <button
+                        className={styles.btnDanger}
+                        onClick={() => confirmDeleteCourse(Number(course.id))}
+                        disabled={isDeletingCourseId === Number(course.id)}
+                      >
+                        {isDeletingCourseId === Number(course.id) ? "جاري الحذف..." : "حذف"}
+                      </button>
                     </td>
                   </tr>
                 );
@@ -212,8 +246,8 @@ export default function AdminDiplomaPage() {
         type={toastType}
         isVisible={toastVisible}
         onClose={() => setToastVisible(false)}
-        onConfirm={toastType === "confirm" ? performDeleteDiploma : undefined}
-        onCancel={toastType === "confirm" ? () => setToastVisible(false) : undefined}
+        onConfirm={toastType === "confirm" ? (pendingDeleteCourseId ? performDeleteCourse : performDeleteDiploma) : undefined}
+        onCancel={toastType === "confirm" ? () => { setToastVisible(false); setPendingDeleteCourseId(null); } : undefined}
       />
     </div>
   );
