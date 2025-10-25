@@ -10,6 +10,7 @@ interface VideoSectionProps {
   isLocked?: boolean;
   lockMessage?: string;
   onAttemptPlay?: () => void;
+  onEnded?: () => void;
 }
 
 const VideoSection: React.FC<VideoSectionProps> = ({ 
@@ -18,7 +19,8 @@ const VideoSection: React.FC<VideoSectionProps> = ({
   alt = "Course Video",
   isLocked = false,
   lockMessage = 'محجوب حتى إكمال أسئلة الدرس',
-  onAttemptPlay
+  onAttemptPlay,
+  onEnded
 }) => {
   // دعم روابط embed (مثل Cloudflare/MediaDelivery) بعرض iframe
   const isEmbedUrl = (() => {
@@ -63,6 +65,7 @@ const VideoSection: React.FC<VideoSectionProps> = ({
               height="100%"
               poster={thumbnailUrl}
               className={styles['video-element']}
+              onEnded={onEnded}
             >
               <source src={videoUrl} type="video/mp4" />
               متصفحك لا يدعم تشغيل الفيديو.

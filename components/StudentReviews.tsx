@@ -92,7 +92,7 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
 
         if (courseId !== undefined && courseId !== null) {
           const enrollments = await getMyEnrollments();
-          setIsEnrolled(enrollments.includes(Number(courseId)));
+          setIsEnrolled(enrollments.some(course => course.id === Number(courseId)));
         } else {
           setIsEnrolled(false);
         }

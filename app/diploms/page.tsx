@@ -3,20 +3,26 @@
 import { Suspense, useState, useMemo, useEffect } from 'react';
 export const dynamic = 'force-dynamic';
 import { useSearchParams } from 'next/navigation';
-import HomeHeader from '../../components/HomeHeader';
-import Footer from '../../components/Footer';
-import HeroSearchSection from '../../components/HeroSearchSection';
-import CourseCard from '../../components/CourseCard';
-import ScrollToTop from '../../components/ScrollToTop';
-import SocialMediaFloat from '../../components/SocialMediaFloat';
-import { getAllCourses, Course } from '../../utils/courseService';
-import { getBackendAssetUrl } from '../../utils/url';
+import HomeHeader from '../../components/HomeHeader'; // تأكد من المسار
+import Footer from '../../components/Footer'; // تأكد من المسار
+import HeroSearchSection from '../../components/HeroSearchSection'; // تأكد من المسار
+// --- تغيير الكومبوننت ---
+// import CourseCard from '../../components/CourseCard'; // لم نعد نستخدمه هنا
+import DiplomaCard from '../../components/DiplomaCard'; // <-- كومبوننت جديد (سننشئه)
+import ScrollToTop from '../../components/ScrollToTop'; // تأكد من المسار
+import SocialMediaFloat from '../../components/SocialMediaFloat'; // تأكد من المسار
+// --- تغيير الخدمات ---
+// import { getAllCourses, Course } from '../../utils/courseService'; // لم نعد نستخدمه هنا
+import { getPublicDiplomas, type Diploma } from '../../utils/categoryService'; // <-- جلب الدبلومات
+import { getBackendAssetUrl } from '../../utils/url'; // تأكد من المسار
+import styles from './diploms.module.css';
 
 function DiplomsContent() {
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('الكل');
-  const [allCourses, setAllCourses] = useState<Course[]>([]);
+  // --- تغيير الحالة ---
+  const [allDiplomas, setAllDiplomas] = useState<Diploma[]>([]); // <-- حالة للدبلومات
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,112 +33,91 @@ function DiplomsContent() {
     }
   }, [searchParams]);
 
+  // --- تغيير جلب البيانات ---
   useEffect(() => {
-    const loadAllCourses = async () => {
+    const loadAllDiplomas = async () => { // <-- تغيير اسم الدالة
       try {
         setLoading(true);
-        const courses = await getAllCourses({ per_page: 1000 });
-        setAllCourses(courses);
+        const diplomas = await getPublicDiplomas(); // <-- استدعاء الخدمة الصحيحة
+        setAllDiplomas(diplomas);
       } catch (err) {
-        console.error('Error loading diploms:', err);
+        console.error('Error loading diplomas:', err);
         setError('فشل في تحميل الدبلومات');
       } finally {
         setLoading(false);
       }
     };
 
-    loadAllCourses();
+    loadAllDiplomas();
   }, []);
 
-  const transformCourseData = (course: Course) => {
-    if (!course?.id) {
-      console.warn('Course without valid ID found:', course);
+  // --- دالة تحويل بيانات الدبلومة لبطاقة العرض ---
+  const transformDiplomaData = (diploma: Diploma) => {
+    if (!diploma?.id) {
+      console.warn('Diploma without valid ID found:', diploma);
       return null;
     }
-    const coverRaw = (course as any).cover_image_url || course.cover_image || '';
-    const coverImage = getBackendAssetUrl(coverRaw) || '/banner.jpg';
-    const instructorImageRaw = course?.instructor?.image || '';
-    const instructorAvatar = getBackendAssetUrl(instructorImageRaw) || '/profile.jpg';
-    const categoryName = typeof course?.category === 'string' 
-      ? course.category 
-      : course?.category?.name || 'عام';
+    // Diploma interface already has cover_image_url
+    const coverImage = getBackendAssetUrl(diploma.cover_image_url || '') || '/banner.jpg'; // صورة افتراضية
 
     return {
-      id: course.id.toString(),
-      title: course.title || 'عنوان غير متوفر',
+      id: diploma.id.toString(),
+      name: diploma.name || 'اسم غير متوفر',
+      description: diploma.description || '', // الوصف لعرضه (ربما مختصر)
       image: coverImage,
-      category: categoryName,
-      rating: parseFloat(String(course.average_rating ?? course.rating ?? '0')),
-      studentsCount: course.students_count || 0,
-      duration: course.duration ? `${course.duration} ساعة` : '0 ساعة',
-      lessonsCount: course.chapters_count || 
-                   ((course.chapters || []).reduce((sum, ch) => sum + ((ch.lessons || []).length), 0)) || 
-                   0,
-      instructorName: course?.instructor?.name || 'مدرب',
-      instructorAvatar,
-      price: Number(course?.price ?? 0),
-      language: 'العربية',
-      level: 'متوسط',
-      field: categoryName,
-      createdAt: course?.created_at || new Date().toISOString(),
+      price: Number(diploma?.price ?? 0),
+      isFree: Boolean(diploma.is_free),
+      slug: diploma.slug, // <-- Slug للرابط
+      studentsCount: diploma.students_count || 0, // عدد الطلاب (للفلترة/الترتيب)
+      coursesCount: diploma.courses_count || 0, // عدد المقررات (للعرض)
+      createdAt: diploma?.created_at || new Date().toISOString(), // للترتيب
     };
   };
 
-  const filteredCourses = useMemo(() => {
-    if (loading || allCourses.length === 0) return [];
+  // --- تحديث منطق الفلترة والترتيب ---
+  const filteredDiplomas = useMemo(() => {
+    if (loading || allDiplomas.length === 0) return [];
 
-    const transformedCourses = allCourses
-      .map(transformCourseData)
-      .filter(course => course !== null);
-    let filtered = [...transformedCourses];
+    const transformedDiplomas = allDiplomas
+      .map(transformDiplomaData)
+      .filter(diploma => diploma !== null); // Ensure no nulls
 
+    let filtered = [...transformedDiplomas];
+
+    // فلترة البحث (بالاسم أو الوصف)
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter((course: any) =>
-        String(course?.title ?? '').toLowerCase().includes(query) ||
-        String(course?.category ?? '').toLowerCase().includes(query) ||
-        String(course?.instructorName ?? '').toLowerCase().includes(query)
+      filtered = filtered.filter((diploma: any) =>
+        String(diploma?.name ?? '').toLowerCase().includes(query) ||
+        String(diploma?.description ?? '').toLowerCase().includes(query)
       );
     }
 
+    // فلترة/ترتيب إضافي
     if (selectedFilter && selectedFilter !== 'الكل') {
       switch (selectedFilter) {
-        case 'برمجة':
-        case 'تصميم':
-        case 'تسويق':
-        case 'أعمال':
-          filtered = filtered.filter(course => course.category === selectedFilter);
-          break;
+        // يمكنك إضافة فلاتر خاصة بالدبلومات هنا إذا أردت
         case 'الأحدث':
           filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
           break;
-        case 'الأعلى تقييماً':
-          filtered.sort((a, b) => b.rating - a.rating);
-          break;
-        case 'الأكثر مبيعاً':
+        case 'الأكثر تسجيلاً': // تغيير من الأكثر مبيعاً
           filtered.sort((a, b) => b.studentsCount - a.studentsCount);
           break;
-        case 'السعر':
+        case 'السعر (من الأقل)': // تغيير
           filtered.sort((a, b) => a.price - b.price);
           break;
-        case 'المستوى':
-          const levelOrder = { 'مبتدئ': 1, 'متوسط': 2, 'متقدم': 3 } as const;
-          filtered.sort((a, b) => levelOrder[a.level as keyof typeof levelOrder] - levelOrder[b.level as keyof typeof levelOrder]);
-          break;
-        case 'المجال':
-          filtered.sort((a, b) => a.field.localeCompare(b.field));
-          break;
+        // أزل الفلاتر غير المنطقية للدبلومات (مثل المحاضر, المستوى)
         default:
           break;
       }
     }
 
-    return filtered as any[];
-  }, [searchQuery, selectedFilter, allCourses, loading]);
+    return filtered as any[]; // Type assertion for simplicity here
+  }, [searchQuery, selectedFilter, allDiplomas, loading]);
 
   return (
     <main>
-      <HeroSearchSection 
+      <HeroSearchSection
         title="دبلومات منصة أفق"
         onSearch={setSearchQuery}
         onFilterChange={setSelectedFilter}
@@ -140,67 +125,43 @@ function DiplomsContent() {
         activeFilter={selectedFilter}
       />
 
-      <section className="popular-courses-section">
-        <div className="popular-courses-container">
-          <div className="popular-courses-header">
-            <div className="popular-courses-left">
-              <div className="popular-badge">الدبلومات</div>
-              <h2 className="popular-title">
+      <section className={styles['popular-courses-section']}> {/* يمكن تغيير اسم الكلاس */}
+        <div className={styles['popular-courses-container']}>
+          <div className={styles['popular-courses-header']}>
+            <div className={styles['popular-courses-left']}>
+              <div className={styles['popular-badge']}>الدبلومات</div>
+              <h2 className={styles['popular-title']}>
                 {searchQuery ? `نتائج البحث عن "${searchQuery}"` : 'الدبلومات المتاحة'}
                 <span style={{ fontSize: '16px', color: '#666', marginRight: '10px' }}>
-                  ({loading ? '...' : filteredCourses.length} دبلوم)
+                  ({loading ? '...' : filteredDiplomas.length} دبلوم)
                 </span>
               </h2>
             </div>
           </div>
 
-          <div className="courses-grid">
+          {/* --- تغيير عرض البطاقات --- */}
+          <div className={styles['courses-grid']}> {/* يمكن تغيير اسم الكلاس */}
             {loading ? (
-              <div style={{ 
-                gridColumn: '1 / -1', 
-                textAlign: 'center', 
-                padding: '40px',
-                fontSize: '18px'
-              }}>
-                جاري تحميل الدبلومات...
-              </div>
+              <div className={styles['loading-state']}>جاري تحميل الدبلومات...</div>
             ) : error ? (
-              <div style={{ 
-                gridColumn: '1 / -1', 
-                textAlign: 'center', 
-                padding: '40px', 
-                color: '#e74c3c',
-                fontSize: '18px'
-              }}>
-                {error}
-              </div>
-            ) : filteredCourses.length > 0 ? (
-              filteredCourses.map((course: any) => (
-                <CourseCard
-                  key={course.id}
-                  id={course.id}
-                  title={course.title}
-                  image={course.image}
-                  category={course.category}
-                  rating={course.rating}
-                  studentsCount={course.studentsCount}
-                  duration={course.duration}
-                  lessonsCount={course.lessonsCount}
-                  instructorName={course.instructorName}
-                  instructorAvatar={course.instructorAvatar}
-                  price={course.price}
+              <div className={styles['error-state']}>{error}</div>
+            ) : filteredDiplomas.length > 0 ? (
+              filteredDiplomas.map((diploma: any) => (
+                <DiplomaCard // <-- استخدام الكومبوننت الجديد
+                  key={diploma.id}
+                  id={diploma.id}
+                  name={diploma.name}
+                  description={diploma.description}
+                  image={diploma.image}
+                  price={diploma.price}
+                  isFree={diploma.isFree}
+                  slug={diploma.slug}
+                  coursesCount={diploma.coursesCount}
+                  // يمكنك تمرير أي بيانات أخرى يحتاجها الكومبوننت
                 />
               ))
             ) : (
-              <div style={{ 
-                gridColumn: '1 / -1', 
-                textAlign: 'center', 
-                padding: '40px', 
-                color: '#666',
-                fontSize: '18px'
-              }}>
-                لا توجد دبلومات تطابق معايير البحث
-              </div>
+              <div className={styles['empty-state']}>لا توجد دبلومات تطابق معايير البحث</div>
             )}
           </div>
         </div>
@@ -211,9 +172,9 @@ function DiplomsContent() {
 
 export default function DiplomsPage() {
   return (
-    <div>
+    <div dir="rtl">
       <HomeHeader />
-      <Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>جاري التحميل...</div>}>
+      <Suspense fallback={<div className={styles['loading-state']}>جاري التحميل...</div>}>
         <DiplomsContent />
       </Suspense>
       <Footer />
@@ -222,3 +183,75 @@ export default function DiplomsPage() {
     </div>
   );
 }
+
+// ----- تعريف مقترح لكومبوننت DiplomaCard (ضعه في ملف منفصل مثل components/DiplomaCard.tsx) -----
+/*
+import Link from 'next/link';
+import Image from 'next/image';
+
+interface DiplomaCardProps {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  price: number;
+  isFree: boolean;
+  slug: string;
+  coursesCount?: number;
+}
+
+const DiplomaCard: React.FC<DiplomaCardProps> = ({
+  id,
+  name,
+  description,
+  image,
+  price,
+  isFree,
+  slug,
+  coursesCount
+}) => {
+  // دالة لتقصير النص إذا كان طويلاً جداً
+  const truncateDescription = (text: string, maxLength: number = 100) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
+  return (
+    <div className="diploma-card"> {/* استخدم كلاسات CSS الخاصة بك */
+      {/* <Link href={`/diplomas/${slug}`} passHref> */}
+        {/* <a className="diploma-card-link"> */}
+          {/* <div className="diploma-card-image-container">
+            <Image
+              src={image}
+              alt={name}
+              layout="fill"
+              objectFit="cover"
+              className="diploma-card-image"
+            />
+          </div>
+          <div className="diploma-card-content">
+            <h3 className="diploma-card-title">{name}</h3>
+            <p className="diploma-card-description">{truncateDescription(description)}</p>
+            <div className="diploma-card-footer">
+              <span className="diploma-card-price">
+                {isFree ? 'مجانية' : `${price.toLocaleString()} ر.س`}
+              </span>
+              <span className="diploma-card-courses">
+                {coursesCount ? `${coursesCount} مقرر` : ''}
+              </span>
+            </div>
+             <button className="diploma-card-button">عرض التفاصيل</button> {/* أو اجعل الرابط كله زرًا */}
+          {/* </div> */}
+        {/* </a> */}
+      {/* </Link> */}
+      {/* إصلاح لـ Link */}
+      {/* <Link href={`/diplomas/${slug}`} passHref legacyBehavior> */}
+        {/* <a className="diploma-card-link"> */}
+          {/* ... (نفس محتوى البطاقة أعلاه) ... */}
+        {/* </a> */}
+      {/* </Link> */}
+    {/* </div> */}
+  {/* ); */}
+{/* }; */}
+
+{/* export default DiplomaCard; */}

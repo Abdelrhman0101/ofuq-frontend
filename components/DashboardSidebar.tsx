@@ -52,13 +52,15 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen = false, onC
           </svg>
         </button>
         <div className="logo-container">
-          <Image
-            src="/mahad_alofk2.png"
-            alt="منصة أفق للتعليم عن بعد"
-            width={200}
-            height={110}
-            className="sidebar-logo"
-          />
+          <Link href="/" onClick={() => onClose?.()} className="logo-link">
+            <Image
+              src="/mahad_alofk2.png"
+              alt="منصة أفق للتعليم عن بعد"
+              width={200}
+              height={110}
+              className="sidebar-logo"
+            />
+          </Link>
         </div>
       </div>
 

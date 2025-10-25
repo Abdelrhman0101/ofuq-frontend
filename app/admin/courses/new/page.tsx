@@ -1,223 +1,363 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import Toast from "@/components/Toast";
-import { createCourse } from "@/utils/courseService";
-import "@/styles/toast.css";
-import "@/styles/admin-courses.css";
+import React, { useState, useEffect, Suspense, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Toast from '@/components/Toast';
+import { createCourse } from '@/utils/courseService';
+import { getAdminCategories, type Diploma } from '@/utils/categoryService';
+import { getInstructors, type Instructor } from '@/utils/instructorService';
+import styles from './NewCourse.module.css';
+import '@/styles/toast.css';
 
-export default function NewCoursePage() {
+// --- Component Wrapper for Suspense ---
+function NewCoursePageComponent() {
   const router = useRouter();
-
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState<number>(0);
-  const [instructorId, setInstructorId] = useState<number>(0);
-  const [categoryId, setCategoryId] = useState<number>(0);
-  const [isFree, setIsFree] = useState<boolean>(false);
-  const [status, setStatus] = useState<'draft' | 'published' | 'archived'>("draft");
-  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const searchParams = useSearchParams();
+  const diplomaId = searchParams.get('diploma_id');
 
   const [loading, setLoading] = useState(false);
+  const [diplomas, setDiplomas] = useState<Diploma[]>([]);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Form state - Initialize category_id with diplomaId if available
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    instructor_id: '',
+    category_id: diplomaId || '',
+    status: 'published' as 'draft' | 'published',
+    duration: '',
+    price: '0',
+    is_free: false,
+    cover_image: null as File | null
+  });
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+
+  // Toast state
   const [toastVisible, setToastVisible] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState<"success" | "error" | "warning" | "info">("info");
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info'>('info');
+
+  // Fetch diplomas and instructors on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [diplomasData, instructorsData] = await Promise.all([
+          getAdminCategories(),
+          getInstructors()
+        ]);
+        setDiplomas(diplomasData);
+        // Sort instructors by Arabic name
+        setInstructors([...instructorsData].sort((a, b) => a.name.localeCompare(b.name, 'ar')));
+      } catch (error: any) {
+        console.error('Error fetching data:', error);
+        if (error?.message?.includes('401') || error?.message?.includes('403')) {
+          showToast('يرجى تسجيل الدخول أولاً', 'error');
+        } else {
+          showToast('فشل في جلب البيانات الأولية', 'error');
+        }
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Effect to update category_id if diplomaId changes
+  useEffect(() => {
+    if (diplomaId) {
+      setFormData(prev => ({ ...prev, category_id: diplomaId }));
+    }
+  }, [diplomaId]);
+
+  const selectedDiploma = diplomaId ? diplomas.find(d => d.id === Number(diplomaId)) : undefined;
+
+  // Instructor dropdown state and helpers (top-level, not inside JSX)
+  const [isInstructorMenuOpen, setInstructorMenuOpen] = useState(false);
+  const [instructorSearch, setInstructorSearch] = useState('');
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setInstructorMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedInstructor = instructors.find(i => String(i.id) === formData.instructor_id);
+  const filteredInstructors = instructors.filter(i => {
+    const q = instructorSearch.trim();
+    if (!q) return true;
+    const s = `${i.name || ''} ${i.title || ''}`;
+    return s.includes(q);
+  });
+
+  function handleSelectInstructor(i: Instructor) {
+    setFormData(prev => ({ ...prev, instructor_id: String(i.id) }));
+    setInstructorMenuOpen(false);
+  }
+
+  const formatInstructorLabel = (instructor: Instructor) => {
+    const full = `${instructor.name} — ${instructor.title || ''}`.trim();
+    return full.length > 40 ? full.slice(0, 37) + '…' : full;
+  };
+
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+    setToastMessage(message);
+    setToastType(type);
+    setToastVisible(true);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+
+    if (type === 'checkbox') {
+      const { checked } = e.target as HTMLInputElement;
+      setFormData(prev => ({
+        ...prev,
+        [name]: checked,
+        ...(name === 'is_free' && checked && { price: '0' })
+      }));
+      if (name === 'is_free' && (e.target as HTMLInputElement).checked) {
+        // Hide price via conditional render; ensure preview unchanged
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      setCoverImage(files[0]);
+    const file = e.target.files?.[0] || null;
+    setFormData(prev => ({ ...prev, cover_image: file }));
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setCoverPreview(url);
+    } else {
+      setCoverPreview(null);
     }
+  };
+
+  const triggerFileEdit = () => {
+    fileInputRef.current?.click();
+  };
+
+  const clearCoverImage = () => {
+    setFormData(prev => ({ ...prev, cover_image: null }));
+    setCoverPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    if (!formData.title || !formData.description || !formData.instructor_id || !formData.category_id || !formData.duration || (!formData.is_free && !formData.price)) {
+      showToast('يرجى التأكد من ملء جميع الحقول الإجبارية بقيم صالحة.', 'error');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const payload: any = {
-        title,
-        description,
-        price,
-        instructor_id: instructorId,
-        category_id: categoryId,
-        isFree,
-        status,
-      };
-      if (coverImage) {
-        payload.coverImage = coverImage;
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('description', formData.description || '');
+      formDataToSend.append('instructor_id', formData.instructor_id);
+      formDataToSend.append('category_id', formData.category_id);
+      formDataToSend.append('is_published', formData.status === 'published' ? '1' : '0');
+      formDataToSend.append('duration', formData.duration);
+      formDataToSend.append('price', formData.price);
+      formDataToSend.append('is_free', formData.is_free ? '1' : '0');
+      if (formData.cover_image) {
+        formDataToSend.append('cover_image', formData.cover_image);
       }
 
-      const course = await createCourse(payload);
-      setToastType("success");
-      setToastMessage("تم إنشاء المقرر بنجاح");
-      setToastVisible(true);
+      await createCourse(formDataToSend);
+      showToast('تم إنشاء المقرر بنجاح!', 'success');
 
-      // الانتقال لتفاصيل المقرر
       setTimeout(() => {
-        router.push('/admin/courses');
-      }, 600);
-    } catch (err: any) {
-      const code = err?.code || "";
-      const status = err?.response?.status;
-      let msg = err?.message || "فشل إنشاء المقرر";
-
-      if (code === "ERR_NETWORK" || String(msg).includes("Network Error")) {
-        const base = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
-        msg = `تعذر الاتصال بالخادم. تأكد من تشغيل الباك اند على ${base} أو ضبط NEXT_PUBLIC_API_URL في .env.local.`;
-      } else if (status === 401) {
-        msg = "غير مصرح. يرجى تسجيل الدخول كمسؤول ثم المحاولة مرة أخرى.";
-      } else if (status === 422) {
-        const errors = err?.response?.data?.errors;
-        if (errors) {
-          const first = Object.values(errors)[0] as any;
-          msg = Array.isArray(first) ? first[0] : (first || msg);
+        if (diplomaId) {
+          router.push(`/admin/diplomas/${diplomaId}`);
+        } else {
+          router.push('/admin/courses');
         }
-      }
-
-      setToastType("error");
-      setToastMessage(msg);
-      setToastVisible(true);
+      }, 1500);
+    } catch (error: any) {
+      console.error('Error during course creation:', error);
+      showToast(error?.message || 'حدث خطأ أثناء إنشاء المقرر', 'error');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleBack = () => {
+    if (diplomaId) {
+      router.push(`/admin/diplomas/${diplomaId}`);
+    } else {
+      router.push('/admin/diplomas');
+    }
+  };
+
   return (
-    <div className="admin-courses-container">
-      <div className="admin-courses-header">
-        <h1 className="admin-courses-title">إنشاء كورس جديد</h1>
-        <p className="admin-courses-subtitle">إضافة كورس تعليمي جديد إلى المنصة</p>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <div>
+          <h1 className={styles.title}>إضافة مقرر جديد</h1>
+          <p className={styles.subtitle}>
+            {selectedDiploma ? `إضافة مقرر جديد للدبلومة ${selectedDiploma.name}` : 'إنشاء مقرر تعليمي جديد'}
+          </p>
+        </div>
+        <div className={styles.headerActions}>
+          <button type="button" onClick={handleBack} className={styles.backButton}>الرجوع للدبلومات</button>
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="course-form">
-        <div className="form-section">
-          <h3 className="form-section-title">المعلومات الأساسية</h3>
-          <div className="form-grid">
-            <div className="form-group">
-              <label className="form-label">العنوان *</label>
-              <input 
-                type="text" 
-                className="form-input"
-                value={title} 
-                onChange={(e) => setTitle(e.target.value)} 
-                required 
-                placeholder="أدخل عنوان المقرر"
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">السعر (بالريال)</label>
-              <input 
-                type="number" 
-                className="form-input"
-                step="0.01" 
-                value={price} 
-                onChange={(e) => setPrice(Number(e.target.value))}
-                placeholder="0.00"
-              />
-            </div>
+      <div className={styles.formContainer}>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          {/* Title */}
+          <div className={styles.formGroup}>
+            <label htmlFor="title">عنوان المقرر *</label>
+            <input type="text" id="title" name="title" value={formData.title} onChange={handleInputChange} required placeholder="أدخل عنوان المقرر" className={styles.input} />
           </div>
-          <div className="form-group form-grid-full">
-            <label className="form-label">الوصف</label>
-            <textarea 
-              className="form-textarea"
-              value={description} 
-              onChange={(e) => setDescription(e.target.value)} 
-              rows={4}
-              placeholder="وصف مفصل عن محتوى المقرر وأهدافه"
-            />
-          </div>
-        </div>
 
-        <div className="form-section">
-          <h3 className="form-section-title">إعدادات المقرر</h3>
-          <div className="form-grid">
-            <div className="form-group">
-              <label className="form-label">رقم المحاضر</label>
-              <input 
-                type="number" 
-                className="form-input"
-                value={instructorId} 
-                onChange={(e) => setInstructorId(Number(e.target.value))}
-                placeholder="معرف المحاضر"
-              />
+          {/* Description */}
+          <div className={styles.formGroup}>
+            <label htmlFor="description">وصف المقرر *</label>
+            <textarea id="description" name="description" value={formData.description} onChange={handleInputChange} placeholder="أدخل وصفاً مفصلاً للمقرر" className={styles.textarea} rows={4} required />
+          </div>
+
+          <div className={styles.formRow}>
+            {/* Instructor */}
+            <div className={styles.formGroup}>
+              <label>المحاضر *</label>
+              <div className={styles.dropdown} ref={dropdownRef}>
+                <button type="button" className={styles.dropdownToggle} onClick={() => setInstructorMenuOpen(v => !v)}>
+                  <div className={styles.dropdownSelectedText}>
+                    {selectedInstructor ? (
+                      <>
+                        <div className={styles.dropdownItemName}>{selectedInstructor.name}</div>
+                        {selectedInstructor.title && (
+                          <div className={styles.dropdownItemTitle}>{selectedInstructor.title}</div>
+                        )}
+                      </>
+                    ) : (
+                      'اختر المحاضر'
+                    )}
+                  </div>
+                  <span className={styles.dropdownCaret} aria-hidden="true" />
+                </button>
+
+                {isInstructorMenuOpen && (
+                  <div className={styles.dropdownMenu}>
+                    <div className={styles.dropdownSearch}>
+                      <input
+                        type="text"
+                        placeholder="ابحث بالاسم أو الوصف"
+                        value={instructorSearch}
+                        onChange={(e) => setInstructorSearch(e.target.value)}
+                      />
+                    </div>
+                    {filteredInstructors.map(i => (
+                      <div key={i.id} className={styles.dropdownItem} onClick={() => handleSelectInstructor(i)}>
+                        <div className={styles.dropdownItemName}>{i.name}</div>
+                        {i.title && <div className={styles.dropdownItemTitle}>{i.title}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="form-group">
-              <label className="form-label">رقم القسم</label>
-              <input 
-                type="number" 
-                className="form-input"
-                value={categoryId} 
-                onChange={(e) => setCategoryId(Number(e.target.value))}
-                placeholder="معرف القسم"
-              />
+
+            {/* Category (Diploma) */}
+            <div className={styles.formGroup}>
+              <label htmlFor="category_id">الدبلومة *</label>
+              <select id="category_id" name="category_id" value={formData.category_id} onChange={handleInputChange} required className={styles.select} disabled={!!diplomaId}>
+                <option value="">اختر الدبلومة</option>
+                {diplomas.map((diploma) => (
+                  <option key={diploma.id} value={diploma.id}>
+                    {diploma.name}
+                  </option>
+                ))}
+              </select>
+              {diplomaId && <input type="hidden" name="category_id" value={diplomaId} />}
             </div>
-            <div className="form-group">
-              <label className="form-label">الحالة</label>
-              <select 
-                className="form-select"
-                value={status} 
-                onChange={(e) => setStatus(e.target.value as any)}
-              >
+          </div>
+
+          <div className={styles.formRow}>
+            {/* Duration */}
+            <div className={styles.formGroup}>
+              <label htmlFor="duration">المدة (بالساعات) *</label>
+              <input type="number" id="duration" name="duration" value={formData.duration} onChange={handleInputChange} placeholder="مثال: 20" className={styles.input} min="1" required />
+            </div>
+
+            {/* Price (hidden when free) */}
+            {!formData.is_free && (
+              <div className={styles.formGroup}>
+                <label htmlFor="price">السعر *</label>
+                <input type="number" id="price" name="price" value={formData.price} onChange={handleInputChange} className={styles.input} min="0" required />
+              </div>
+            )}
+          </div>
+
+          <div className={styles.formRow}>
+            {/* Status */}
+            <div className={styles.formGroup}>
+              <label htmlFor="status">الحالة</label>
+              <select id="status" name="status" value={formData.status} onChange={handleInputChange} className={styles.select}>
                 <option value="draft">مسودة</option>
                 <option value="published">منشور</option>
-                <option value="archived">أرشيف</option>
               </select>
             </div>
-            <div className="form-group">
-              <label className="form-label">
-                <input 
-                  type="checkbox" 
-                  checked={isFree} 
-                  onChange={(e) => setIsFree(e.target.checked)}
-                  style={{ marginLeft: '8px' }}
-                />
-                كورس مجاني
+            {/* Is Free */}
+            <div className={styles.formGroup}>
+              <label className={styles.checkbox} style={{ marginTop: '30px' }}>
+                <input type="checkbox" id="is_free" name="is_free" checked={formData.is_free} onChange={handleInputChange} /> مقرر مجاني
               </label>
             </div>
           </div>
-        </div>
 
-        <div className="form-section">
-          <h3 className="form-section-title">صورة الغلاف</h3>
-          <div className="form-group">
-            <div className="file-upload-area">
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={handleFileChange}
-                style={{ display: 'none' }}
-                id="cover-image-input"
-              />
-              <label htmlFor="cover-image-input" style={{ cursor: 'pointer', display: 'block' }}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📷</div>
-                  <div style={{ fontWeight: '600', marginBottom: '0.5rem' }}>
-                    {coverImage ? coverImage.name : 'اختر صورة الغلاف'}
-                  </div>
-                  <div style={{ color: '#64748b', fontSize: '0.9rem' }}>
-                    اسحب الصورة هنا أو انقر للاختيار
-                  </div>
+          {/* Cover Image */}
+          <div className={styles.formGroup}>
+            <label htmlFor="cover_image">صورة الغلاف</label>
+            <input ref={fileInputRef} type="file" id="cover_image" name="cover_image" accept="image/*" onChange={handleFileChange} className={styles.file} />
+            {formData.cover_image && (
+              <p className={styles.fileSelected}>تم اختيار الملف: {formData.cover_image.name}</p>
+            )}
+            {coverPreview && (
+              <div>
+                <img src={coverPreview} alt="معاينة الغلاف" className={styles.coverPreview} />
+                <div className={styles.coverActions}>
+                  <button type="button" className={styles.btnSecondary} onClick={triggerFileEdit}>تعديل الصورة</button>
+                  <button type="button" className={styles.btnSecondary} onClick={clearCoverImage}>حذف الصورة</button>
                 </div>
-              </label>
-            </div>
+              </div>
+            )}
           </div>
-        </div>
 
-        <div className="admin-courses-actions">
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? "جارٍ الإنشاء..." : "إنشاء المقرر"}
-          </button>
-        </div>
-      </form>
+          {/* Actions */}
+          <div className={styles.actions}>
+            <button type="button" onClick={handleBack} className={styles.btnSecondary} disabled={loading}>إلغاء</button>
+            <button type="submit" className={styles.btnPrimary} disabled={loading}>
+              {loading ? 'جاري الإنشاء...' : 'إنشاء المقرر'}
+            </button>
+          </div>
+        </form>
+      </div>
 
-      <Toast
-        message={toastMessage}
-        type={toastType}
-        isVisible={toastVisible}
-        onClose={() => setToastVisible(false)}
-        duration={4500}
-      />
+      {/* Toast */}
+      <Toast message={toastMessage} type={toastType} isVisible={toastVisible} onClose={() => setToastVisible(false)} />
     </div>
+  );
+}
+
+export default function NewCoursePageWrapper() {
+  return (
+    <Suspense fallback={<div>جاري تحميل الصفحة...</div>}>
+      <NewCoursePageComponent />
+    </Suspense>
   );
 }

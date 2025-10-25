@@ -48,7 +48,7 @@
 .active { background-color: #019EBB; color: white; }
 
 /* Profile Menu Anchor */
-.header-profile { flex-shrink: 0; display: flex; align-items: center; position: relative; }
+.header-profile { flex-shrink: 0; display: flex; align-items: center; position: relative; margin-right: auto; }
 
 /* Hamburger Button */
 .hamburger-btn {

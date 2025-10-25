@@ -323,6 +323,89 @@
   font-weight: 600;
 }
 
+/* Student Info Modal Styles */
+.sm-student-info {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.sm-info-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.sm-info-field:last-child {
+  border-bottom: none;
+}
+
+.sm-info-field label {
+  font-weight: 600;
+  color: #333;
+  min-width: 150px;
+}
+
+.sm-info-field span {
+  color: #666;
+  text-align: left;
+}
+
+.sm-info-field .active-status {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.sm-info-field .blocked-status {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.sm-info-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+/* Diploma Cards Styles */
+.sm-diplomas-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.sm-diploma-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sm-diploma-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.sm-diploma-card h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.sm-diploma-card p {
+  margin: 8px 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
 .sm-grade-score {
   font-weight: 700;
   color: #0366d6;
@@ -331,4 +414,526 @@
 .grade-btn {
   background: #eef6ff;
   color: #0b5bd9;
+}
+
+/* Enhanced Modal Header Styles */
+.sm-modal-header {
+  background: linear-gradient(135deg, #0298BA 0%, #0277BD 100%);
+  color: white;
+  padding: 20px 24px;
+  margin: -20px -20px 24px -20px;
+  border-radius: 12px 12px 0 0;
+  position: relative;
+}
+
+.sm-modal-header-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sm-modal-title-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.sm-modal-icon {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.sm-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.sm-back-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateX(2px);
+}
+
+.sm-back-icon {
+  font-size: 16px;
+}
+
+/* Enhanced Student Info Styles */
+.sm-student-info {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.sm-info-section {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.sm-section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.sm-section-icon {
+  font-size: 20px;
+  color: #0298BA;
+}
+
+.sm-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.sm-info-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.sm-info-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+.sm-field-icon {
+  font-size: 16px;
+  color: #6b7280;
+}
+
+.sm-field-icon.verified {
+  color: #10b981;
+}
+
+.sm-field-icon.unverified {
+  color: #ef4444;
+}
+
+.sm-field-icon.blocked {
+  color: #ef4444;
+}
+
+.sm-field-icon.active {
+  color: #10b981;
+}
+
+.sm-info-value {
+  font-size: 15px;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.sm-info-value.verified {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.sm-info-value.unverified {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.sm-info-value.active-status {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.sm-info-value.blocked-status {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* Stats Grid for Learning Statistics */
+.sm-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.sm-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s ease;
+}
+
+.sm-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.sm-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: #0298BA;
+  color: white;
+  border-radius: 12px;
+  font-size: 20px;
+}
+
+.sm-stat-icon.completed {
+  background: #10b981;
+}
+
+.sm-stat-icon.active {
+  background: #f59e0b;
+}
+
+.sm-stat-content {
+  flex: 1;
+}
+
+.sm-stat-number {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1f2937;
+  line-height: 1;
+}
+
+.sm-stat-label {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* Enhanced Action Buttons */
+.sm-info-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid #f3f4f6;
+}
+
+.sm-btn-primary {
+  background: linear-gradient(135deg, #0298BA 0%, #0277BD 100%);
+  color: white;
+  border: none;
+}
+
+.sm-btn-secondary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+}
+
+.sm-btn-accent {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  border: none;
+}
+
+.sm-btn-outline {
+  background: transparent;
+  color: #0298BA;
+  border: 2px solid #0298BA;
+}
+
+.sm-btn-outline:hover {
+  background: #0298BA;
+  color: white;
+}
+
+.sm-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.sm-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.sm-btn-icon {
+  font-size: 16px;
+}
+
+/* Course Cards Styles */
+.sm-courses-container,
+.sm-diplomas-container {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.sm-courses-grid,
+.sm-diplomas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.sm-course-card,
+.sm-diploma-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.sm-course-card:hover,
+.sm-diploma-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.sm-course-image-container,
+.sm-diploma-image-container {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.sm-course-image,
+.sm-diploma-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.sm-course-card:hover .sm-course-image,
+.sm-diploma-card:hover .sm-diploma-image {
+  transform: scale(1.05);
+}
+
+.sm-course-image-placeholder,
+.sm-diploma-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  color: #9ca3af;
+}
+
+.sm-placeholder-icon {
+  font-size: 48px;
+}
+
+.sm-course-status-badge,
+.sm-diploma-status-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+}
+
+.sm-status-completed {
+  background: rgba(16, 185, 129, 0.9);
+  color: white;
+}
+
+.sm-status-in-progress {
+  background: rgba(245, 158, 11, 0.9);
+  color: white;
+}
+
+.sm-status-icon {
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.sm-course-content,
+.sm-diploma-content {
+  padding: 20px;
+}
+
+.sm-course-title,
+.sm-diploma-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.sm-course-description,
+.sm-diploma-description {
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sm-course-details,
+.sm-diploma-details {
+  margin-bottom: 16px;
+}
+
+.sm-course-detail,
+.sm-diploma-detail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.sm-detail-icon {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.sm-detail-icon.completed {
+  color: #10b981;
+}
+
+.sm-detail-text {
+  color: #4b5563;
+}
+
+.sm-progress-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.sm-progress-label {
+  font-size: 12px;
+  color: #6b7280;
+  min-width: 40px;
+}
+
+.sm-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.sm-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  transition: width 0.3s ease;
+}
+
+.sm-progress-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #10b981;
+  min-width: 35px;
+}
+
+.sm-course-actions,
+.sm-diploma-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Empty State Styles */
+.sm-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.sm-empty-icon {
+  font-size: 64px;
+  color: #d1d5db;
+  margin-bottom: 16px;
+}
+
+.sm-empty-text {
+  font-size: 16px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .sm-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .sm-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .sm-courses-grid,
+  .sm-diplomas-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .sm-info-actions {
+    flex-direction: column;
+  }
+  
+  .sm-modal-header-content {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .sm-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .sm-stat-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
 }

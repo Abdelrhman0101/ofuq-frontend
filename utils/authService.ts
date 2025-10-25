@@ -48,7 +48,12 @@ export const signup = async (data: SignupData): Promise<AuthResponse> => {
     if (typeof window !== 'undefined') {
       try {
         console.log('[Signup] Storing auth token and user in localStorage');
-        window.localStorage?.setItem('auth_token', result.access_token);
+        const token = (result.access_token ?? (result as any).token) as string | undefined;
+        if (token) {
+          window.localStorage?.setItem('auth_token', token);
+        } else {
+          console.warn('[Signup] No token in response (expected access_token or token)');
+        }
         window.localStorage?.setItem('user_data', JSON.stringify(normalizedUser));
         console.log('[Signup] Storage complete');
       } catch (e) {
@@ -56,7 +61,7 @@ export const signup = async (data: SignupData): Promise<AuthResponse> => {
       }
     }
 
-    return { user: normalizedUser, access_token: result.access_token, token_type: result.token_type };
+    return { user: normalizedUser, access_token: (result.access_token ?? (result as any).token), token_type: (result.token_type ?? 'Bearer') };
   } catch (error: any) {
     console.log('Signup Error:', error);
     let message = 'فشل في إنشاء الحساب';
@@ -297,8 +302,9 @@ export const isAuthenticated = (): boolean => {
   if (typeof window === 'undefined') return false; // Check if running on client side
   try {
     const token = window.localStorage?.getItem('auth_token');
+    const hasValidToken = !!(token && token !== 'undefined');
     const userData = window.localStorage?.getItem('user_data');
-    return !!(token && userData);
+    return !!(hasValidToken && userData);
   } catch (error) {
     console.warn('isAuthenticated: localStorage unavailable', error);
     return false;
@@ -309,7 +315,8 @@ export const isAuthenticated = (): boolean => {
 export const getAuthToken = (): string | null => {
   if (typeof window === 'undefined') return null; // Check if running on client side
   try {
-    return window.localStorage?.getItem('auth_token');
+    const t = window.localStorage?.getItem('auth_token');
+    return t && t !== 'undefined' ? t : null;
   } catch (error) {
     console.warn('getAuthToken: localStorage unavailable', error);
     return null;

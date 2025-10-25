@@ -1,4 +1,12 @@
 /* Toast Notification Styles */
+/* موضع أعلى يمين لغير التأكيد */
+.toast-container {
+  position: fixed;
+  top: 16px;
+  inset-inline-end: 16px; /* يدعم RTL/LTR */
+  z-index: 1000;
+}
+
 .toast-overlay {
   position: fixed;
   top: 0;
@@ -34,13 +42,13 @@
 
 .toast-content {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
 }
 
 .toast-icon {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -48,12 +56,11 @@
   font-weight: bold;
   font-size: 14px;
   flex-shrink: 0;
-  margin-top: 2px;
 }
 
 .toast-message {
   flex: 1;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.5;
   color: #333;
   font-weight: 500;
@@ -62,7 +69,7 @@
 .toast-close {
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 18px;
   cursor: pointer;
   color: #666;
   padding: 0;
@@ -170,5 +177,10 @@
   
   .toast-btn {
     width: 100%;
+  }
+  
+  .toast-container {
+    top: 8px;
+    inset-inline-end: 8px;
   }
 }

@@ -225,10 +225,19 @@ export default function AdminCoursesPage() {
             ...selectedCourse,
             id: String(selectedCourse.id),
             status: selectedCourse.status === 'archived' ? 'draft' : selectedCourse.status,
-            chapters: (selectedCourse.chapters ?? []).map(ch => ({
-              ...ch,
+            instructor: selectedCourse.instructor?.name || selectedCourse.instructor?.title || undefined,
+            duration: selectedCourse.duration ? String(selectedCourse.duration) : undefined,
+            chapters: (selectedCourse.chapters ?? []).map((ch, chIndex) => ({
               id: String(ch.id),
-              order: ch.order ?? 0,
+              title: ch.title,
+              order: chIndex + 1, // Use index as order since order property might not exist
+              description: undefined, // Optional property
+              lessons: (ch.lessons ?? []).map((lesson, index) => ({
+                id: String(lesson.id),
+                title: lesson.title,
+                order: index + 1,
+                status: 'published' as 'published' | 'draft',
+              })),
             })),
           }}
           isOpen={popupVisible}

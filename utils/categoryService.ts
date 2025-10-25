@@ -1,234 +1,333 @@
-// خدمة إدارة الأقسام - Category Management Service
+// خدمة إدارة الدبلومات (الأقسام سابقًا) - Diploma Management Service
 import apiClient from './apiClient';
 
-export interface Category {
+// ---------------------------------------------------------------- //
+// 1. الواجهات الأساسية (Interfaces)
+// ---------------------------------------------------------------- //
+
+/**
+ * الواجهة الكاملة للدبلومة (القسم) كما هي في قاعدة البيانات
+ */
+export interface Diploma {
   id: number;
-  name: string;
-  price?: number;
+  name: string; // تم تغيير الاسم في الواجهة إلى name ليتطابق مع name في create
+  description: string;
+  price: number;
+  is_free: boolean;
+  cover_image_url: string; // المسار الكامل للصورة
+  slug: string;
+  is_published: boolean;
+  display_order?: number;
+  // عدادات (اختياري تحميلها)
+  courses_count?: number;
+  students_count?: number;
   created_at?: string;
   updated_at?: string;
 }
 
-export interface CategoryResponse {
-  data: Category[];
-  message?: string;
-}
-
-export interface CreateCategoryData {
+/**
+ * البيانات المطلوبة لإنشاء دبلومة جديدة (لوحة الإدارة)
+ * ملاحظة: سنستخدم FormData، لذا الحقول اختيارية هنا
+ */
+export interface CreateDiplomaData {
   name: string;
-  price?: number;
+  description: string;
+  price: number;
+  is_free: boolean;
+  is_published: boolean;
+  cover_image?: File; // ملف الصورة
+  slug: string;
 }
 
-export interface UpdateCategoryData {
+/**
+ * البيانات المطلوبة لتحديث دبلومة (لوحة الإدارة)
+ */
+export interface UpdateDiplomaData {
   name: string;
-  price?: number;
+  description: string;
+  price: number;
+  is_free: boolean;
+  is_published: boolean;
+  cover_image?: File | null; // قد يتم إرسال صورة جديدة أو لا
+  slug: string;
 }
 
-// جلب جميع الأقسام - Get all categories
-export const getCategories = async (): Promise<Category[]> => {
+/**
+ * واجهة رد التسجيل في الدبلومة
+ */
+export interface EnrollmentResponse {
+  status: 'active' | 'pending_payment';
+  message: string;
+  // قد يرجع الباك اند بيانات إضافية
+}
+
+/**
+ * واجهة الدبلومة في صفحة "دبلوماتي"
+ */
+export interface MyDiploma {
+  id: number; // معرف التسجيل
+  status: 'active' | 'pending_payment';
+  enrolled_at: string;
+  category: Diploma; // تفاصيل الدبلومة
+}
+
+// ---------------------------------------------------------------- //
+// 2. دوال لوحة الإدارة (Admin Functions)
+// ---------------------------------------------------------------- //
+
+/**
+ * [Admin] جلب جميع الدبلومات (للإدارة)
+ */
+export const getAdminCategories = async (): Promise<Diploma[]> => {
   try {
-    console.log('[GetCategories] Sending request to /admin/categories');
-    
+    console.log('[GetAdminCategories] Sending request to /admin/categories');
     const response = await apiClient.get('/admin/categories');
     const result = response.data;
     
-    console.log('[GetCategories] Response received:', result);
-    
-    // التعامل مع هيكل الاستجابة المختلف
     if (result.data && Array.isArray(result.data)) {
       return result.data;
     } else if (Array.isArray(result)) {
       return result;
-    } else {
-      console.warn('[GetCategories] Unexpected response structure:', result);
-      return [];
     }
+    console.warn('[GetAdminCategories] Unexpected response structure:', result);
+    return [];
   } catch (error: any) {
-    console.error('[GetCategories] Error:', error);
-    let message = 'فشل في جلب الأقسام';
-    
-    if (error.response) {
-      if (error.response.status === 401) {
-        message = 'غير مصرح لك بالوصول. يرجى تسجيل الدخول مرة أخرى.';
-      } else if (error.response.status === 403) {
-        message = 'ليس لديك صلاحية للوصول إلى الأقسام.';
-      } else if (error.response.status === 419) {
-        message = 'انتهت صلاحية الجلسة. يرجى تحديث الصفحة والمحاولة مرة أخرى.';
-      } else if (error.response.data?.message) {
-        message = error.response.data.message;
-      }
-    }
-    
+    console.error('[GetAdminCategories] Error:', error);
+    const message = error.response?.data?.message || 'فشل في جلب الأقسام';
     throw new Error(message);
   }
 };
 
-// إنشاء قسم جديد - Create new category
-export const createCategory = async (data: CreateCategoryData): Promise<Category> => {
+/**
+ * [Admin] إنشاء دبلومة جديدة
+ * ملاحظة: نستخدم FormData بسبب رفع الصورة
+ */
+export const createCategory = async (data: CreateDiplomaData | { name: string }): Promise<Diploma> => {
   try {
     console.log('[CreateCategory] Sending request to /admin/categories', data);
     
-    const response = await apiClient.post('/admin/categories', data);
-    const result = response.data;
+    const formData = new FormData();
+    formData.append('name', data.name);
     
-    console.log('[CreateCategory] Response received:', result);
-    
-    // التعامل مع هيكل الاستجابة المختلف
-    if (result.data) {
-      return result.data;
-    } else if (result.category) {
-      return result.category;
+    // إذا كانت البيانات كاملة، استخدمها، وإلا استخدم القيم الافتراضية
+    if ('description' in data) {
+      formData.append('description', data.description);
+      formData.append('price', data.price.toString());
+      formData.append('is_free', data.is_free ? '1' : '0');
+      formData.append('is_published', data.is_published ? '1' : '0');
+      formData.append('slug', data.slug);
+      if (data.cover_image) {
+        formData.append('cover_image', data.cover_image);
+      }
     } else {
-      return result;
+      // القيم الافتراضية للإنشاء السريع
+      formData.append('description', '');
+      formData.append('price', '0');
+      formData.append('is_free', '1');
+      formData.append('is_published', '1');
     }
+
+    const response = await apiClient.post('/admin/categories', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    
+    const result = response.data;
+    console.log('[CreateCategory] Response received:', result);
+    return result.data || result; // بناءً على الهيكل المعتاد
   } catch (error: any) {
     console.error('[CreateCategory] Error:', error);
-    let message = 'فشل في إنشاء القسم';
-    
-    if (error.response) {
-      if (error.response.status === 401) {
-        message = 'غير مصرح لك بالوصول. يرجى تسجيل الدخول مرة أخرى.';
-      } else if (error.response.status === 403) {
-        message = 'ليس لديك صلاحية لإنشاء الأقسام.';
-      } else if (error.response.status === 422) {
-        // التعامل مع أخطاء التحقق
-        const validationErrors = error.response.data?.errors;
-        if (validationErrors?.name) {
-          message = validationErrors.name[0];
-        } else if (validationErrors?.price) {
-          message = validationErrors.price[0];
-        } else {
-          message = 'بيانات غير صحيحة. يرجى التحقق من اسم القسم والسعر.';
-        }
-      } else if (error.response.status === 419) {
-        message = 'انتهت صلاحية الجلسة. يرجى تحديث الصفحة والمحاولة مرة أخرى.';
-      } else if (error.response.data?.message) {
-        message = error.response.data.message;
-      }
-    }
-    
+    const message = error.response?.data?.message || 'فشل في إنشاء القسم';
     throw new Error(message);
   }
 };
 
-// تحديث قسم موجود - Update existing category
-export const updateCategory = async (id: number, data: UpdateCategoryData): Promise<Category> => {
+/**
+ * [Admin] تحديث دبلومة موجودة
+ * ملاحظة: يجب استخدام POST مع _method=PUT للتعامل مع FormData
+ */
+export const updateCategory = async (id: number, data: UpdateDiplomaData | { name: string }): Promise<Diploma> => {
   try {
     console.log(`[UpdateCategory] Sending request to /admin/categories/${id}`, data);
+
+    const formData = new FormData();
+    formData.append('name', data.name);
     
-    const response = await apiClient.put(`/admin/categories/${id}`, data);
-    const result = response.data;
-    
-    console.log('[UpdateCategory] Response received:', result);
-    
-    // التعامل مع هيكل الاستجابة المختلف
-    if (result.data) {
-      return result.data;
-    } else if (result.category) {
-      return result.category;
-    } else {
-      return result;
-    }
-  } catch (error: any) {
-    console.error('[UpdateCategory] Error:', error);
-    let message = 'فشل في تحديث القسم';
-    
-    if (error.response) {
-      if (error.response.status === 401) {
-        message = 'غير مصرح لك بالوصول. يرجى تسجيل الدخول مرة أخرى.';
-      } else if (error.response.status === 403) {
-        message = 'ليس لديك صلاحية لتحديث الأقسام.';
-      } else if (error.response.status === 404) {
-        message = 'القسم المطلوب غير موجود.';
-      } else if (error.response.status === 422) {
-        // التعامل مع أخطاء التحقق
-        const validationErrors = error.response.data?.errors;
-        if (validationErrors?.name) {
-          message = validationErrors.name[0];
-        } else if (validationErrors?.price) {
-          message = validationErrors.price[0];
-        } else {
-          message = 'بيانات غير صحيحة. يرجى التحقق من اسم القسم والسعر.';
-        }
-      } else if (error.response.status === 419) {
-        message = 'انتهت صلاحية الجلسة. يرجى تحديث الصفحة والمحاولة مرة أخرى.';
-      } else if (error.response.data?.message) {
-        message = error.response.data.message;
+    // إذا كانت البيانات كاملة، استخدمها، وإلا استخدم القيم الافتراضية
+    if ('description' in data) {
+      formData.append('description', data.description);
+      formData.append('price', data.price.toString());
+      formData.append('is_free', data.is_free ? '1' : '0');
+      formData.append('is_published', data.is_published ? '1' : '0');
+      formData.append('slug', data.slug);
+      if (data.cover_image) {
+        formData.append('cover_image', data.cover_image);
       }
     }
+    formData.append('_method', 'PUT'); // خدعة لإرسال FormData مع PUT
+
+    const response = await apiClient.post(`/admin/categories/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     
+    const result = response.data;
+    console.log('[UpdateCategory] Response received:', result);
+    return result.data || result;
+  } catch (error: any) {
+    console.error('[UpdateCategory] Error:', error);
+    const message = error.response?.data?.message || 'فشل في تحديث القسم';
     throw new Error(message);
   }
 };
 
-// حذف قسم - Delete category
+/**
+ * [Admin] حذف دبلومة
+ */
 export const deleteCategory = async (id: number): Promise<void> => {
   try {
     console.log(`[DeleteCategory] Sending request to /admin/categories/${id}`);
-    
-    const response = await apiClient.delete(`/admin/categories/${id}`);
-    
+    await apiClient.delete(`/admin/categories/${id}`);
     console.log('[DeleteCategory] Category deleted successfully');
   } catch (error: any) {
     console.error('[DeleteCategory] Error:', error);
-    let message = 'فشل في حذف القسم';
-    
-    if (error.response) {
-      if (error.response.status === 401) {
-        message = 'غير مصرح لك بالوصول. يرجى تسجيل الدخول مرة أخرى.';
-      } else if (error.response.status === 403) {
-        message = 'ليس لديك صلاحية لحذف الأقسام.';
-      } else if (error.response.status === 404) {
-        message = 'القسم المطلوب غير موجود.';
-      } else if (error.response.status === 409) {
-        message = 'لا يمكن حذف هذا القسم لأنه مرتبط بدورات أخرى.';
-      } else if (error.response.status === 419) {
-        message = 'انتهت صلاحية الجلسة. يرجى تحديث الصفحة والمحاولة مرة أخرى.';
-      } else if (error.response.data?.message) {
-        message = error.response.data.message;
-      }
-    }
-    
+    const message = error.response?.data?.message || 'فشل في حذف القسم';
     throw new Error(message);
   }
 };
 
-// جلب قسم واحد بالمعرف - Get single category by ID
-export const getCategoryById = async (id: number): Promise<Category> => {
+/**
+ * [Admin] جلب دبلومة واحدة بالمعرف (للوحة الإدارة)
+ */
+export const getCategoryById = async (id: number): Promise<Diploma> => {
   try {
     console.log(`[GetCategoryById] Sending request to /admin/categories/${id}`);
-    
     const response = await apiClient.get(`/admin/categories/${id}`);
     const result = response.data;
-    
     console.log('[GetCategoryById] Response received:', result);
-    
-    // التعامل مع هيكل الاستجابة المختلف
-    if (result.data) {
-      return result.data;
-    } else if (result.category) {
-      return result.category;
-    } else {
-      return result;
-    }
+    return result.data || result;
   } catch (error: any) {
     console.error('[GetCategoryById] Error:', error);
-    let message = 'فشل في جلب بيانات القسم';
-    
-    if (error.response) {
-      if (error.response.status === 401) {
-        message = 'غير مصرح لك بالوصول. يرجى تسجيل الدخول مرة أخرى.';
-      } else if (error.response.status === 403) {
-        message = 'ليس لديك صلاحية للوصول إلى الأقسام.';
-      } else if (error.response.status === 404) {
-        message = 'القسم المطلوب غير موجود.';
-      } else if (error.response.status === 419) {
-        message = 'انتهت صلاحية الجلسة. يرجى تحديث الصفحة والمحاولة مرة أخرى.';
-      } else if (error.response.data?.message) {
-        message = error.response.data.message;
-      }
-    }
-    
+    const message = error.response?.data?.message || 'فشل في جلب بيانات القسم';
     throw new Error(message);
   }
 };
+
+/**
+ * [Admin] جلب دبلومة واحدة بالمعرف (للوحة الإدارة) - اسم بديل لنفس الدالة
+ */
+export const getAdminCategory = async (id: number): Promise<Diploma> => {
+  return getCategoryById(id);
+};
+
+// ---------------------------------------------------------------- //
+// 3. دوال عامة (Public Functions) - (جديد)
+// ---------------------------------------------------------------- //
+
+/**
+ * [Public] جلب الدبلومات المنشورة لعرضها للزوار
+ * GET /api/categories
+ */
+export const getPublicDiplomas = async (): Promise<Diploma[]> => {
+  try {
+    console.log('[GetPublicDiplomas] Sending request to /api/categories');
+    // نفترض أن هذا الـ endpoint لا يتطلب مصادقة، لذا قد نستخدم apiClient أو http مباشر
+    const response = await apiClient.get('/categories');
+    const result = response.data;
+    
+    if (result.data && Array.isArray(result.data)) {
+      return result.data;
+    }
+    console.warn('[GetPublicDiplomas] Unexpected response structure:', result);
+    return [];
+  } catch (error: any) {
+    console.error('[GetPublicDiplomas] Error:', error);
+    const message = error.response?.data?.message || 'فشل في جلب الدبلومات';
+    throw new Error(message);
+  }
+};
+
+/**
+ * [Public] جلب تفاصيل دبلومة واحدة (صفحة تفاصيل الدبلومة)
+ * GET /api/categories/{slug}
+ */
+export const getPublicDiplomaDetails = async (slug: string): Promise<Diploma> => {
+  try {
+    console.log(`[GetPublicDiplomaDetails] Sending request to /api/categories/${slug}`);
+    const response = await apiClient.get(`/categories/${slug}`);
+    const result = response.data;
+    console.log('[GetPublicDiplomaDetails] Response received:', result);
+    return result.data || result;
+  } catch (error: any) {
+    console.error('[GetPublicDiplomaDetails] Error:', error);
+    const message = error.response?.data?.message || 'فشل في جلب تفاصيل الدبلومة';
+    throw new Error(message);
+  }
+};
+
+// ---------------------------------------------------------------- //
+// 4. دوال تسجيل المستخدم (User Enrollment Functions) - (جديد)
+// ---------------------------------------------------------------- //
+
+/**
+ * [User] تسجيل المستخدم في دبلومة (يتطلب مصادقة)
+ * POST /api/categories/{category}/enroll
+ */
+export const enrollInDiploma = async (categoryId: number | string): Promise<EnrollmentResponse> => {
+  try {
+    console.log(`[EnrollInDiploma] Sending request to /api/categories/${categoryId}/enroll`);
+    // هذا الطلب يتطلب مصادقة (يستخدم apiClient)
+    const response = await apiClient.post(`/categories/${categoryId}/enroll`);
+    console.log('[EnrollInDiploma] Response received:', response.data);
+    return response.data; // نتوقع { status: '...' }
+  } catch (error: any) {
+    console.error('[EnrollInDiploma] Error:', error);
+    const message = error.response?.data?.message || 'فشل في عملية التسجيل';
+    throw new Error(message);
+  }
+};
+
+/**
+ * [User] تفعيل الدبلومة بعد الدفع (يتطلب مصادقة)
+ * POST /api/categories/{category}/enroll/activate
+ */
+export const activateDiploma = async (categoryId: number | string): Promise<any> => {
+  try {
+    console.log(`[ActivateDiploma] Sending request to /api/categories/${categoryId}/enroll/activate`);
+    const response = await apiClient.post(`/categories/${categoryId}/enroll/activate`);
+    console.log('[ActivateDiploma] Response received:', response.data);
+    return response.data; // نتوقع { enrollment: {...}, enrolled_courses_count: X }
+  } catch (error: any) {
+    console.error('[ActivateDiploma] Error:', error);
+    const message = error.response?.data?.message || 'فشل في تفعيل الدبلومة';
+    throw new Error(message);
+  }
+};
+
+/**
+ * [User] جلب الدبلومات الخاصة بالمستخدم (صفحة "دبلوماتي") (يتطلب مصادقة)
+ * GET /api/my-diplomas
+ */
+export const getMyDiplomas = async (): Promise<MyDiploma[]> => {
+  try {
+    console.log('[GetMyDiplomas] Sending request to /api/my-diplomas');
+    const response = await apiClient.get('/my-diplomas');
+    const result = response.data;
+    
+    if (result.data && Array.isArray(result.data)) {
+      return result.data;
+    }
+    console.warn('[GetMyDiplomas] Unexpected response structure:', result);
+    return [];
+  } catch (error: any) {
+    console.error('[GetMyDiplomas] Error:', error);
+    const message = error.response?.data?.message || 'فشل في جلب دبلوماتك';
+    throw new Error(message);
+  }
+};
+
+// Add alias for backward compatibility
+export const getCategories = getAdminCategories;
+export type Category = Diploma;

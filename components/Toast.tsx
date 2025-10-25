@@ -33,6 +33,9 @@ export default function Toast({
 
   if (!isVisible) return null;
 
+  // اختيار غلاف العرض: تأكيد = Overlay، غير ذلك = أعلى يمين
+  const wrapperClass = type === 'confirm' ? 'toast-overlay' : 'toast-container';
+
   const getToastIcon = () => {
     switch (type) {
       case 'success':
@@ -55,7 +58,7 @@ export default function Toast({
   };
 
   return (
-    <div className="toast-overlay">
+    <div className={wrapperClass}>
       <div className={getToastClass()}>
         <div className="toast-content">
           <div className="toast-icon">

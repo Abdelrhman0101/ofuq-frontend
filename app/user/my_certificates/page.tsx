@@ -4,10 +4,10 @@ import React, { useEffect, useState } from 'react';
 import CertificateCard from '../../../components/CertificateCard';
 import '../../../styles/my-courses.css';
 import { isAuthenticated } from '../../../utils/authService';
-import { getMyCertificates, getDownloadUrl, getVerificationUrl, CertificateItem } from '../../../utils/certificateService';
+import { getMyCertificates, getDownloadUrl, getVerificationUrl, DiplomaCertificate } from '../../../utils/certificateService';
 
 export default function MyCertificatesPage() {
-  const [certificates, setCertificates] = useState<CertificateItem[]>([]);
+  const [certificates, setCertificates] = useState<DiplomaCertificate[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,12 +80,12 @@ export default function MyCertificatesPage() {
         {!loading && !error && certificates.map((cert) => (
           <CertificateCard
             key={cert.id}
-            courseName={cert.course_title}
-            completionDate={cert.completion_date || cert.issued_at}
+            courseName={cert.diploma_name}
+            completionDate={cert.issued_at}
             certificateId={String(cert.id)}
             certificateImage={'/certificates/certificate-template.png'}
-            downloadUrl={getDownloadUrl(cert.download_url)}
-            verificationUrl={getVerificationUrl(cert.verification_url || cert.verification_token)}
+            downloadUrl={getDownloadUrl(cert.file_path)}
+            verificationUrl={getVerificationUrl(cert.uuid)}
           />
         ))}
       </div>

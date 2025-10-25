@@ -286,7 +286,7 @@
   .financial-reports-header {
     background: #0299BA !important;
     -webkit-print-color-adjust: exact;
-    color-adjust: exact;
+  print-color-adjust: exact;
   }
   
   .financial-reports-controls {

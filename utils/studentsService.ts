@@ -1,91 +1,116 @@
-import http from './apiClient';
+import { http } from '../lib/http';
 
-export interface CourseItem {
+export interface EnrolledDiplomaItem {
   id: number;
-  name: string;
-  progress: number;
-  image: string;
-  category: string;
-  instructor: { name: string; avatar: string };
-  finalExamScore?: number;
+  category_id: number;
+  category_name: string;
+  category_slug: string;
+  status: string;
+  enrolled_at: string;
+  courses_count: number;
+  is_free: boolean;
+  price: number;
 }
 
-export interface CertificateItem {
-  id: number;
-  courseId: number;
+export interface DiplomaCertificateItem {
   courseName: string;
-  issuedAt?: string;
-  completionDate?: string | null;
-  verificationToken?: string;
-  verificationUrl?: string;
+  completionDate: string;
+  certificateId?: string;
+  certificateImage?: string;
   downloadUrl?: string;
+  verificationUrl?: string;
+}
+
+export interface StudentCourse {
+  id: number;
+  title: string;
+  instructor: string;
+  category: string;
+  cover_image_url: string;
+  status: string;
+  progress_percentage: number;
+  completed_at: string | null;
+  final_exam_score: number | null;
+  certificate_id: string | null;
 }
 
 export interface StudentItem {
   id: number;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
-  blocked: boolean;
-  courses: CourseItem[];
-  certificates?: CertificateItem[];
-}
-
-function splitName(fullName: string) {
-  const parts = (fullName || '').trim().split(/\s+/);
-  const firstName = parts[0] || '';
-  const lastName = parts.slice(1).join(' ') || '';
-  return { firstName, lastName };
+  phone: string | null;
+  nationality: string | null;
+  qualification: string | null;
+  media_work_sector: string | null;
+  date_of_birth: string | null;
+  previous_field: string | null;
+  created_at: string;
+  email_verified_at: string | null;
+  is_blocked: boolean;
+  courses: StudentCourse[];
+  diplomas: EnrolledDiplomaItem[];
+  total_courses: number;
+  total_diplomas: number;
+  completed_courses: number;
+  active_diplomas: number;
 }
 
 export async function getStudentsStatus(): Promise<StudentItem[]> {
-  const res = await http.get('/admin/students/status');
-  const list = res.data?.data || [];
-  return list.map((s: any) => {
-    const { firstName, lastName } = splitName(s.student_name);
-    const courses: CourseItem[] = (s.courses || []).map((c: any) => ({
-      id: c.course_id,
-      name: c.course_title,
-      progress: Math.round(c.progress_percentage || 0),
-      image: c.cover_image_url || '/hero-image.png',
-      category: c.category || 'غير محدد',
-      instructor: { name: c.instructor_name || 'غير معروف', avatar: '/profile.jpg' },
-      finalExamScore: typeof c.final_exam_score === 'number' ? Math.round(c.final_exam_score) : undefined,
-    }));
-    return {
-      id: s.student_id,
-      firstName,
-      lastName,
-      email: s.student_email,
-      blocked: !!s.is_blocked,
-      courses,
-    } as StudentItem;
-  });
+  try {
+    const response = await http.get('/admin/students');
+    return response.data.data || [];
+  } catch (error) {
+    console.error('Error fetching students status:', error);
+    throw error;
+  }
 }
 
 export async function deleteUser(userId: number): Promise<void> {
-  await http.delete(`/admin/users/${userId}`);
+  try {
+    await http.delete(`/admin/users/${userId}`);
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    throw error;
+  }
 }
 
-export async function blockUser(userId: number, reason = 'Violation'): Promise<void> {
-  await http.post('/admin/blocked-users', { user_id: userId, reason, is_blocked: true });
+export async function blockUser(userId: number): Promise<void> {
+  try {
+    await http.post('/admin/blocked-users', { user_id: userId });
+  } catch (error) {
+    console.error('Error blocking user:', error);
+    throw error;
+  }
 }
 
 export async function unblockUser(userId: number): Promise<void> {
-  await http.delete(`/admin/blocked-users/${userId}`);
+  try {
+    await http.delete(`/admin/blocked-users/${userId}`);
+  } catch (error) {
+    console.error('Error unblocking user:', error);
+    throw error;
+  }
 }
 
-export async function getUserCertificates(userId: number): Promise<CertificateItem[]> {
-  const res = await http.get(`/admin/users/${userId}/certificates`);
-  const certs = res.data?.certificates || [];
-  return certs.map((c: any) => ({
-    id: c.id,
-    courseId: c.course_id,
-    courseName: c.course_title,
-    issuedAt: c.issued_at,
-    completionDate: c.completion_date,
-    verificationToken: c.verification_token,
-    verificationUrl: c.verification_url,
-    downloadUrl: c.download_url,
-  }));
+export async function getUserCertificates(userId: number): Promise<DiplomaCertificateItem[]> {
+  try {
+    const response = await http.get(`/admin/users/${userId}/certificates`);
+    const raw = response.data;
+    const list = Array.isArray(raw?.certificates)
+      ? raw.certificates
+      : Array.isArray(raw?.data?.certificates)
+      ? raw.data.certificates
+      : [];
+    return list.map((c: any) => ({
+      courseName: c.course_title,
+      completionDate: c.completion_date || '',
+      certificateId: c.id?.toString(),
+      certificateImage: undefined,
+      downloadUrl: c.download_url,
+      verificationUrl: c.verification_url,
+    }));
+  } catch (error) {
+    console.error('Error fetching user certificates:', error);
+    throw error;
+  }
 }

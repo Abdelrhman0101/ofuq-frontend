@@ -142,9 +142,9 @@ export default function CourseGrid({
     >
       <div className="course-image">
         <img src={course.image} alt={course.name} />
-        <div className="course-category">
+        {/* <div className="course-category">
           {typeof course.category === 'string' ? course.category : course.category?.name || 'عام'}
-        </div>
+        </div> */}
       </div>
       <div className="course-content">
         <h4 className="course-name">{course.name}</h4>

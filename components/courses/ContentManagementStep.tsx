@@ -427,15 +427,15 @@ const ContentManagementStep: React.FC<ContentManagementStepProps> = ({
                                                                     attachments: [], // normalize: backend JSON not File[]
                                                                     resources: [], // normalize until explicit mapping
                                                                     quiz: createdLessonApi.quiz
-                                                                        ? {
-                                                                            id: Number(createdLessonApi.quiz.id),
-                                                                            title: String(createdLessonApi.quiz.title ?? ''),
-                                                                            description: createdLessonApi.quiz.description ?? undefined,
-                                                                            passing_score: createdLessonApi.quiz.passing_score ?? undefined,
-                                                                            time_limit: createdLessonApi.quiz.time_limit ?? undefined,
-                                                                            questions: [] // defer to LessonQuestionManager normalization
-                                                                          }
-                                                                        : undefined,
+                                                        ? {
+                                                            id: Number(createdLessonApi.quiz.id),
+                                                            title: String(createdLessonApi.quiz.title ?? ''),
+                                                            description: (createdLessonApi.quiz as any).description ?? undefined,
+                                                            passing_score: (createdLessonApi.quiz as any).passing_score ?? undefined,
+                                                            time_limit: (createdLessonApi.quiz as any).time_limit ?? undefined,
+                                                            questions: [] // defer to LessonQuestionManager normalization
+                                                          }
+                                                        : undefined,
                                                                     questions: [] // keep UI questions empty initially
                                                                   }
                                                                 : l

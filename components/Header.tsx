@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { isAuthenticated, getCurrentUser, signout, User } from '../utils/authService';
+import { getBackendAssetUrl } from '../utils/url';
 import '../styles/header.css';
 
 const NotificationIcon = '/icons/notification.svg';
@@ -20,6 +21,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState<string>('/avatar.jpg');
   
   const notificationsRef = useRef<HTMLDivElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -35,10 +37,38 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
       if (authenticated) {
         const currentUser = getCurrentUser();
         setUser(currentUser);
+        
+        // Update profile image URL from user data
+        if (currentUser?.profile_picture) {
+          setProfileImageUrl(getBackendAssetUrl(currentUser.profile_picture));
+        } else {
+          setProfileImageUrl('/avatar.jpg');
+        }
       }
     };
 
     checkAuthStatus();
+    
+    // Listen for storage changes to update profile image when changed in settings
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'user_data') {
+        checkAuthStatus();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for custom events for same-tab updates
+    const handleUserDataUpdate = () => {
+      checkAuthStatus();
+    };
+    
+    window.addEventListener('userDataUpdated', handleUserDataUpdate);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('userDataUpdated', handleUserDataUpdate);
+    };
   }, []);
 
   // إضافة event listener للنقر خارج قائمة الإشعارات وقائمة البروفايل
@@ -115,7 +145,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
               <div className="profile-menu-container" onClick={toggleProfileMenu} ref={profileMenuRef}>
                 <div className="profile-info">
                   <div className="profile-avatar" ref={avatarRef}>
-                    <img src="/avatar.jpg" alt="Profile" className="profile-image" />
+                    <img src={profileImageUrl} alt="Profile" className="profile-image" />
                   </div>
                   <div className="profile-details">
                     <span className="profile-name">مرحباً، {user?.name}</span>
@@ -127,7 +157,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                   <div className="profile-dropdown-menu" onClick={(e) => e.stopPropagation()}>
                     <div className="profile-dropdown-header">
                       <div className="profile-dropdown-avatar">
-                        <img src="/avatar.jpg" alt="Profile" className="dropdown-profile-image" />
+                        <img src={profileImageUrl} alt="Profile" className="dropdown-profile-image" />
                       </div>
                       <div className="profile-dropdown-info">
                         <h4>{user?.name}</h4>

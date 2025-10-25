@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { isAuthenticated, getCurrentUser, signout, User } from '../utils/authService';
+import { getBackendAssetUrl } from '../utils/url';
 import clsx from 'clsx';
 import styles from './HomeHeader.module.css';
 import ph from './ProfileHeader.module.css';
@@ -67,22 +68,26 @@ const ProfileHeader = () => {
     }
   };
 
+  const profileImageUrl = user?.profile_picture ? getBackendAssetUrl(user.profile_picture) : '/avatar.jpg';
+
   return (
     <>
       <header className={ph['profile-header']}>
         <div className={ph['header-container']}>
           {/* Logo */}
-          <div className={ph['header-logo']}>
-            <Link href="/">
-              <Image 
-                src="/mahad_alofk2.png" 
-                alt="منصة أفق" 
-                width={120} 
-                height={50}
-                className={ph['logo-image']}
-              />
-            </Link>
-          </div>
+          {!(pathname?.startsWith('/dashboard') || pathname?.startsWith('/user') || pathname?.startsWith('/admin')) && (
+            <div className={ph['header-logo']}>
+              <Link href="/">
+                <Image 
+                  src="/mahad_alofk2.png" 
+                  alt="منصة أفق" 
+                  width={120} 
+                  height={50}
+                  className={ph['logo-image']}
+                />
+              </Link>
+            </div>
+          )}
 
           {/* Desktop Navigation Links - Centered */}
           <nav className={clsx(ph['header-nav'], ph['desktop-nav'])}>
@@ -110,7 +115,7 @@ const ProfileHeader = () => {
               <div className={styles['profile-menu-container']} onClick={toggleProfileMenu}>
                 <div className={styles['profile-info']}>
                   <div className={clsx(styles['profile-avatar'], avatarClicked && styles['click-effect'])} ref={avatarRef}>
-                    <Image src="/avatar.jpg" alt="Profile" width={36} height={36} className={styles['profile-image']} />
+                    <Image src={profileImageUrl} alt="Profile" width={36} height={36} className={styles['profile-image']} />
                   </div>
                   <div className={styles['profile-details']}>
                     <span className={styles['profile-name']}>مرحباً، {user?.name}</span>

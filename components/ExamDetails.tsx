@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import '../styles/exam-details.css';
-import { FinalExamMetaData, getFinalExamMeta, getQuizAttempts, QuizAttempt } from '../utils/quizService';
+import { FinalExamMetaData, getCourseFinalExamMeta, getQuizAttempts, QuizAttempt } from '../utils/quizService';
 
 interface ExamDetailsProps {
   courseId: number;
@@ -23,7 +23,7 @@ const ExamDetails: React.FC<ExamDetailsProps> = ({ courseId, courseName, complet
       try {
         setLoading(true);
         setError(null);
-        const m = await getFinalExamMeta(courseId);
+        const m = await getCourseFinalExamMeta(courseId);
         if (!cancelled) setMeta(m);
         if (m?.quiz_id) {
           const a = await getQuizAttempts(m.quiz_id);

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import '../styles/quiz.css';
 
 interface QuizQuestion {
@@ -13,38 +13,60 @@ interface QuizQuestion {
 interface QuizProps {
   questions?: QuizQuestion[];
   requireAllAnswered?: boolean;
-  onComplete?: (answers: { [key: number]: number }) => void;
+  onComplete?: (selectedAnswers: { [key: number]: number }) => void;
+  initialAnswers?: { [key: number]: number };
+  canGoNext?: boolean;
+  onGoNext?: () => void;
 }
 
-const Quiz: React.FC<QuizProps> = ({ questions = defaultQuestions, requireAllAnswered = true, onComplete }) => {
+const Quiz: React.FC<QuizProps> = ({ questions = defaultQuestions, requireAllAnswered = true, onComplete, initialAnswers, canGoNext = false, onGoNext }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number }>({});
   const [isFinished, setIsFinished] = useState(false);
 
-  const currentQuestion = questions[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === questions.length - 1;
-  const isFirstQuestion = currentQuestionIndex === 0;
+  // Compute safe current question with bounds
+  const totalQuestions = Array.isArray(questions) ? questions.length : 0;
+  const safeIndex = Math.min(Math.max(currentQuestionIndex, 0), Math.max(totalQuestions - 1, 0));
+  const currentQuestion = totalQuestions > 0 ? questions[safeIndex] : undefined;
+  const isLastQuestion = totalQuestions > 0 ? safeIndex === totalQuestions - 1 : false;
+  const isFirstQuestion = safeIndex === 0;
 
   const allAnswered = useMemo(() => {
     if (!questions || questions.length === 0) return true;
     return questions.every((_, idx) => selectedAnswers[idx] !== undefined);
   }, [questions, selectedAnswers]);
 
+  // Guard: no questions or out-of-range index
+  if (!questions || questions.length === 0 || !currentQuestion) {
+    return (
+      <div className="quiz-container">
+        <div className="question-box">
+          <h2 style={{ textAlign: 'center', color: '#019EBB' }}>
+            جاري تحميل أسئلة الكويز...
+          </h2>
+          <p style={{ textAlign: 'center', fontSize: '16px', marginTop: '12px' }}>
+            برجاء الانتظار حتى يتم تجهيز الأسئلة.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const handleOptionSelect = (optionIndex: number) => {
     setSelectedAnswers(prev => ({
       ...prev,
-      [currentQuestionIndex]: optionIndex
+      [safeIndex]: optionIndex
     }));
   };
 
   const handleNext = () => {
-    if (currentQuestionIndex < questions.length - 1) {
+    if (safeIndex < totalQuestions - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     }
   };
 
   const handlePrevious = () => {
-    if (currentQuestionIndex > 0) {
+    if (safeIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
     }
   };
@@ -59,16 +81,27 @@ const Quiz: React.FC<QuizProps> = ({ questions = defaultQuestions, requireAllAns
     }
   };
 
+  // تهيئة الإجابات من الحالة الأولية (للاستعادة بعد الريفريش)
+  useEffect(() => {
+    if (initialAnswers && Object.keys(initialAnswers).length > 0) {
+      setSelectedAnswers(initialAnswers);
+    }
+  }, [initialAnswers]);
+
   if (isFinished) {
     return (
       <div className="quiz-container">
-        <div className="question-box">
-          <h2 style={{ textAlign: 'center', color: '#019EBB' }}>
-            تم إنهاء الاختبار بنجاح!
-          </h2>
-          <p style={{ textAlign: 'center', fontSize: '18px', marginTop: '20px' }}>
-            شكراً لك على إكمال الاختبار
+        <div className="question-box" style={{ textAlign: 'center' }}>
+          <h2 style={{ color: '#019EBB' }}>تم تأكيد الإجابات</h2>
+          <p style={{ fontSize: '18px', marginTop: '12px' }}>
+            يمكنك المتابعة عند نجاح التقييم.
           </p>
+          {canGoNext && (
+            <button className="finish-button" onClick={onGoNext} style={{ marginTop: 16 }}>
+              الانتقال للدرس التالي
+              <div className="finish-arrow">←</div>
+            </button>
+          )}
         </div>
       </div>
     );
@@ -77,12 +110,12 @@ const Quiz: React.FC<QuizProps> = ({ questions = defaultQuestions, requireAllAns
   return (
     <div className="quiz-container">
       <div className="quiz-progress">
-        السؤال {currentQuestionIndex + 1} من {questions.length}
+        السؤال {safeIndex + 1} من {totalQuestions}
       </div>
 
       <div className="question-box">
         <div className="question-number">
-          السؤال {currentQuestionIndex + 1}
+          السؤال {safeIndex + 1}
         </div>
         <div className="question-text">
           {currentQuestion.question}
@@ -110,14 +143,14 @@ const Quiz: React.FC<QuizProps> = ({ questions = defaultQuestions, requireAllAns
         {currentQuestion.options.map((option, index) => (
           <div
             key={index}
-            className={`option-item ${selectedAnswers[currentQuestionIndex] === index ? 'selected' : ''}`}
+            className={`option-item ${selectedAnswers[safeIndex] === index ? 'selected' : ''}`}
             onClick={() => handleOptionSelect(index)}
           >
             <input
               type="radio"
-              name={`question-${currentQuestionIndex}`}
+              name={`question-${safeIndex}`}
               value={index}
-              checked={selectedAnswers[currentQuestionIndex] === index}
+              checked={selectedAnswers[safeIndex] === index}
               onChange={() => handleOptionSelect(index)}
               className="option-radio"
             />
@@ -126,19 +159,26 @@ const Quiz: React.FC<QuizProps> = ({ questions = defaultQuestions, requireAllAns
         ))}
       </div>
 
-      {isLastQuestion && (
+      {(requireAllAnswered ? allAnswered : true) && (
         <button className="finish-button" onClick={handleFinish} disabled={requireAllAnswered && !allAnswered}>
-          أنتهيت
+          تأكيد
           <div className="finish-arrow">
             ←
           </div>
         </button>
       )}
-      {requireAllAnswered && !allAnswered && (
-        <p style={{ marginTop: 10, color: '#d35400', fontWeight: 600, textAlign: 'center' }}>
-          يجب الإجابة على جميع الأسئلة قبل الإنهاء.
-        </p>
+
+      {canGoNext && (
+        <button className="finish-button" onClick={onGoNext} style={{ marginTop: 12 }}>
+          الانتقال للدرس التالي
+          <div className="finish-arrow">←</div>
+        </button>
       )}
+        {requireAllAnswered && !allAnswered && (
+          <p style={{ marginTop: 10, color: '#d35400', fontWeight: 600, textAlign: 'center' }}>
+            يجب الإجابة على جميع الأسئلة قبل الإنهاء.
+          </p>
+        )}
     </div>
   );
 };

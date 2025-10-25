@@ -60,6 +60,9 @@ export default function ProfileTab({
         const parsedUserData = JSON.parse(userData);
         parsedUserData.profile_picture = response.path;
         localStorage.setItem('user_data', JSON.stringify(parsedUserData));
+        
+        // Dispatch custom event to notify other components of the update
+        window.dispatchEvent(new CustomEvent('userDataUpdated'));
       }
       
       console.log('Profile picture uploaded successfully:', response);
@@ -85,6 +88,9 @@ export default function ProfileTab({
       const parsedUserData = JSON.parse(userData);
       parsedUserData.profile_picture = null;
       localStorage.setItem('user_data', JSON.stringify(parsedUserData));
+      
+      // Dispatch custom event to notify other components of the update
+      window.dispatchEvent(new CustomEvent('userDataUpdated'));
     }
   };
 

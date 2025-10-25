@@ -347,7 +347,7 @@
   .visits-reports-header {
     background: #0299BA !important;
     -webkit-print-color-adjust: exact;
-    color-adjust: exact;
+  print-color-adjust: exact;
   }
   
   .visits-reports-controls {
@@ -365,6 +365,6 @@
   .rate-badge {
     border: 1px solid #000 !important;
     -webkit-print-color-adjust: exact;
-    color-adjust: exact;
+  print-color-adjust: exact;
   }
 }

@@ -47,7 +47,7 @@ export default function WatchProgress({ courses: injected }: WatchProgressProps)
             name: String(c.title ?? ''),
             progress,
             image: getBackendAssetUrl((c as any).cover_image_url ?? c.cover_image ?? ''),
-            category: c.category?.name ?? 'عام',
+            category: typeof c.category === 'string' ? c.category : (c.category?.name ?? 'عام'),
             instructor: {
               name: c.instructor?.name ?? '—',
               avatar: getBackendAssetUrl(c.instructor?.image ?? ''),

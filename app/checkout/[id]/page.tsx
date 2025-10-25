@@ -36,7 +36,7 @@ const DynamicCheckoutPage: React.FC = () => {
 
         setCourse(details);
         const idNum = Number(courseId);
-        setIsEnrolled(myEnrollments.includes(idNum));
+        setIsEnrolled(myEnrollments.some(course => course.id === idNum));
       } catch (err: any) {
         console.error('Checkout init error:', err);
         setError(err?.message || 'فشل في تحميل بيانات صفحة الدفع');

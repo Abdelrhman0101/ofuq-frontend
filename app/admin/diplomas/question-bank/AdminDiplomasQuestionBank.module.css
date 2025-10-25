@@ -1,0 +1,96 @@
+.root {
+  padding: 24px;
+  background-color: #f8f9fb;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  direction: rtl;
+}
+
+.th {
+  text-align: right;
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 600;
+  color: #374151;
+  background-color: #f9fafb;
+}
+
+.td {
+  text-align: right;
+  padding: 12px;
+  border-bottom: 1px solid #f3f4f6;
+  color: #1f2937;
+}
+
+.row:hover {
+  background-color: #fafafa;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.statusPublished {
+  background-color: #e3f9e5;
+  color: #057a55;
+}
+
+.statusDraft {
+  background-color: #fde8e7;
+  color: #c81e1e;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.primaryBtn {
+  background-color: #0055cc;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.primaryBtn:hover {
+  background-color: #0044aa;
+}
+
+.message {
+  margin-bottom: 12px;
+  color: #374151;
+}
+
+.error {
+  margin-bottom: 12px;
+  color: #c81e1e;
+}

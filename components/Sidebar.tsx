@@ -49,14 +49,27 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
 
           <li className={styles['nav-item']}>
             <Link
-              href="/admin/courses"
-              className={`${styles['nav-link']} ${isActive('/admin/courses') ? styles.active : ''}`}
+              href="/admin/diplomas"
+              className={`${styles['nav-link']} ${isActive('/admin/diplomas') ? styles.active : ''}`}
               onClick={handleNavigate}
             >
-              <span className={styles['nav-icon']}>📚</span>
-              <span>إدارة المقررات</span>
+              <span className={styles['nav-icon']}>🎓</span>
+              <span>إدارة الدبلومات</span>
             </Link>
           </li>
+
+          <li className={styles['nav-item']}>
+            <Link
+              href="/admin/diplomas/question-bank"
+              className={`${styles['nav-link']} ${isActive('/admin/diplomas/question-bank') ? styles.active : ''}`}
+              onClick={handleNavigate}
+            >
+              <span className={styles['nav-icon']}>❓</span>
+              <span>بنك الأسئلة</span>
+            </Link>
+          </li>
+          
+
 
           <li className={styles['nav-item']}>
             <Link

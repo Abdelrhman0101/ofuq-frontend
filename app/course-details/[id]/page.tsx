@@ -13,6 +13,8 @@ import SocialMediaFloat from '../../../components/SocialMediaFloat';
 import { getCourseDetails, getFeaturedCourses, getMyEnrollments, Course } from '../../../utils/courseService';
 import { isAuthenticated } from '../../../utils/authService';
 import { getBackendAssetUrl } from '../../../utils/url';
+import { getMyDiplomas, type MyDiploma } from "@/utils/categoryService";
+import Link from 'next/link';
 import '../../../styles/course-details.css';
 import '../../../styles/course-cards.css';
 
@@ -26,6 +28,7 @@ const CourseDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEnrolled, setIsEnrolled] = useState<boolean>(false);
+  const [myDiplomas, setMyDiplomas] = useState<MyDiploma[]>([]);
 
   useEffect(() => {
     const loadCourseData = async () => {
@@ -60,7 +63,7 @@ const CourseDetailsPage = () => {
         if (!courseId || !isAuthenticated()) return;
         const myCourses = await getMyEnrollments();
         const courseIdNum = Number(courseId);
-        setIsEnrolled(myCourses.includes(courseIdNum));
+        setIsEnrolled(myCourses.some(course => course.id === courseIdNum));
       } catch (err) {
         console.warn('Failed to check enrollment:', err);
       }
@@ -69,19 +72,48 @@ const CourseDetailsPage = () => {
     checkEnrollment();
   }, [courseId]);
 
+  useEffect(() => {
+    const fetchMyDiplomas = async () => {
+      try {
+        if (!isAuthenticated()) {
+          setMyDiplomas([]);
+          return;
+        }
+        const list = await getMyDiplomas();
+        setMyDiplomas(list);
+      } catch (err) {
+        console.warn('Failed to fetch my diplomas:', err);
+        setMyDiplomas([]);
+      }
+    };
+    fetchMyDiplomas();
+  }, []);
+
   const handlePrimaryAction = () => {
-    // If not authenticated, send to login
-    if (!isAuthenticated()) {
-      router.push('/auth');
+    const categoryIdNum = Number(((courseData as any)?.category_id) ?? ((courseData?.category as any)?.id) ?? 0);
+    const hasAccessViaDiploma = myDiplomas.some((d) => d.status === 'active' && Number((d as any).category?.id) === categoryIdNum);
+    const isFree = Boolean((courseData as any)?.is_free) || ((courseData?.price != null ? Number(courseData.price) : 0) <= 0);
+    const hasAccess = isFree || isEnrolled || hasAccessViaDiploma;
+
+    const catSlug = String(((courseData as any)?.category?.slug) || ((courseData as any)?.category?.id) || ((courseData as any)?.category_id) || '');
+
+    if (hasAccess) {
+      const chapters = (courseData?.chapters || []).slice().sort((a: any, b: any) => Number(a?.order ?? 0) - Number(b?.order ?? 0));
+      const firstLesson = chapters.length ? (chapters[0]?.lessons || []).slice().sort((a: any, b: any) => Number(a?.order ?? 0) - Number(b?.order ?? 0))[0] : null;
+      if (firstLesson) {
+        router.push(`/watch?lessonId=${firstLesson.id}&chapterId=${chapters[0].id}&courseId=${courseId}`);
+      } else {
+        router.push('/user/my_courses');
+      }
       return;
     }
-    // If already enrolled, continue to my courses
-    if (isEnrolled) {
-      router.push('/user/my_courses');
-      return;
+
+    // Guide user to parent diploma instead of checkout
+    if (catSlug) {
+      router.push(`/diplomas/${catSlug}`);
+    } else {
+      router.push('/diplomas');
     }
-    // Otherwise go to dynamic checkout
-    router.push(`/checkout/${courseId}`);
   };
 
   // Transform API course data to match CourseCard props
@@ -200,6 +232,25 @@ const CourseDetailsPage = () => {
                 />
               );
             })()}
+            {(() => {
+              const categoryIdNum = Number(((courseData as any)?.category_id) ?? ((courseData?.category as any)?.id) ?? 0);
+              const hasAccessViaDiploma = myDiplomas.some((d) => d.status === 'active' && Number((d as any).category?.id) === categoryIdNum);
+              const isFree = Boolean((courseData as any)?.is_free) || ((courseData?.price != null ? Number(courseData.price) : 0) <= 0);
+              const hasAccess = isFree || isEnrolled || hasAccessViaDiploma;
+              if (hasAccess) return null;
+              const catSlug = String(((courseData as any)?.category?.slug) || '');
+              const catName = String(((courseData as any)?.category?.name) || 'الدبلومة الأم');
+              return (
+                <div className="preview-notice">
+                  هذا الفيديو للعرض المسبق. للحصول على الوصول الكامل لجميع محتويات هذا المقرر، يرجى التسجيل في{' '}
+                  {catSlug ? (
+                    <Link href={`/diplomas/${catSlug}`} className="preview-notice-link">{catName}</Link>
+                  ) : (
+                    <Link href="/diplomas" className="preview-notice-link">الدبلومات</Link>
+                  )}.
+                </div>
+              );
+            })()}
             <CourseContent 
               rating={parseFloat(String(courseData.average_rating ?? courseData.rating ?? 0))} // Use real rating
               courseTitle={courseData.title}
@@ -212,7 +263,12 @@ const CourseDetailsPage = () => {
               hoursCount={Number(courseData.duration ?? 0)} // Use real duration
               courseDescription={courseData.description}
               courseId={courseId}
-              isEnrolled={isEnrolled}
+              isEnrolled={(() => {
+                const categoryIdNum = Number(((courseData as any)?.category_id) ?? ((courseData?.category as any)?.id) ?? 0);
+                const hasAccessViaDiploma = myDiplomas.some((d) => d.status === 'active' && Number((d as any).category?.id) === categoryIdNum);
+                const isFree = Boolean((courseData as any)?.is_free) || ((courseData?.price != null ? Number(courseData.price) : 0) <= 0);
+                return isFree || isEnrolled || hasAccessViaDiploma;
+              })()}
               chapters={courseData.chapters as any}
               instructorName={courseData.instructor?.name || ''}
               instructorImage={(
@@ -255,7 +311,13 @@ const CourseDetailsPage = () => {
             )}
             instructorTitle={(courseData.instructor as any)?.title}
             instructorBio={(courseData.instructor as any)?.bio}
-            actionLabel={isEnrolled ? 'تابع الكورس' : 'سجل الآن'}
+            actionLabel={(() => {
+              const categoryIdNum = Number(((courseData as any)?.category_id) ?? ((courseData?.category as any)?.id) ?? 0);
+              const hasAccessViaDiploma = myDiplomas.some((d) => d.status === 'active' && Number((d as any).category?.id) === categoryIdNum);
+              const isFree = Boolean((courseData as any)?.is_free) || ((courseData?.price != null ? Number(courseData.price) : 0) <= 0);
+              const hasAccess = isFree || isEnrolled || hasAccessViaDiploma;
+              return hasAccess ? 'مشاهدة الآن' : 'عرض الدبلومة';
+            })()}
             onActionClick={handlePrimaryAction}
           />
         </div>

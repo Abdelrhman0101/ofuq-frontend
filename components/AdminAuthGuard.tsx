@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser } from '../utils/authService';
 
@@ -10,6 +10,8 @@ interface AdminAuthGuardProps {
 
 export default function AdminAuthGuard({ children }: AdminAuthGuardProps) {
   const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -19,14 +21,23 @@ export default function AdminAuthGuard({ children }: AdminAuthGuardProps) {
       router.replace('/auth');
       return;
     }
+    
+    setIsAuthorized(true);
+    setIsLoading(false);
   }, [router]);
 
-  // Get current user for conditional rendering
-  const user = getCurrentUser();
-  
-  // Only render children if user is authenticated and is an admin
-  if (!user || user.role !== 'admin') {
-    return null; // Prevent admin UI from flashing before redirect
+  // Show loading state during initial check to prevent hydration issues
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // Only render children if user is authorized
+  if (!isAuthorized) {
+    return null;
   }
 
   return <>{children}</>;
