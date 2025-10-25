@@ -8,6 +8,7 @@ import "@/styles/toast.css";
 import { getAdminCategory, type Diploma } from "@/utils/categoryService";
 import { getCourses, getAllCourses, type Course } from "@/utils/courseService";
 import { getBackendAssetUrl } from "@/utils/url";
+import { deleteCategory } from "@/utils/categoryService";
 
 function isCoursePublished(course: Course): boolean {
   // Normalize publish logic: prefer explicit flag, otherwise infer from status
@@ -29,6 +30,8 @@ export default function AdminDiplomaPage() {
   const diplomaId = Number(id);
   const router = useRouter();
 
+  // Add deleting state
+  const [isDeleting, setIsDeleting] = useState(false);
   const [diploma, setDiploma] = useState<Diploma | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +41,28 @@ export default function AdminDiplomaPage() {
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState<"success" | "error" | "warning" | "info" | "confirm">("info");
+  // Provide confirm handlers
+  const confirmDeleteDiploma = () => {
+    setToastMessage("هل أنت متأكد من حذف هذه الدبلومة؟ سيتم فك ارتباط المقررات بها.");
+    setToastType("confirm");
+    setToastVisible(true);
+  };
+  const performDeleteDiploma = async () => {
+    try {
+      setIsDeleting(true);
+      await deleteCategory(diplomaId);
+      setToastType("success");
+      setToastMessage("تم حذف الدبلومة بنجاح");
+      setToastVisible(true);
+      router.push("/admin/diplomas");
+    } catch (err: any) {
+      setToastType("error");
+      setToastMessage(err?.message || "فشل في حذف الدبلومة");
+      setToastVisible(true);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -124,6 +149,9 @@ export default function AdminDiplomaPage() {
         </div>
         <div className={styles.actions}>
           <button className={styles.btnPrimary} onClick={handleAddCourse}>إضافة مقرر جديد</button>
+          <button className={styles.btnDanger} onClick={confirmDeleteDiploma} disabled={isDeleting}>
+            {isDeleting ? "جاري الحذف..." : "حذف الدبلومة"}
+          </button>
         </div>
       </div>
 
@@ -184,6 +212,8 @@ export default function AdminDiplomaPage() {
         type={toastType}
         isVisible={toastVisible}
         onClose={() => setToastVisible(false)}
+        onConfirm={toastType === "confirm" ? performDeleteDiploma : undefined}
+        onCancel={toastType === "confirm" ? () => setToastVisible(false) : undefined}
       />
     </div>
   );

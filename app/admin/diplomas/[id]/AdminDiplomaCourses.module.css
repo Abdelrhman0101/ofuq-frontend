@@ -74,6 +74,7 @@
 .actions {
   display: flex;
   justify-content: flex-end;
+  gap: 0.5rem;
   margin: 1rem 0 1.5rem;
 }
 
@@ -180,4 +181,22 @@
     width: 56px;
     height: 40px;
   }
+}
+
+/* Danger button for destructive actions */
+.btnDanger {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+}
+.btnDanger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(185, 28, 28, 0.4);
 }
