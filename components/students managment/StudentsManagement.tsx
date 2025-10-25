@@ -1,8 +1,6 @@
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
-import '../../styles/students-management.css';
-import '../../styles/toast.css';
 import CourseGrid, { Course as CourseGridCourse } from '../CourseGrid';
 import CertificateCard from '../CertificateCard';
 import FinalGradesList from './FinalGradesList';
