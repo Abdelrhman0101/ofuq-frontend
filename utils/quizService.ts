@@ -81,16 +81,23 @@ export const getOrCreateLessonQuiz = async (
   defaultTitle = 'اختبار الدرس'
 ): Promise<Quiz> => {
   try {
-    // Try to fetch the existing quiz using the admin endpoint
-    const response = await apiClient.get(`/admin/lessons/${lessonId}/quiz`);
-    // If the quiz exists, the API should return it.
-    return response.data?.data ?? response.data;
+    // استخدم مسار المستخدم لقراءة كويز الدرس (متاح للمشرف أيضًا)
+    const response = await apiClient.get(`/lessons/${lessonId}/quiz`);
+    const payload = response.data?.data ?? response.data;
+    const quizObj = payload?.quiz ?? payload;
+
+    return {
+      id: Number(quizObj.id),
+      title: String(quizObj.title),
+      description: quizObj.description ?? null,
+    };
   } catch (error: any) {
-    // If the quiz is not found (404), create a new one
-    if (error.response?.status === 404) {
+    const status = error?.response?.status;
+    // إذا لم يوجد الكويز (404) أو كان المسار غير مدعوم GET (405)، أنشئ الكويز
+    if (status === 404 || status === 405) {
       return await createLessonQuiz(lessonId, { title: defaultTitle });
     }
-    // For other errors, log and re-throw
+    // لأخطاء أخرى، سجل وأعد رمي الخطأ
     console.error('Error in getOrCreateLessonQuiz:', error);
     throw new Error(error.response?.data?.message || 'فشل في جلب أو إنشاء اختبار الدرس');
   }
