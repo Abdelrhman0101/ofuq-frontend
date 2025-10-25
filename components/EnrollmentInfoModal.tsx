@@ -15,6 +15,7 @@ export interface EnrollmentInfoModalProps {
 const qualificationOptions = [
   'بدون',
   'دبلوم',
+ 'الثانوي',
   'بكالوريوس',
   'ماجستير',
   'دكتوراه',

@@ -270,10 +270,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onTabChange }) => {
 
       <div className={styles.formContent}>
         {/* Google Login */}
-        <button className={styles.googleLoginBtn} onClick={handleGoogleLogin} disabled={isGoogleLoading}>
-          <span className={styles.googleIcon} aria-hidden="true" />
-          {isGoogleLoading ? 'جارٍ الاتصال بجوجل...' : 'تسجيل الدخول عبر Google'}
-        </button>
+        {/*
+          تم إخفاء زر تسجيل الدخول عبر Google مؤقتًا بسبب عطل.
+          لإعادة تفعيله لاحقًا، أزل هذا التعليق بعد حل المشكلة.
+          <button className={styles.googleLoginBtn} onClick={handleGoogleLogin} disabled={isGoogleLoading}>
+            <span className={styles.googleIcon} aria-hidden="true" />
+            {isGoogleLoading ? 'جارٍ الاتصال بجوجل...' : 'تسجيل الدخول عبر Google'}
+          </button>
+        */}
 
         {/* Divider */}
         <div className={styles.divider}>
