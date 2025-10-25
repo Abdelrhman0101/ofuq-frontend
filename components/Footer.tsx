@@ -135,7 +135,7 @@ const Footer = () => {
         <div className={styles['footer-column']}>
           <motion.h3 className={styles['footer-title']} whileHover={{ scale: 1.02 }}>الدبلومات</motion.h3>
           <ul className={styles['footer-list']}>
-            <Link href="/diplomas/baraa"><li className={styles['footer-item']}>بارع</li></Link>
+            <Link href="/diplomas/baree3"><li className={styles['footer-item']}>بارع</li></Link>
             <Link href="/community"><li className={styles['footer-item']}>مجتمع أفق</li></Link>
           </ul>
         </div>
