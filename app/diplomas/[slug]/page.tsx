@@ -252,13 +252,13 @@ export default function DiplomaDetailsPage() {
                   <div className={styles.metaItem}>
                     <strong>الحالة:</strong> 
                     <span className={diploma?.is_free ? styles.freeTag : styles.paidTag}>
-                      {diploma?.is_free ? 'مجانية' : 'مدفوعة'}
+                      {diploma?.is_free ? '200$' : 'مدفوعة'}
                     </span>
                   </div>
                   <div className={styles.metaItem}>
                     <strong>السعر:</strong> 
                     <span className={styles.priceTag}>
-                      {diploma?.is_free ? 'مجاني' : `${diploma?.price} جنيه`}
+                      {diploma?.is_free ? '200$' : `${diploma?.price} جنيه`}
                     </span>
                   </div>
                   {typeof diploma?.courses_count !== 'undefined' && (

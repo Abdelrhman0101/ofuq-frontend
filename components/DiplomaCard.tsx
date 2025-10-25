@@ -38,7 +38,7 @@ export default function DiplomaCard({
 }: DiplomaCardProps) {
   const href = `/diplomas/${slug}`; // رابط صفحة تفاصيل الدبلومة
   const imgSrc = image || '/logo.png'; // صورة افتراضية عند غياب الصورة
-  const displayPrice = isFree ? 'مجانية' : `${formatPrice(price)} ر.س`;
+  const displayPrice = isFree ? '200$' : `${formatPrice(price)} ر.س`;
 
   return (
     <Link href={href} className={styles['diploma-card']} data-id={id}>
