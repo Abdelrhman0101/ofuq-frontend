@@ -407,6 +407,8 @@ const CourseContent: React.FC<CourseContentProps> = ({
           line-height: 1.8;
           color: #333;
           margin: 8px 0 16px;
+          text-align: right;
+          direction: rtl;
         }
 
         .course-content-subtitle {

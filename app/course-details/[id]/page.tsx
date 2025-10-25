@@ -206,7 +206,7 @@ const CourseDetailsPage = () => {
       <main className="main-content">
         <div className="course-details-container">
           {/* Left Content */}
-          <div className="left-section">
+          <div className="left-content">
             {/**
              * اختر فيديو المعاينة: أول درس مرئي (is_visible = true) عبر كل فصول الكورس
              * يعتمد على أن الباك اند يعرض video_url للدرس المرئي حتى لغير المشتركين
@@ -381,7 +381,7 @@ const CourseDetailsPage = () => {
           background-color: #f8f9fa;
         }
         
-        .left-section {
+        .left-content {
           display: flex;
           flex-direction: column;
           gap: 20px;

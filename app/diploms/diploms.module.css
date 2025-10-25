@@ -49,6 +49,43 @@
   gap: 30px;
 }
 
+/* Responsive grid for mobile */
+@media (max-width: 1024px) {
+  .courses-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+  }
+}
+
+@media (max-width: 768px) {
+  .courses-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .popular-courses-section {
+    padding: 60px 20px;
+  }
+  
+  .popular-title {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .courses-grid {
+    gap: 16px;
+  }
+  
+  .popular-courses-section {
+    padding: 40px 16px;
+  }
+  
+  .popular-title {
+    font-size: 24px;
+  }
+}
+
 /* Local state styles */
 .loading-state,
 .error-state,

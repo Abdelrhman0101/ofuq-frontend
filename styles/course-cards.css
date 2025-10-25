@@ -516,10 +516,19 @@
 @media (max-width: 1200px) {
   .courses-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+  }
+  
+  .popular-courses-section {
+    padding: 60px 30px;
   }
 }
 
 @media (max-width: 768px) {
+  .popular-courses-section {
+    padding: 40px 20px;
+  }
+  
   .popular-courses-header {
     flex-direction: column;
     gap: 20px;
@@ -530,22 +539,183 @@
     max-width: none;
   }
   
+  .popular-title {
+    font-size: 28px;
+  }
+  
   .courses-grid {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-}
-
-@media (max-width: 480px) {
-  .popular-courses-section {
-    padding: 40px 15px;
+  
+  .course-card {
+    max-width: 100%;
   }
   
   .course-content {
     padding: 20px;
   }
   
+  .course-title {
+    font-size: 17px;
+    line-height: 1.4;
+  }
+  
+  .instructor-info {
+    padding: 10px 14px;
+  }
+  
+  .instructor-name {
+    font-size: 14px;
+  }
+  
+  .course-price {
+    font-size: 20px;
+  }
+  
+  .enroll-text {
+    font-size: 15px;
+  }
+  
+  .enroll-arrow {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .enroll-arrow svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .popular-courses-section {
+    padding: 30px 15px;
+  }
+  
   .popular-title {
+    font-size: 24px;
+    line-height: 1.3;
+  }
+  
+  .popular-badge {
+    font-size: 13px;
+    padding: 6px 14px;
+  }
+  
+  .course-content {
+    padding: 18px;
+  }
+  
+  .course-title {
     font-size: 16px;
+    margin-bottom: 12px;
+  }
+  
+  .course-image {
+    height: 180px;
+  }
+  
+  .instructor-info {
+    padding: 8px 12px;
+    margin-bottom: 15px;
+  }
+  
+  .instructor-avatar {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .instructor-name {
+    font-size: 13px;
+  }
+  
+  .course-price {
+    font-size: 18px;
+  }
+  
+  .currency {
+    font-size: 14px;
+  }
+  
+  .enroll-text {
+    font-size: 14px;
+  }
+  
+  .enroll-arrow {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .enroll-arrow svg {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .view-all-btn {
+    font-size: 15px;
+  }
+  
+  .arrow-circle {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .arrow-circle svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .popular-courses-section {
+    padding: 25px 12px;
+  }
+  
+  .popular-title {
+    font-size: 22px;
+  }
+  
+  .course-content {
+    padding: 15px;
+  }
+  
+  .course-title {
+    font-size: 15px;
+  }
+  
+  .course-image {
+    height: 160px;
+  }
+  
+  .instructor-info {
+    padding: 6px 10px;
+  }
+  
+  .instructor-avatar {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .instructor-name {
+    font-size: 12px;
+  }
+  
+  .course-price {
+    font-size: 16px;
+  }
+  
+  .enroll-text {
+    font-size: 13px;
+  }
+  
+  .enroll-arrow {
+    width: 26px;
+    height: 26px;
+  }
+  
+  .enroll-arrow svg {
+    width: 10px;
+    height: 10px;
   }
 }
