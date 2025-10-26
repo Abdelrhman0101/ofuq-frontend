@@ -305,12 +305,12 @@ const CourseContent: React.FC<CourseContentProps> = ({
           >
             نظرة عامة
           </button>
-          <button 
+          {/* <button 
             className={`tab-button ${activeTab === 'instructor' ? 'active' : ''}`}
             onClick={() => setActiveTab('instructor')}
           >
             المحاضر
-          </button>
+          </button> */}
         </div>
         {getTabContent()}
       </div>
