@@ -1,7 +1,8 @@
 .fav-section {
   padding: 24px;
-  width: min(100%, 920px); /* تقليل عرض الصفحة وتحديد حد أقصى */
-  
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .fav-header {
@@ -59,8 +60,9 @@
 /* شبكة أعلى الصفحة لعرض 3 كروت */
 .fav-top-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 16px;
 }
 
 .fav-bottom {
@@ -69,13 +71,18 @@
 
 .fav-grid {
   display: grid;
-  grid-template-columns: repeat(3 , 1fr);
-  gap: 10px;
-  width: 1150px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  width: 100%;
 }
 
 .fav-item-wrapper {
   position: relative;
+  transition: transform 0.3s ease;
+}
+
+.fav-item-wrapper:hover {
+  transform: translateY(-5px);
 }
 
 /* Normalize card sizing inside favorites to avoid cross-CSS conflicts */
@@ -142,8 +149,36 @@
 /* (تم حذف مؤثرات التدرج الخاصة بالسلايدر) */
 
 /* استجابة للشاشات الصغيرة */
+@media (max-width: 768px) {
+  .fav-section {
+    padding: 16px;
+  }
+  
+  .fav-top-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+  }
+  
+  .fav-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+  }
+}
+
 @media (max-width: 520px) {
-  .fav-top-grid { grid-template-columns: 1fr; }
+  .fav-top-grid { 
+    grid-template-columns: 1fr; 
+    gap: 12px;
+  }
+  
+  .fav-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .fav-section {
+    padding: 12px;
+  }
 }
 
 /* ضمان عرض كامل لبطاقة CourseGrid داخل السلايدر */
@@ -231,8 +266,8 @@
 
 .fav-modal-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* ثابت 3 أعمدة */
-  gap: 20px; /* مسافة أكبر بين البطاقات */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
   width: 100%;
 }
 

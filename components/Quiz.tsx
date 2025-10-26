@@ -7,7 +7,7 @@ interface QuizQuestion {
   id: number;
   question: string;
   options: string[];
-  correctAnswer: number;
+  correctAnswer: number | number[] | null;
 }
 
 interface QuizProps {
@@ -17,9 +17,10 @@ interface QuizProps {
   initialAnswers?: { [key: number]: number };
   canGoNext?: boolean;
   onGoNext?: () => void;
+  onClose?: () => void;
 }
 
-const Quiz: React.FC<QuizProps> = ({ questions = defaultQuestions, requireAllAnswered = true, onComplete, initialAnswers, canGoNext = false, onGoNext }) => {
+const Quiz: React.FC<QuizProps> = ({ questions = defaultQuestions, requireAllAnswered = true, onComplete, initialAnswers, canGoNext = false, onGoNext, onClose }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number }>({});
   const [isFinished, setIsFinished] = useState(false);

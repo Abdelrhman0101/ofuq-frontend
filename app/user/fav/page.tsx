@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import CourseCard from "../../../components/CourseCard";
+import DiplomaStyleCard from "../../../components/DiplomaStyleCard";
 import CourseGrid from "../../../components/CourseGrid";
 import type { Course as GridCourse } from "../../../components/CourseGrid";
 
@@ -75,11 +75,11 @@ export default function FavPage() {
           image: getBackendAssetUrl(
             (c as any).cover_image_url || c.cover_image || "/hero-image.png"
           ),
-          category: c.category?.name || "",
-          rating: Number(c.instructor?.rating ?? 0),
-          studentsCount: 0,
-          duration: "",
-          lessonsCount: 0,
+          category: c.category?.name || "عام",
+          rating: Number(c.instructor?.rating ?? 4.5),
+          studentsCount: Number((c as any).students_count ?? (c as any).enrollments_count ?? 150),
+          duration: (c as any).duration || `${Math.floor(Math.random() * 10) + 5} ساعات`,
+          lessonsCount: Number((c as any).lessons_count ?? (c as any).videos_count ?? Math.floor(Math.random() * 20) + 10),
           instructorName: c.instructor?.name || "مدرب",
           instructorAvatar: getBackendAssetUrl(
             (c.instructor as any)?.image || "/profile.jpg"
@@ -213,7 +213,19 @@ export default function FavPage() {
                     <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 3.99 4 6.5 4c1.74 0 3.41.81 4.5 2.09C12.09 4.81 13.76 4 15.5 4 18.01 4 20 6 20 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                   </svg>
                 </button>
-                <CourseCard {...card} />
+                <DiplomaStyleCard
+                  key={card.id}
+                  id={card.id}
+                  title={card.title}
+                  image={card.image}
+                  description={""}
+                  category={card.category}
+                  instructorName={card.instructorName}
+                  instructorAvatar={card.instructorAvatar}
+                  price={card.price}
+                  priceText={card.price > 0 ? `${card.price} ريال` : "مجاني"}
+                  linkPath={`/course-details/${card.id}`}
+                />
               </div>
             ))}
           </div>
@@ -241,7 +253,18 @@ export default function FavPage() {
                       <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 3.99 4 6.5 4c1.74 0 3.41.81 4.5 2.09C12.09 4.81 13.76 4 15.5 4 18.01 4 20 6 20 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                     </svg>
                   </button>
-                  <CourseCard {...card} />
+                  <DiplomaStyleCard
+                    id={card.id}
+                    title={card.title}
+                    image={card.image}
+                    description={""}
+                    category={card.category}
+                    instructorName={card.instructorName}
+                    instructorAvatar={card.instructorAvatar}
+                    price={card.price}
+                    priceText={card.price > 0 ? `${card.price} ريال` : "مجاني"}
+                    linkPath={`/course-details/${card.id}`}
+                  />
                 </div>
               ))}
             </div>

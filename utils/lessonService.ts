@@ -2,18 +2,19 @@ import apiClient from './apiClient';
 
 // Interface for lesson data structure
 export interface Lesson {
-  id: number;
-  title: string;
-  description?: string;
-  content?: string;
-  order: number;
-  chapter_id: number;
-  video_url?: string;
-  is_visible?: boolean;
-  attachments?: any;
-  resources?: any;
-  created_at?: string;
-  updated_at?: string;
+  id: number;
+  title: string;
+  description?: string;
+  content?: string;
+  order: number;
+  chapter_id: number;
+  video_url?: string;
+  thumbnail?: string;
+  is_visible?: boolean;
+  attachments?: any;
+  resources?: any;
+  created_at?: string;
+  updated_at?: string;
   // --- (تم الإلغاء) ---
   // تم إلغاء الاختبارات المرتبطة بالدرس
   // quiz?: { ... };

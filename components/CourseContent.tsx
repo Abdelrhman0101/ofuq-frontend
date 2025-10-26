@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import StudentReviews from './StudentReviews';
 import InstructorProfile from './InstructorProfile';
 import '../styles/student-reviews.css';
 
@@ -17,6 +16,10 @@ interface CourseContentProps {
   isEnrolled?: boolean;
   defaultExpandedChapterId?: number;
   activeLessonId?: number;
+  currentLessonId?: number | null;
+  currentChapterId?: number | null;
+  courseProgress?: any;
+  onLessonClick?: (lessonId: number, chapterId: number) => void;
   chapters?: Array<{
     id: number;
     title: string;
@@ -46,6 +49,10 @@ const CourseContent: React.FC<CourseContentProps> = ({
   isEnrolled = false,
   defaultExpandedChapterId,
   activeLessonId,
+  currentLessonId,
+  currentChapterId,
+  courseProgress,
+  onLessonClick,
   chapters = [],
   instructorName = "",
   instructorImage = "/profile.jpg",
@@ -237,12 +244,6 @@ const CourseContent: React.FC<CourseContentProps> = ({
             
           </div>
         );
-      case 'reviews':
-        return (
-          <StudentReviews 
-            courseId={courseId || ''}
-          />
-        );
       case 'instructor':
         return (
           <InstructorProfile 
@@ -303,12 +304,6 @@ const CourseContent: React.FC<CourseContentProps> = ({
             onClick={() => setActiveTab('overview')}
           >
             نظرة عامة
-          </button>
-          <button 
-            className={`tab-button ${activeTab === 'reviews' ? 'active' : ''}`}
-            onClick={() => setActiveTab('reviews')}
-          >
-            آراء الطلاب
           </button>
           <button 
             className={`tab-button ${activeTab === 'instructor' ? 'active' : ''}`}

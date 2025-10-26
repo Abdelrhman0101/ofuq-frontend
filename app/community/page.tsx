@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import HomeHeader from '../../components/HomeHeader';
 import Footer from '../../components/Footer';
 import HeroSearchSection from '../../components/HeroSearchSection';
-import CourseCard from '../../components/CourseCard';
+import DiplomaStyleCard from '../../components/DiplomaStyleCard';
 import ScrollToTop from '../../components/ScrollToTop';
 import SocialMediaFloat from '../../components/SocialMediaFloat';
 import { getAllCourses, Course } from '../../utils/courseService';
@@ -176,19 +176,18 @@ function CommunityContent() {
               </div>
             ) : filteredCourses.length > 0 ? (
               filteredCourses.map((course: any) => (
-                <CourseCard
+                <DiplomaStyleCard
                   key={course.id}
                   id={course.id}
                   title={course.title}
                   image={course.image}
+                  description={course.description}
                   category={course.category}
-                  rating={course.rating}
-                  studentsCount={course.studentsCount}
-                  duration={course.duration}
-                  lessonsCount={course.lessonsCount}
                   instructorName={course.instructorName}
                   instructorAvatar={course.instructorAvatar}
                   price={course.price}
+                  priceText={course.price > 0 ? `${course.price} ريال` : "مجاني"}
+                  linkPath={`/course-details/${course.id}`}
                 />
               ))
             ) : (

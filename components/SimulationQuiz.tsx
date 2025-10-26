@@ -12,12 +12,16 @@ interface SimulationQuestion {
 interface SimulationQuizProps {
   questions?: SimulationQuestion[];
   onFinish?: () => void;
+  onClose?: () => void;
+  onComplete?: (score: any) => void;
   isLastLesson?: boolean;
 }
 
 const SimulationQuiz: React.FC<SimulationQuizProps> = ({ 
   questions = defaultSimulationQuestions, 
   onFinish,
+  onClose,
+  onComplete,
   isLastLesson = false 
 }) => {
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number }>({});
