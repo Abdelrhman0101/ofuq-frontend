@@ -1,5 +1,3 @@
-import { http } from '../lib/http';
-
 export interface EnrolledDiplomaItem {
   id: number;
   category_id: number;
@@ -34,31 +32,68 @@ export interface StudentCourse {
   certificate_id: string | null;
 }
 
+import http from './apiClient';
+
 export interface StudentItem {
   id: number;
   name: string;
   email: string;
-  phone: string | null;
-  nationality: string | null;
-  qualification: string | null;
-  media_work_sector: string | null;
-  date_of_birth: string | null;
-  previous_field: string | null;
-  created_at: string;
-  email_verified_at: string | null;
-  is_blocked: boolean;
-  courses: StudentCourse[];
-  diplomas: EnrolledDiplomaItem[];
-  total_courses: number;
-  total_diplomas: number;
-  completed_courses: number;
-  active_diplomas: number;
+  phone?: string;
+  nationality?: string;
+  qualification?: string;
+  media_work_sector?: string;
+  date_of_birth?: string;
+  previous_field?: string;
+  created_at?: string;
+  email_verified_at?: string | null;
+  is_blocked?: boolean;
+  total_courses?: number;
+  total_diplomas?: number;
+  completed_courses?: number;
+  active_diplomas?: number;
+  courses?: Array<any>;
+  diplomas?: Array<any>;
 }
 
-export async function getStudentsStatus(): Promise<StudentItem[]> {
+export interface StudentsPagination {
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+}
+
+export interface StudentsStats {
+  total_students: number;
+  active_students: number;
+  blocked_students: number;
+}
+
+export interface StudentsResponse {
+  data: StudentItem[];
+  pagination: StudentsPagination;
+  stats?: StudentsStats;
+}
+
+// Updated: support page/per_page and return pagination + global stats
+export async function getStudentsStatus(page: number = 1, perPage: number = 10): Promise<StudentsResponse> {
   try {
-    const response = await http.get('/admin/students');
-    return response.data.data || [];
+    const response = await http.get('/admin/students', {
+      params: { page, per_page: perPage },
+    });
+    const raw = response?.data ?? {};
+    const data: StudentItem[] = Array.isArray(raw?.data)
+      ? raw.data
+      : Array.isArray(raw?.data?.data)
+      ? raw.data.data
+      : [];
+    const pagination: StudentsPagination = raw?.pagination ?? {
+      current_page: page,
+      last_page: 1,
+      per_page: perPage,
+      total: data.length,
+    };
+    const stats: StudentsStats | undefined = raw?.stats ?? undefined;
+    return { data, pagination, stats };
   } catch (error) {
     console.error('Error fetching students status:', error);
     throw error;

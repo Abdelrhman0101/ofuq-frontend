@@ -42,8 +42,46 @@ interface Student {
   previous_field: string | null;
 }
 
+// Helper: map API StudentItem to local Student
+const mapItemToStudent = (s: StudentItem): Student => ({
+  id: Number(s.id),
+  name: String(s.name ?? ''),
+  email: String(s.email ?? ''),
+  phone: s.phone ?? null,
+  created_at: s.created_at ?? '',
+  email_verified_at: s.email_verified_at ?? null,
+  is_blocked: Boolean(s.is_blocked),
+  courses: (s.courses ?? []).map((c: any) => ({
+    ...c,
+    finalExamScore: c?.final_exam_score ?? 0,
+  })) as StudentCourseWithScore[],
+  diplomas: (s.diplomas ?? []) as EnrolledDiplomaItem[],
+  certificates: [],
+  total_courses: Number(s.total_courses ?? ((s.courses ?? []).length)),
+  total_diplomas: Number(s.total_diplomas ?? ((s.diplomas ?? []).length)),
+  completed_courses: Number(s.completed_courses ?? 0),
+  active_diplomas: Number(s.active_diplomas ?? 0),
+  nationality: s.nationality ?? null,
+  qualification: s.qualification ?? null,
+  media_work_sector: s.media_work_sector ?? null,
+  date_of_birth: s.date_of_birth ?? null,
+  previous_field: s.previous_field ?? null,
+});
+
 export default function StudentsManagement() {
   const [students, setStudents] = useState<Student[]>([]);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [lastPage, setLastPage] = useState<number>(1);
+  const [perPage, setPerPage] = useState<number>(10);
+  const [total, setTotal] = useState<number>(0);
+  // All pages cache for global search
+  const [allStudents, setAllStudents] = useState<Student[]>([]);
+  const [allLoaded, setAllLoaded] = useState<boolean>(false);
+  const [fetchingAll, setFetchingAll] = useState<boolean>(false);
+  // Added: global stats state from backend
+  const [globalStats, setGlobalStats] = useState<{ total: number; active: number; blocked: number }>({ total: 0, active: 0, blocked: 0 });
 
   // Filters & Sorting state
   const [searchQuery, setSearchQuery] = useState('');
@@ -62,29 +100,106 @@ export default function StudentsManagement() {
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
   const [certLoading, setCertLoading] = useState<boolean>(false);
 
+  // Initial load (page 1)
   useEffect(() => {
-    setLoading(true);
-    getStudentsStatus()
-      .then((data: StudentItem[]) => {
-        setStudents(data.map((s) => ({
-          ...s,
-          courses: s.courses.map((c) => ({
-            ...c,
-            finalExamScore: c.final_exam_score ?? 0,
-          })),
-          certificates: [],
-        })));
-        setLoading(false);
-      })
-      .catch((err) => {
+    const loadInitial = async () => {
+      try {
+        setLoading(true);
+        const { data, pagination, stats } = await getStudentsStatus(1, 10);
+        const mapped = data.map(mapItemToStudent);
+        setStudents(mapped);
+        setCurrentPage(pagination?.current_page ?? 1);
+        setLastPage(pagination?.last_page ?? 1);
+        setPerPage(pagination?.per_page ?? 10);
+        setTotal(pagination?.total ?? mapped.length);
+        // set global stats from backend if available, else fallback
+        if (stats) {
+          setGlobalStats({
+            total: Number(stats.total_students ?? pagination?.total ?? mapped.length),
+            active: Number(stats.active_students ?? 0),
+            blocked: Number(stats.blocked_students ?? 0),
+          });
+        } else {
+          setGlobalStats({
+            total: Number(pagination?.total ?? mapped.length),
+            active: mapped.filter((s) => !s.is_blocked).length,
+            blocked: mapped.filter((s) => s.is_blocked).length,
+          });
+        }
+        setError('');
+      } catch (err) {
         console.error('Failed to load students', err);
         setError('فشل تحميل بيانات الطلاب');
         setToastMessage('فشل تحميل بيانات الطلاب');
         setToastType('error');
         setToastVisible(true);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+    loadInitial();
   }, []);
+
+  // Prefetch all pages for global search
+  useEffect(() => {
+    const prefetchAll = async () => {
+      if (lastPage <= 1 || allLoaded) return;
+      try {
+        setFetchingAll(true);
+        const all: Student[] = [];
+        for (let p = 1; p <= lastPage; p++) {
+          const { data } = await getStudentsStatus(p, perPage);
+          all.push(...data.map(mapItemToStudent));
+        }
+        setAllStudents(all);
+        setAllLoaded(true);
+      } catch (e) {
+        console.error('Failed to prefetch all students', e);
+      } finally {
+        setFetchingAll(false);
+      }
+    };
+    prefetchAll();
+  }, [lastPage, perPage, allLoaded]);
+
+  // Load a specific page
+  const loadPage = async (page: number) => {
+    try {
+      setLoading(true);
+      const { data, pagination, stats } = await getStudentsStatus(page, perPage);
+      const mapped = data.map(mapItemToStudent);
+      setStudents(mapped);
+      setCurrentPage(pagination?.current_page ?? page);
+      setLastPage(pagination?.last_page ?? lastPage);
+      setPerPage(pagination?.per_page ?? perPage);
+      setTotal(pagination?.total ?? total);
+      // refresh global stats from backend
+      if (stats) {
+        setGlobalStats({
+          total: Number(stats.total_students ?? pagination?.total ?? mapped.length),
+          active: Number(stats.active_students ?? 0),
+          blocked: Number(stats.blocked_students ?? 0),
+        });
+      }
+    } catch (e) {
+      console.error('Failed to load page', e);
+      setToastMessage('تعذر تحميل الصفحة المحددة');
+      setToastType('error');
+      setToastVisible(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // handlePageChange (duplicate removed; see earlier definition)
+
+
+  // General stats: always show global stats from backend
+  const stats = useMemo(() => ({
+    total: globalStats.total,
+    active: globalStats.active,
+    blocked: globalStats.blocked,
+  }), [globalStats]);
 
   const selectedStudent = useMemo(
     () => students.find((s) => s.id === selectedStudentId) || null,
@@ -189,6 +304,8 @@ export default function StudentsManagement() {
       try {
         await apiDeleteUser(pendingDeleteId);
         setStudents((prev) => prev.filter((s) => s.id !== pendingDeleteId));
+        setAllStudents((prev) => prev.filter((s) => s.id !== pendingDeleteId));
+        setTotal((t) => (t > 0 ? t - 1 : 0));
         setToastMessage('تم حذف الطالب بنجاح');
         setToastType('success');
       } catch (e) {
@@ -223,6 +340,7 @@ export default function StudentsManagement() {
         await apiUnblockUser(id);
       }
       setStudents((prev) => prev.map((s) => (s.id === id ? { ...s, is_blocked: willBlock } : s)));
+      setAllStudents((prev) => prev.map((s) => (s.id === id ? { ...s, is_blocked: willBlock } : s)));
     } catch (e) {
       console.error('Block/unblock failed', e);
       setToastMessage('تعذر تحديث حالة الحساب');
@@ -231,23 +349,26 @@ export default function StudentsManagement() {
     }
   };
 
-  const calcFinalExamAverage = (student: Student) => {
-    if (!student.courses.length) return 0;
-    const total = student.courses.reduce((sum, c) => sum + (c.finalExamScore || 0), 0);
-    return Math.round(total / student.courses.length);
+  // Load a specific page (duplicate removed; see earlier definition)
+
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > lastPage || page === currentPage) return;
+    loadPage(page);
   };
 
-  // General stats (independent of filters)
-  const stats = useMemo(() => {
-    const total = students.length;
-    const active = students.filter((s) => !s.is_blocked).length;
-    const blocked = students.filter((s) => s.is_blocked).length;
-    return { total, active, blocked };
-  }, [students]);
+  const calcFinalExamAverage = (student: Student) => {
+    if (!student.courses.length) return 0;
+    const totalScore = student.courses.reduce((sum, c) => sum + (c.finalExamScore || 0), 0);
+    return Math.round(totalScore / student.courses.length);
+  };
+
+  // General stats (duplicate removed; using globalStats)
+
 
   // Derived list after applying search, filter, and sort
   const visibleStudents = useMemo(() => {
-    let list = [...students];
+    let list = [...(searchQuery.trim() ? (allLoaded ? allStudents : students) : students)];
 
     // Search by name or email
     const q = searchQuery.trim().toLowerCase();
@@ -274,7 +395,7 @@ export default function StudentsManagement() {
     }
 
     return list;
-  }, [students, searchQuery, statusFilter, sortOption]);
+  }, [students, allStudents, allLoaded, searchQuery, statusFilter, sortOption]);
 
   return (
     <div className="students-management">
@@ -404,6 +525,34 @@ export default function StudentsManagement() {
           </tbody>
         </table>
       </div>
+
+      {!searchQuery.trim() && lastPage > 1 && (
+        <div className="sm-pagination">
+          <button
+            className="sm-btn page-nav"
+            disabled={currentPage === 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+          >
+            السابق
+          </button>
+          {Array.from({ length: lastPage }, (_, i) => i + 1).map((p) => (
+            <button
+              key={p}
+              className={`sm-btn page-number ${p === currentPage ? 'active' : ''}`}
+              onClick={() => handlePageChange(p)}
+            >
+              {p}
+            </button>
+          ))}
+          <button
+            className="sm-btn page-nav"
+            disabled={currentPage === lastPage}
+            onClick={() => handlePageChange(currentPage + 1)}
+          >
+            التالي
+          </button>
+        </div>
+      )}
 
       {modalOpen && selectedStudent && (
         <div className="sm-modal" onClick={closeModal}>
