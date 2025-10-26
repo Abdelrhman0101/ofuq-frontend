@@ -16,20 +16,23 @@ export default function AdminDashboard() {
     const loadStats = async () => {
       setLoading(true);
       try {
-        const [categories, students] = await Promise.all([
+        const [categories, studentsResp] = await Promise.all([
           getAdminCategories(),
           getStudentsStatus(),
         ]);
 
+        const students = studentsResp?.data ?? [];
+        const stats = studentsResp?.stats;
+
         setTotalDiplomas(categories.length);
         setPublishedDiplomas(categories.filter((c) => c.is_published).length);
-        setTotalStudents(students.length);
+        setTotalStudents(stats?.total_students ?? students.length);
 
         const now = new Date();
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
 
-        const enrollments: EnrolledDiplomaItem[] = students.flatMap((s) => s.diplomas || []);
+        const enrollments: EnrolledDiplomaItem[] = students.flatMap((s: any) => s.diplomas || []);
         const monthlySum = enrollments.reduce((sum, d) => {
           const enrolledAt = d.enrolled_at ? new Date(d.enrolled_at) : null;
           const sameMonth = enrolledAt
