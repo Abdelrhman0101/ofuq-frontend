@@ -89,7 +89,7 @@ const HomeHeader = () => {
               <Link href="/" className={clsx(styles['nav-link'], pathname === '/' && styles['active'])}>الرئيسية</Link>
               <Link href="/diploms" className={clsx(styles['nav-link'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && styles['active'])}>دبلومات منصة أفق</Link>
               <Link href="/community" className={clsx(styles['nav-link'], pathname?.startsWith('/community') && styles['active'])}>مجتمع أفق</Link>
-              <Link href="/about" className={clsx(styles['nav-link'], pathname?.startsWith('/about') && styles['active'])}>عنّا</Link>
+              <Link href="/about" className={clsx(styles['nav-link'], pathname?.startsWith('/about') && styles['active'])}>من نحن</Link>
             </nav>
           </div>
 

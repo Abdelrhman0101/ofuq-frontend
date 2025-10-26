@@ -2,12 +2,41 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './HeroSection.module.css';
+import { getGeneralStats, GeneralStats } from '../utils/statsService';
 
 const HeroSection = () => {
   const [displayText, setDisplayText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [stats, setStats] = useState<GeneralStats | null>(null);
+  const [loading, setLoading] = useState(true);
   const fullText = 'مستقبلك';
+  
+  // جلب الإحصائيات من الباك إند
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const statsData = await getGeneralStats();
+        setStats(statsData);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+        // في حالة الخطأ، استخدم قيم افتراضية
+        setStats({
+          total_students: 200,
+          happy_students: 200,
+          total_courses: 0,
+          positive_reviews: 0,
+          average_rating: 0,
+          active_students: 0,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -56,8 +85,10 @@ const HeroSection = () => {
             {/* Student Stats */}
             <div className={styles['student-stats']}>
               <div className={styles['stats-content']}>
-                <span className={styles['student-count']}>200+</span>
-                <span className={styles['student-label']}>طالب سعيد</span>
+                <span className={styles['student-count']}>
+                  {loading ? '...' : `${stats?.total_students || 0}+`}
+                </span>
+                <span className={styles['student-label']}>طالب</span>
               </div>
               <div className={styles['student-profiles']}>
                 {studentProfiles.map((profile, index) => (
@@ -101,7 +132,9 @@ const HeroSection = () => {
               
               {/* Course Stats */}
               <div className={styles['course-stats']}>
-                <span className={styles['course-count']}>13+</span>
+                <span className={styles['course-count']}>
+                  {loading ? '...' : `${stats?.total_courses || 0}+`}
+                </span>
                 <span className={styles['course-label']}>دورة تدريبية</span>
               </div>
             </div>
