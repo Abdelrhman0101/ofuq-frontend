@@ -472,7 +472,7 @@ export default function StudentsManagement() {
         <table className="sm-table">
           <thead>
             <tr>
-              <th>ID</th>
+              <th>#</th>
               <th>الاسم</th>
               <th>البريد الإلكتروني</th>
               <th>عدد الدورات</th>
@@ -484,9 +484,9 @@ export default function StudentsManagement() {
             </tr>
           </thead>
           <tbody>
-            {visibleStudents.map((student) => (
+            {visibleStudents.map((student, index) => (
               <tr key={student.id}>
-                <td>{student.id}</td>
+                <td>{searchQuery.trim() ? index + 1 : (currentPage - 1) * perPage + index + 1}</td>
                 <td>{student.name}</td>
                 <td>{student.email}</td>
                 <td>{student.total_courses}</td>
@@ -529,25 +529,45 @@ export default function StudentsManagement() {
       {!searchQuery.trim() && lastPage > 1 && (
         <div className="sm-pagination">
           <button
-            className="sm-btn page-nav"
+            className="sm-btn page-nav prev-btn"
             disabled={currentPage === 1}
             onClick={() => handlePageChange(currentPage - 1)}
+            title="الصفحة السابقة"
           >
             السابق
           </button>
-          {Array.from({ length: lastPage }, (_, i) => i + 1).map((p) => (
-            <button
-              key={p}
-              className={`sm-btn page-number ${p === currentPage ? 'active' : ''}`}
-              onClick={() => handlePageChange(p)}
-            >
-              {p}
-            </button>
-          ))}
+          
+          <div className="sm-page-info">
+            <span className="page-label">الصفحة</span>
+            <input
+              type="number"
+              className="page-input"
+              value={currentPage}
+              min={1}
+              max={lastPage}
+              onChange={(e) => {
+                const page = parseInt(e.target.value);
+                if (page >= 1 && page <= lastPage) {
+                  handlePageChange(page);
+                }
+              }}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  const page = parseInt((e.target as HTMLInputElement).value);
+                  if (page >= 1 && page <= lastPage) {
+                    handlePageChange(page);
+                  }
+                }
+              }}
+            />
+            <span className="page-total">من {lastPage}</span>
+          </div>
+
           <button
-            className="sm-btn page-nav"
+            className="sm-btn page-nav next-btn"
             disabled={currentPage === lastPage}
             onClick={() => handlePageChange(currentPage + 1)}
+            title="الصفحة التالية"
           >
             التالي
           </button>
