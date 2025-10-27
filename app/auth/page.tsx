@@ -1,18 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import LoginForm from '../../components/LoginForm';
+import AuthPageContent from '../../components/AuthPageContent';
 import styles from './Auth.module.css';
 
 export default function AuthPage() {
-  const searchParams = useSearchParams();
-  const tab = searchParams.get('tab') as 'login' | 'signup' | null;
-
   return (
     <div className={styles.authPage}>
-      <LoginForm initialTab={tab} />
+      <Suspense fallback={<div>جاري التحميل...</div>}>
+        <AuthPageContent />
+      </Suspense>
       <div className={styles.authFooterLinks}>
         <Link href="/privacy" className={styles.footerLink}>
           سياسة الخصوصية
