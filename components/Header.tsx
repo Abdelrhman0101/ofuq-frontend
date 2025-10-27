@@ -248,13 +248,13 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
             <div className="auth-buttons">
               <button 
                 className="login-btn"
-                onClick={() => router.push('/auth')}
+                onClick={() => router.push('/auth?tab=login')}
               >
                 تسجيل الدخول
               </button>
               <button 
                 className="signup-btn"
-                onClick={() => router.push('/auth')}
+                onClick={() => router.push('/auth?tab=signup')}
               >
                 إنشاء حساب
               </button>

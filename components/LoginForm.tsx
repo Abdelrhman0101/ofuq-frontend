@@ -16,10 +16,11 @@ import nationalities from '../data/nationalities.json';
 
 interface LoginFormProps {
   onTabChange?: (tab: 'login' | 'signup') => void;
+  initialTab?: 'login' | 'signup' | null;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onTabChange }) => {
-  const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
+const LoginForm: React.FC<LoginFormProps> = ({ onTabChange, initialTab }) => {
+  const [activeTab, setActiveTab] = useState<'login' | 'signup'>(initialTab || 'login');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

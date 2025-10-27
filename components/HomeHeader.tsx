@@ -149,8 +149,8 @@ const HomeHeader = () => {
               </div>
             ) : (
               <>
-                <Link href="/auth" className={clsx(styles['auth-btn'], styles['login-btn1'])}>تسجيل دخول</Link>
-                <Link href="/auth" className={clsx(styles['auth-btn'], styles['signup-btn'])}>إنشاء حساب</Link>
+                <Link href="/auth?tab=login" className={clsx(styles['auth-btn'], styles['login-btn1'])}>تسجيل دخول</Link>
+                <Link href="/auth?tab=signup" className={clsx(styles['auth-btn'], styles['signup-btn'])}>إنشاء حساب</Link>
               </>
             )}
           </div>
@@ -175,8 +175,8 @@ const HomeHeader = () => {
 
           {!isLoggedIn && (
             <div className={styles['sidebar-auth']}>
-              <Link href="/auth" className={clsx(styles['auth-btn'], styles['login-btn1'])} onClick={closeSidebar}>تسجيل دخول</Link>
-              <Link href="/auth" className={clsx(styles['auth-btn'], styles['signup-btn'])} onClick={closeSidebar}>إنشاء حساب</Link>
+              <Link href="/auth?tab=login" className={clsx(styles['auth-btn'], styles['login-btn1'])} onClick={closeSidebar}>تسجيل دخول</Link>
+              <Link href="/auth?tab=signup" className={clsx(styles['auth-btn'], styles['signup-btn'])} onClick={closeSidebar}>إنشاء حساب</Link>
             </div>
           )}
 
