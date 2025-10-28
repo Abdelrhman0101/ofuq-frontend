@@ -11,6 +11,7 @@ import Footer from '../components/Footer';
 import ScrollToTop from '../components/ScrollToTop';
 import SocialMediaFloat from '../components/SocialMediaFloat';
 import WorldUsersMap from '../components/WorldUsersMap';
+import AboutOfuqSection from '../components/AboutOfuqSection';
 import { getPublicDiplomas, Diploma } from '../utils/categoryService';
 import { getBackendAssetUrl } from '../utils/url';
 import '../styles/contact-section.css';
@@ -109,11 +110,14 @@ export default function HomePage() {
           </div>
         </section>
         
+        {/* About Ofuq Section */}
+        <AboutOfuqSection />
+        
         {/* Values Section */}
-        <ValuesSection />
+        {/* <ValuesSection /> */}
         
         {/* Testimonials Section */}
-        <TestimonialsSlider />
+        {/* <TestimonialsSlider /> */}
         
         {/* Contact Section */}
         <section className="contact-section" aria-labelledby="contact-heading">
