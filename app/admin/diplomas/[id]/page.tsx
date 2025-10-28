@@ -110,8 +110,8 @@ export default function AdminDiplomaPage() {
         if (filteredAdmin.length > 0) {
           setCourses(filteredAdmin);
         } else {
-          // Fallback to public courses mapping to ensure data visibility
-          const publicCourses = await getAllCourses({ per_page: 1000 });
+          // Fallback to public courses with حجم أقل لتسريع التحميل
+          const publicCourses = await getAllCourses({ per_page: 200 });
           const filteredPublic = publicCourses.filter((c) => Number(c.category_id ?? c.category?.id ?? 0) === diplomaId);
           setCourses(filteredPublic);
         }

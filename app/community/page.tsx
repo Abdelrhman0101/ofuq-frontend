@@ -31,7 +31,8 @@ function CommunityContent() {
     const loadAllCourses = async () => {
       try {
         setLoading(true);
-        const courses = await getAllCourses({ per_page: 1000 });
+        // تقليل الحجم الأولي لتحسين زمن التحميل الفعلي
+        const courses = await getAllCourses({ per_page: 50 });
         setAllCourses(courses);
       } catch (err) {
         console.error('Error loading community content:', err);

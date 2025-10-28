@@ -68,6 +68,7 @@ export default function WorldUsersMap() {
   const [diplomasCount, setDiplomasCount] = useState<number>(0);
   const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
   const [hoverKey, setHoverKey] = useState<string | null>(null);
+  const [hoverCoords, setHoverCoords] = useState<[number, number] | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -184,43 +185,46 @@ export default function WorldUsersMap() {
                     // تأخير الحركة لكل علامة
                     const animationDelay = index * 0.1;
                     
-                    return (
-                      <Marker key={`${item.country_ar}-${lon}-${lat}`} coordinates={[lon, lat]}> 
-                        <g
-                          onMouseEnter={(e) => {
-                            setHoverInfo({
-                              nameAr: item.country_ar,
-                              count: item.students_count,
-                              offsetX: 15,
-                              offsetY: -20,
-                            });
-                            setHoverKey(item.country_ar);
-                          }}
-                          onMouseLeave={() => { setHoverInfo(null); setHoverKey(null); }}
-                          className="marker-group"
+                  return (
+                    <Marker key={`${item.country_ar}-${lon}-${lat}`} coordinates={[lon, lat]}> 
+                      <g
+                        onMouseEnter={(e) => {
+                          setHoverInfo({
+                            nameAr: item.country_ar,
+                            count: item.students_count,
+                            offsetX: 0,
+                            offsetY: -80,
+                          });
+                          setHoverKey(item.country_ar);
+                          setHoverCoords([lon, lat]);
+                        }}
+                        onMouseLeave={() => { setHoverInfo(null); setHoverKey(null); }}
+                        className="marker-group"
+                        style={{
+                          animationDelay: `${animationDelay}s`
+                        }}
+                      >
+                        {/* دائرة الوهج الخارجية */}
+                        <circle 
+                          r={radius + 4} 
+                          fill="rgba(1, 158, 187, 0.2)"
+                          className="marker-outer-glow"
                           style={{
-                            animationDelay: `${animationDelay}s`
+                            animation: `markerPulse 3s ease-in-out infinite ${animationDelay}s`,
+                            pointerEvents: 'none'
                           }}
-                        >
-                          {/* دائرة الوهج الخارجية */}
-                          <circle 
-                            r={radius + 4} 
-                            fill="rgba(1, 158, 187, 0.2)"
-                            className="marker-outer-glow"
-                            style={{
-                              animation: `markerPulse 3s ease-in-out infinite ${animationDelay}s`
-                            }}
-                          />
-                          
-                          {/* إضافة طبقة إضافية للتوهج الخارجي */}
-                          <circle 
-                            r={radius + 8} 
-                            fill="url(#markerGradient)"
-                            className="marker-outer-glow"
-                            style={{
-                              animationDelay: `${index * 0.2}s`
-                            }}
-                          />
+                        />
+                        
+                        {/* إضافة طبقة إضافية للتوهج الخارجي */}
+                        <circle 
+                          r={radius + 8} 
+                          fill="url(#markerGradient)"
+                          className="marker-outer-glow"
+                          style={{
+                            animationDelay: `${index * 0.2}s`,
+                            pointerEvents: 'none'
+                          }}
+                        />
                           
                           {/* العلامة الرئيسية */}
                           <circle 
@@ -244,92 +248,42 @@ export default function WorldUsersMap() {
                             }}
                           />
                           
-                          {/* التولتيب المحسن */}
-                          {hoverInfo && hoverKey === item.country_ar && (
-                            <g 
-                              transform={`translate(${hoverInfo.offsetX}, ${hoverInfo.offsetY})`} 
-                              className="tooltip-group"
-                            >
-                              {/* ظل التولتيب */}
-                              <rect 
-                                x="2" 
-                                y="2" 
-                                rx={10} 
-                                ry={10} 
-                                width={180} 
-                                height={60}
-                                fill="rgba(0, 0, 0, 0.1)"
-                                className="tooltip-shadow"
-                              />
-                              
-                              {/* خلفية التولتيب */}
-                              <rect 
-                                rx={10} 
-                                ry={10} 
-                                width={180} 
-                                height={60}
-                                fill="white"
-                                stroke="#019EBB"
-                                strokeWidth="2"
-                                className="tooltip-rect"
-                              />
-                              
-                              {/* خط علوي ملون */}
-                              <rect 
-                                rx={10} 
-                                ry={10} 
-                                width={180} 
-                                height={24}
-                                fill="url(#markerGradient)"
-                              />
-                              
-                              {/* رأس التولتيب */}
-                              <text 
-                                x={90} 
-                                y={16} 
-                                className="tooltip-country"
-                                textAnchor="middle"
-                                dominantBaseline="middle"
-                                fontWeight="700"
-                                fontSize="13"
-                                fill="white"
-                              >
-                                {hoverInfo.nameAr}
-                              </text>
-                              
-                              {/* جسم التولتيب */}
-                              <g className="tooltip-body">
-                                <text 
-                                  x={90} 
-                                  y={40} 
-                                  className="student-count"
-                                  textAnchor="middle"
-                                  dominantBaseline="middle"
-                                  fill="#019EBB" 
-                                  fontWeight="700"
-                                  fontSize="18"
-                                >
-                                  {hoverInfo.count.toLocaleString()}
-                                </text>
-                                <text 
-                                  x={90} 
-                                  y={54} 
-                                  className="tooltip-label"
-                                  textAnchor="middle"
-                                  dominantBaseline="middle"
-                                  fill="#64748b"
-                                  fontWeight="500"
-                                  fontSize="11"
-                                >
-                                  طالب
-                                </text>
-                              </g>
-                            </g>
-                          )}
+                          {/* التولتيب يُعرض في طبقة Overlay فقط لمنع التكرار */}
                         </g>
                       </Marker>
-                    );
-                  })}
+                  );
+                })}
+
+                {/* Overlay لرفع العنصر المُشار إليه والتولتيب فوق الجميع */}
+                {hoverKey && hoverCoords && (() => {
+                  const hi = distribution.find(d => d.country_ar === hoverKey);
+                  if (!hi) return null;
+                  const baseRadius = 4;
+                  const maxRadius = 12;
+                  const radius = Math.max(baseRadius, Math.min(maxRadius, baseRadius + Math.sqrt(hi.students_count) * 0.8));
+                  return (
+                    <Marker key={`hover-overlay-${hoverKey}`} coordinates={hoverCoords}>
+                      <g className="marker-group marker-overlay" style={{ pointerEvents: 'none' }}>
+                        <circle r={radius + 4} fill="rgba(1, 158, 187, 0.2)" className="marker-outer-glow" />
+                        <circle r={radius + 8} fill="url(#markerGradient)" className="marker-outer-glow" />
+                        <circle r={radius} fill="url(#markerGradientHover)" className="marker-glow" filter="url(#markerGlow)" />
+                        <circle r={2} fill="#ffffff" opacity="0.9" />
+                        {hoverInfo && (
+                          <g transform={`translate(${hoverInfo.offsetX}, ${hoverInfo.offsetY})`} className="tooltip-group">
+                            <rect x="2" y="2" rx={10} ry={10} width={180} height={60} fill="rgba(0, 0, 0, 0.1)" className="tooltip-shadow" />
+                            <rect rx={10} ry={10} width={180} height={60} fill="white" stroke="#019EBB" strokeWidth="2" className="tooltip-rect" />
+                            <rect rx={10} ry={10} width={180} height={24} fill="url(#markerGradient)" />
+                            <text x={90} y={16} className="tooltip-country" textAnchor="middle" dominantBaseline="middle" fontWeight="700" fontSize="13" fill="white">{hoverInfo.nameAr}</text>
+                            <g className="tooltip-body">
+                              <text x={90} y={40} className="student-count" textAnchor="middle" dominantBaseline="middle" fill="#019EBB" fontWeight="700" fontSize="18">{hoverInfo.count.toLocaleString()}</text>
+                              <text x={90} y={54} className="tooltip-label" textAnchor="middle" dominantBaseline="middle" fill="#64748b" fontWeight="500" fontSize="11">طالب</text>
+                            </g>
+                          </g>
+                        )}
+                      </g>
+                    </Marker>
+                  );
+                })()}
                 </>
               )}
             </Geographies>
