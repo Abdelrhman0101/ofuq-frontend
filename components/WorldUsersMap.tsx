@@ -7,7 +7,7 @@ import { geoCentroid } from "d3-geo";
 import { getGeneralStats, getStudentsByCountry, type GeneralStats, type StudentsByCountryItem } from "@/utils/statsService";
 import { getPublicDiplomasCount } from "@/utils/categoryService";
 import nationalities from "@/data/nationalities.json";
-import "@/styles/world-map.css";
+import styles from "./WorldUsersMap.module.css";
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -111,14 +111,14 @@ export default function WorldUsersMap() {
   const progressDiplomas = Math.round(Math.min(100, (diplomasCount / TARGET_DIPLOMAS) * 100));
 
   return (
-    <section className="world-map-section">
-      <div className="world-map-wrapper">
-        <div className="section-header">
-          <h2 className="section-title">انتشار طلابنا حول العالم</h2>
-          <p className="section-subtitle">مرّر الفأرة على النقاط لمعرفة البلد وعدد الطلاب</p>
+    <section className={styles['world-map-section']}>
+      <div className={styles['world-map-wrapper']}>
+        <div className={styles['section-header']}>
+          <h2 className={styles['section-title']}>انتشار طلابنا حول العالم</h2>
+          <p className={styles['section-subtitle']}>مرّر الفأرة على النقاط لمعرفة البلد وعدد الطلاب</p>
         </div>
 
-        <div className="map-container">
+        <div className={styles['map-container']}>
           <ComposableMap projectionConfig={{ scale: 160 }}>
             {/* تعريف التدرجات اللونية للعلامات */}
             <defs>
@@ -199,7 +199,7 @@ export default function WorldUsersMap() {
                           setHoverCoords([lon, lat]);
                         }}
                         onMouseLeave={() => { setHoverInfo(null); setHoverKey(null); }}
-                        className="marker-group"
+                        className={styles['marker-group']}
                         style={{
                           animationDelay: `${animationDelay}s`
                         }}
@@ -208,7 +208,7 @@ export default function WorldUsersMap() {
                         <circle 
                           r={radius + 4} 
                           fill="rgba(1, 158, 187, 0.2)"
-                          className="marker-outer-glow"
+                          className={styles['marker-outer-glow']}
                           style={{
                             animation: `markerPulse 3s ease-in-out infinite ${animationDelay}s`,
                             pointerEvents: 'none'
@@ -219,7 +219,7 @@ export default function WorldUsersMap() {
                         <circle 
                           r={radius + 8} 
                           fill="url(#markerGradient)"
-                          className="marker-outer-glow"
+                          className={styles['marker-outer-glow']}
                           style={{
                             animationDelay: `${index * 0.2}s`,
                             pointerEvents: 'none'
@@ -230,7 +230,7 @@ export default function WorldUsersMap() {
                           <circle 
                             r={radius} 
                             fill={hoverKey === item.country_ar ? "url(#markerGradientHover)" : "url(#markerGradient)"}
-                            className="marker-glow"
+                            className={styles['marker-glow']}
                             filter="url(#markerGlow)"
                             style={{
                               cursor: 'pointer',
@@ -263,20 +263,20 @@ export default function WorldUsersMap() {
                   const radius = Math.max(baseRadius, Math.min(maxRadius, baseRadius + Math.sqrt(hi.students_count) * 0.8));
                   return (
                     <Marker key={`hover-overlay-${hoverKey}`} coordinates={hoverCoords}>
-                      <g className="marker-group marker-overlay" style={{ pointerEvents: 'none' }}>
-                        <circle r={radius + 4} fill="rgba(1, 158, 187, 0.2)" className="marker-outer-glow" />
-                        <circle r={radius + 8} fill="url(#markerGradient)" className="marker-outer-glow" />
-                        <circle r={radius} fill="url(#markerGradientHover)" className="marker-glow" filter="url(#markerGlow)" />
+                      <g className={`${styles['marker-group']} ${styles['marker-overlay'] ?? ''}`} style={{ pointerEvents: 'none' }}>
+                        <circle r={radius + 4} fill="rgba(1, 158, 187, 0.2)" className={styles['marker-outer-glow']} />
+                        <circle r={radius + 8} fill="url(#markerGradient)" className={styles['marker-outer-glow']} />
+                        <circle r={radius} fill="url(#markerGradientHover)" className={styles['marker-glow']} filter="url(#markerGlow)" />
                         <circle r={2} fill="#ffffff" opacity="0.9" />
                         {hoverInfo && (
-                          <g transform={`translate(${hoverInfo.offsetX}, ${hoverInfo.offsetY})`} className="tooltip-group">
-                            <rect x="2" y="2" rx={10} ry={10} width={180} height={60} fill="rgba(0, 0, 0, 0.1)" className="tooltip-shadow" />
-                            <rect rx={10} ry={10} width={180} height={60} fill="white" stroke="#019EBB" strokeWidth="2" className="tooltip-rect" />
+                          <g transform={`translate(${hoverInfo.offsetX}, ${hoverInfo.offsetY})`} className={styles['tooltip-group']}>
+                            <rect x="2" y="2" rx={10} ry={10} width={180} height={60} fill="rgba(0, 0, 0, 0.1)" className={styles['tooltip-shadow']} />
+                            <rect rx={10} ry={10} width={180} height={60} fill="white" stroke="#019EBB" strokeWidth="2" className={styles['tooltip-rect']} />
                             <rect rx={10} ry={10} width={180} height={24} fill="url(#markerGradient)" />
-                            <text x={90} y={16} className="tooltip-country" textAnchor="middle" dominantBaseline="middle" fontWeight="700" fontSize="13" fill="white">{hoverInfo.nameAr}</text>
-                            <g className="tooltip-body">
-                              <text x={90} y={40} className="student-count" textAnchor="middle" dominantBaseline="middle" fill="#019EBB" fontWeight="700" fontSize="18">{hoverInfo.count.toLocaleString()}</text>
-                              <text x={90} y={54} className="tooltip-label" textAnchor="middle" dominantBaseline="middle" fill="#64748b" fontWeight="500" fontSize="11">طالب</text>
+                            <text x={90} y={16} className={styles['tooltip-country']} textAnchor="middle" dominantBaseline="middle" fontWeight="700" fontSize="13" fill="white">{hoverInfo.nameAr}</text>
+                            <g className={styles['tooltip-body']}>
+                              <text x={90} y={40} className={styles['student-count']} textAnchor="middle" dominantBaseline="middle" fill="#019EBB" fontWeight="700" fontSize="18">{hoverInfo.count.toLocaleString()}</text>
+                              <text x={90} y={54} className={styles['tooltip-label']} textAnchor="middle" dominantBaseline="middle" fill="#64748b" fontWeight="500" fontSize="11">طالب</text>
                             </g>
                           </g>
                         )}
@@ -291,76 +291,76 @@ export default function WorldUsersMap() {
         </div>
 
         {/* قسم الإحصائيات بتصميم احترافي عصري */}
-        <div className="stats-grid">
+        <div className={styles['stats-grid']}>
           {/* بطاقة الدول */}
-          <div className="stat-card" style={{ animationDelay: '0.1s' }}>
-            <div className="stat-header">
-              <div className="stat-progress" style={{ ['--progress' as any]: progressCountries }}>
-                <div className="stat-progress-inner">
-                  <FaGlobe className="stat-icon" />
+          <div className={styles['stat-card']} style={{ animationDelay: '0.1s' }}>
+            <div className={styles['stat-header']}>
+              <div className={styles['stat-progress']} style={{ ['--progress' as any]: progressCountries }}>
+                <div className={styles['stat-progress-inner']}>
+                  <FaGlobe className={styles['stat-icon']} />
                 </div>
               </div>
-              <h3 className="stat-title">الدول</h3>
-              <span className="stat-chip">{progressCountries}% تغطية</span>
+              <h3 className={styles['stat-title']}>الدول</h3>
+              <span className={styles['stat-chip']}>{progressCountries}% تغطية</span>
             </div>
-            <div className="stat-body">
-              <div className="stat-number"><CountUp value={distribution.length} /></div>
-              <div className="stat-label">دولة</div>
-              <div className="stat-description">عدد الدول المشاركة</div>
+            <div className={styles['stat-body']}>
+              <div className={styles['stat-number']}><CountUp value={distribution.length} /></div>
+              <div className={styles['stat-label']}>دولة</div>
+              <div className={styles['stat-description']}>عدد الدول المشاركة</div>
             </div>
           </div>
 
           {/* بطاقة إجمالي الطلاب */}
-          <div className="stat-card" style={{ animationDelay: '0.2s' }}>
-            <div className="stat-header">
-              <div className="stat-progress" style={{ ['--progress' as any]: progressStudents }}>
-                <div className="stat-progress-inner">
-                  <FaUsers className="stat-icon" />
+          <div className={styles['stat-card']} style={{ animationDelay: '0.2s' }}>
+            <div className={styles['stat-header']}>
+              <div className={styles['stat-progress']} style={{ ['--progress' as any]: progressStudents }}>
+                <div className={styles['stat-progress-inner']}>
+                  <FaUsers className={styles['stat-icon']} />
                 </div>
               </div>
-              <h3 className="stat-title">إجمالي الطلاب</h3>
-              <span className="stat-chip">{progressStudents}% نمو</span>
+              <h3 className={styles['stat-title']}>إجمالي الطلاب</h3>
+              <span className={styles['stat-chip']}>{progressStudents}% نمو</span>
             </div>
-            <div className="stat-body">
-              <div className="stat-number"><CountUp value={(generalStats?.total_students ?? 0)} /></div>
-              <div className="stat-label">طالب</div>
-              <div className="stat-description">إجمالي الطلاب المسجلين</div>
+            <div className={styles['stat-body']}>
+              <div className={styles['stat-number']}><CountUp value={(generalStats?.total_students ?? 0)} /></div>
+              <div className={styles['stat-label']}>طالب</div>
+              <div className={styles['stat-description']}>إجمالي الطلاب المسجلين</div>
             </div>
           </div>
 
           {/* بطاقة المقررات */}
-          <div className="stat-card" style={{ animationDelay: '0.3s' }}>
-            <div className="stat-header">
-              <div className="stat-progress" style={{ ['--progress' as any]: progressCourses }}>
-                <div className="stat-progress-inner">
-                  <FaGraduationCap className="stat-icon" />
+          <div className={styles['stat-card']} style={{ animationDelay: '0.3s' }}>
+            <div className={styles['stat-header']}>
+              <div className={styles['stat-progress']} style={{ ['--progress' as any]: progressCourses }}>
+                <div className={styles['stat-progress-inner']}>
+                  <FaGraduationCap className={styles['stat-icon']} />
                 </div>
               </div>
-              <h3 className="stat-title">المقررات</h3>
-              <span className="stat-chip">{progressCourses}% توفر</span>
+              <h3 className={styles['stat-title']}>المقررات</h3>
+              <span className={styles['stat-chip']}>{progressCourses}% توفر</span>
             </div>
-            <div className="stat-body">
-              <div className="stat-number"><CountUp value={(generalStats?.total_courses ?? 0)} /></div>
-              <div className="stat-label">مقرر</div>
-              <div className="stat-description">المقررات المتاحة</div>
+            <div className={styles['stat-body']}>
+              <div className={styles['stat-number']}><CountUp value={(generalStats?.total_courses ?? 0)} /></div>
+              <div className={styles['stat-label']}>مقرر</div>
+              <div className={styles['stat-description']}>المقررات المتاحة</div>
             </div>
           </div>
 
           {/* بطاقة الدبلومات */}
-          <div className="stat-card" style={{ animationDelay: '0.4s' }}>
-            <div className="stat-header">
-              <div className="stat-progress" style={{ ['--progress' as any]: progressDiplomas }}>
-                <div className="stat-progress-inner">
-                  <FaChartLine className="stat-icon" />
+          <div className={styles['stat-card']} style={{ animationDelay: '0.4s' }}>
+            <div className={styles['stat-header']}>
+              <div className={styles['stat-progress']} style={{ ['--progress' as any]: progressDiplomas }}>
+                <div className={styles['stat-progress-inner']}>
+                  <FaChartLine className={styles['stat-icon']} />
                 </div>
               </div>
-              <h3 className="stat-title">الدبلومات</h3>
-              <span className="stat-chip">{progressDiplomas}% إصدار</span>
+              <h3 className={styles['stat-title']}>الدبلومات</h3>
+              <span className={styles['stat-chip']}>{progressDiplomas}% إصدار</span>
             </div>
-            <div className="stat-body">
-              <div className="stat-number"><CountUp value={diplomasCount} /></div>
-              <div className="stat-label">دبلومة</div>
-              <div className="stat-description">الدبلومات المتاحة للنشر</div>
+            <div className={styles['stat-body']}>
+              <div className={styles['stat-number']}><CountUp value={diplomasCount} /></div>
+              <div className={styles['stat-label']}>دبلومة</div>
+              <div className={styles['stat-description']}>الدبلومات المتاحة للنشر</div>
             </div>
           </div>
         </div>

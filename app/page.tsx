@@ -14,7 +14,6 @@ import WorldUsersMap from '../components/WorldUsersMap';
 import { getPublicDiplomas, Diploma } from '../utils/categoryService';
 import { getBackendAssetUrl } from '../utils/url';
 import '../styles/contact-section.css';
-import '../styles/world-map.css';
 
 export default function HomePage() {
   const [featuredDiplomas, setFeaturedDiplomas] = useState<Diploma[]>([]);
