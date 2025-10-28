@@ -3,11 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import { getAdminCategories } from '../../utils/categoryService';
 import { getStudentsStatus, EnrolledDiplomaItem } from '../../utils/studentsService';
+import WorldUsersMap from '../../components/WorldUsersMap';
+import { getGeneralStats, getStudentsByCountry } from '../../utils/statsService';
 
 export default function AdminDashboard() {
   const [totalDiplomas, setTotalDiplomas] = useState<number>(0);
-  const [publishedDiplomas, setPublishedDiplomas] = useState<number>(0);
   const [totalStudents, setTotalStudents] = useState<number>(0);
+  const [totalCourses, setTotalCourses] = useState<number>(0);
+  const [countriesCount, setCountriesCount] = useState<number>(0);
   const [monthlyRevenue, setMonthlyRevenue] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
@@ -16,17 +19,20 @@ export default function AdminDashboard() {
     const loadStats = async () => {
       setLoading(true);
       try {
-        const [categories, studentsResp] = await Promise.all([
+        const [general, categories, studentsResp, countries] = await Promise.all([
+          getGeneralStats(),
           getAdminCategories(),
           getStudentsStatus(),
+          getStudentsByCountry(),
         ]);
 
         const students = studentsResp?.data ?? [];
         const stats = studentsResp?.stats;
 
         setTotalDiplomas(categories.length);
-        setPublishedDiplomas(categories.filter((c) => c.is_published).length);
-        setTotalStudents(stats?.total_students ?? students.length);
+        setTotalStudents(general?.total_students ?? stats?.total_students ?? students.length);
+        setTotalCourses(general?.total_courses ?? 0);
+        setCountriesCount(Array.isArray(countries) ? countries.length : 0);
 
         const now = new Date();
         const currentMonth = now.getMonth();
@@ -77,21 +83,26 @@ export default function AdminDashboard() {
 
       <div className="dashboard-stats">
         <div className="stat-card">
-          <h3>إجمالي الدبلومات</h3>
-          <p className="stat-number">{loading ? '...' : totalDiplomas}</p>
-        </div>
-        <div className="stat-card">
-          <h3>الطلاب المسجلين</h3>
+          <h3>عدد الطلاب</h3>
           <p className="stat-number">{loading ? '...' : totalStudents}</p>
         </div>
         <div className="stat-card">
-          <h3>الإيرادات الشهرية</h3>
-          <p className="stat-number">{loading ? '...' : formatCurrency(monthlyRevenue)}</p>
+          <h3>عدد المقررات</h3>
+          <p className="stat-number">{loading ? '...' : totalCourses}</p>
         </div>
         <div className="stat-card">
-          <h3>الدبلومات المنشورة</h3>
-          <p className="stat-number">{loading ? '...' : publishedDiplomas}</p>
+          <h3>عدد الدبلومات</h3>
+          <p className="stat-number">{loading ? '...' : totalDiplomas}</p>
         </div>
+        <div className="stat-card">
+          <h3>عدد البلاد</h3>
+          <p className="stat-number">{loading ? '...' : countriesCount}</p>
+        </div>
+      </div>
+
+      {/* خريطة المستخدمين حول العالم داخل لوحة التحكم */}
+      <div style={{ marginTop: 24 }}>
+        <WorldUsersMap />
       </div>
 
       <div className="quick-actions">
