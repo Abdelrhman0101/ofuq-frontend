@@ -250,6 +250,28 @@ export const getPublicDiplomas = async (): Promise<Diploma[]> => {
 };
 
 /**
+ * [Public] جلب العدد الإجمالي للدبلومات المنشورة عبر meta.total
+ */
+export const getPublicDiplomasCount = async (): Promise<number> => {
+  try {
+    const response = await apiClient.get('/categories', { params: { per_page: 1 } });
+    const result = response.data;
+    if (result?.meta?.total !== undefined) {
+      return Number(result.meta.total) || 0;
+    }
+    // إذا لم تكن هناك meta، احتياطيًا نحسب العدد من البيانات إن وجدت
+    if (Array.isArray(result?.data)) {
+      return result.data.length;
+    }
+    console.warn('[GetPublicDiplomasCount] Unexpected response structure:', result);
+    return 0;
+  } catch (error: any) {
+    console.error('[GetPublicDiplomasCount] Error:', error);
+    return 0;
+  }
+};
+
+/**
  * [Public] جلب تفاصيل دبلومة واحدة (صفحة تفاصيل الدبلومة)
  * GET /api/categories/{slug}
  */

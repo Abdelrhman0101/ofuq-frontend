@@ -475,6 +475,7 @@ export default function StudentsManagement() {
               <th>#</th>
               <th>الاسم</th>
               <th>البريد الإلكتروني</th>
+              <th>الجنسية</th>
               <th>عدد الدورات</th>
               <th>عدد الدبلومات</th>
               <th>متوسط الامتحان النهائي</th>
@@ -489,6 +490,7 @@ export default function StudentsManagement() {
                 <td>{searchQuery.trim() ? index + 1 : (currentPage - 1) * perPage + index + 1}</td>
                 <td>{student.name}</td>
                 <td>{student.email}</td>
+                <td>{student.nationality || 'غير محددة'}</td>
                 <td>{student.total_courses}</td>
                 <td>{student.total_diplomas}</td>
                 <td>

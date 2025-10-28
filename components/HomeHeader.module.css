@@ -219,6 +219,8 @@
   min-width: 100px;
 }
 
+/* Help button styles removed per request */
+
 .signup-btn {
   background-color: transparent;
   color: black;
@@ -412,6 +414,22 @@
     font-size: 13px;
     min-width: 80px;
   }
+
+  /* Mobile Help Button Adjustments */
+  .help-btn .help-text {
+    display: none;
+  }
+
+  .help-btn {
+    min-width: 50px;
+    padding: 8px 12px;
+  }
+
+  .help-icon {
+    font-size: 18px;
+  }
+
+  /* Mobile help button styles removed */
 
   .hero-placeholder h1 {
     font-size: 32px;

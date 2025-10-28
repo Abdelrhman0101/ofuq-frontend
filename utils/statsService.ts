@@ -23,6 +23,17 @@ export interface StatsResponse<T> {
   message?: string;
 }
 
+export interface StudentsByCountryItem {
+  country_ar: string;
+  students_count: number;
+}
+
+export interface StudentsByCountryResponse {
+  success: boolean;
+  data: StudentsByCountryItem[];
+  message?: string;
+}
+
 /**
  * جلب الإحصائيات العامة للموقع (للصفحة الرئيسية)
  */
@@ -88,5 +99,23 @@ export const getStudentStats = async (): Promise<StudentStats> => {
       students_with_completed_courses: 0,
       students_with_active_enrollments: 0,
     };
+  }
+};
+
+/**
+ * جلب توزيع الطلاب حسب الجنسية (للاستخدام في خريطة الصفحة الرئيسية)
+ */
+export const getStudentsByCountry = async (): Promise<StudentsByCountryItem[]> => {
+  try {
+    const response = await http.get<StudentsByCountryResponse>('/stats/students-by-country');
+
+    if (response.data && response.data.success && Array.isArray(response.data.data)) {
+      return response.data.data;
+    }
+    console.error('Unexpected API response structure for students-by-country:', response.data);
+    return [];
+  } catch (error) {
+    console.error('Error fetching students-by-country stats:', error);
+    return [];
   }
 };

@@ -10,9 +10,11 @@ import TestimonialsSlider from '../components/TestimonialsSlider';
 import Footer from '../components/Footer';
 import ScrollToTop from '../components/ScrollToTop';
 import SocialMediaFloat from '../components/SocialMediaFloat';
+import WorldUsersMap from '../components/WorldUsersMap';
 import { getPublicDiplomas, Diploma } from '../utils/categoryService';
 import { getBackendAssetUrl } from '../utils/url';
 import '../styles/contact-section.css';
+import '../styles/world-map.css';
 
 export default function HomePage() {
   const [featuredDiplomas, setFeaturedDiplomas] = useState<Diploma[]>([]);
@@ -63,6 +65,8 @@ export default function HomePage() {
       <HeroSection />
       
       <main>
+        {/* World Users Map Section */}
+        <WorldUsersMap />
         {/* Popular Diplomas Section */}
         <section className="popular-courses-section">
           <div className="popular-courses-container">

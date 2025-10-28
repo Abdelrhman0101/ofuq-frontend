@@ -7,6 +7,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { isAuthenticated, getCurrentUser, signout, User } from '../utils/authService';
 import styles from './HomeHeader.module.css';
 import clsx from 'clsx';
+// Removed help button and VideoPopup integration
 
 const HomeHeader = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -18,6 +19,8 @@ const HomeHeader = () => {
   const avatarRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
+
+  // Video popup removed per request
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -182,6 +185,8 @@ const HomeHeader = () => {
 
         </div>
       </div>
+
+      {/* Help video popup removed */}
     </>
   );
 };
