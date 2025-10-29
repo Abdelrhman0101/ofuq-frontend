@@ -301,7 +301,6 @@ export default function WorldUsersMap() {
                 </div>
               </div>
               <h3 className={styles['stat-title']}>الدول</h3>
-              <span className={styles['stat-chip']}>{progressCountries}% تغطية</span>
             </div>
             <div className={styles['stat-body']}>
               <div className={styles['stat-number']}><CountUp value={distribution.length} /></div>
@@ -319,7 +318,6 @@ export default function WorldUsersMap() {
                 </div>
               </div>
               <h3 className={styles['stat-title']}>إجمالي الطلاب</h3>
-              <span className={styles['stat-chip']}>{progressStudents}% نمو</span>
             </div>
             <div className={styles['stat-body']}>
               <div className={styles['stat-number']}><CountUp value={(generalStats?.total_students ?? 0)} /></div>
@@ -337,7 +335,6 @@ export default function WorldUsersMap() {
                 </div>
               </div>
               <h3 className={styles['stat-title']}>المقررات</h3>
-              <span className={styles['stat-chip']}>{progressCourses}% توفر</span>
             </div>
             <div className={styles['stat-body']}>
               <div className={styles['stat-number']}><CountUp value={(generalStats?.total_courses ?? 0)} /></div>
@@ -355,7 +352,6 @@ export default function WorldUsersMap() {
                 </div>
               </div>
               <h3 className={styles['stat-title']}>الدبلومات</h3>
-              <span className={styles['stat-chip']}>{progressDiplomas}% إصدار</span>
             </div>
             <div className={styles['stat-body']}>
               <div className={styles['stat-number']}><CountUp value={diplomasCount} /></div>

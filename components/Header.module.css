@@ -28,6 +28,7 @@
   flex: 1;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
 }
 
 /* زر القائمة للموبايل */
@@ -66,8 +67,8 @@
   align-items: center;
   gap: 16px;
   position: relative;
-  right: 70%;
   direction: rtl;
+  justify-content: flex-start;
 }
 
 /* تنسيق قائمة البروفايل */

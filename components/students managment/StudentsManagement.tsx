@@ -430,7 +430,7 @@ export default function StudentsManagement() {
           <option value="blocked">محظور</option>
         </select>
 
-        <select
+        {/* <select
           className="sm-select"
           value={sortOption}
           onChange={(e) => setSortOption(e.target.value as 'none' | 'highestGrade' | 'courseCount')}
@@ -438,7 +438,7 @@ export default function StudentsManagement() {
           <option value="none">بدون فرز</option>
           <option value="highestGrade">أعلى درجة</option>
           <option value="courseCount">عدد الدورات</option>
-        </select>
+        </select> */}
 
         <button
           className="sm-btn sm-reset-btn"
