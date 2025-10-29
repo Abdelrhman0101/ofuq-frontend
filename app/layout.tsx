@@ -6,12 +6,60 @@ import '@/styles/course-cards.css'
 import '@/styles/hero-search-section.css'
 import 'react-phone-number-input/style.css'
 
+const SITE_TITLE = 'منصة أفق للتعليم والتدريب';
+const SITE_DESCRIPTION =
+  'منصة أفق للتعليم والتدريب تقدّم دبلومات احترافية تجمع بين الأصالة والمعاصرة بمنهج متكامل يدمج العلوم الشرعية، التربوية، التقنية والإعلامية لإعداد قيادات مؤثرة في المجتمع.';
+
 export const metadata: Metadata = {
-  title: 'منصة أفق للتعليم عن بعد',
-  description:
-    'أفق مؤسسة تعليمية رائدة متخصصة في بناء وتقديم برامج دبلوم احترافية في مجالات متنوعة تجمع بين الأصالة والمعاصرة.',
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  keywords: [
+    'منصة أفق',
+    'التعليم والتدريب',
+    'دبلومات احترافية',
+    'تعليم عن بعد',
+    'علوم شرعية',
+    'إعلام',
+    'تقنية',
+    'ذكاء اصطناعي',
+    'تأهيل الدعاة',
+    'رعاية الموهوبين',
+    'إشراف تربوي',
+  ],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ar',
+    url: '/',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    siteName: SITE_TITLE,
+    images: [{ url: '/logo.png' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ['/logo.png'],
+  },
+  themeColor: '#0e7490',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+  },
   icons: {
     icon: [{ url: '/logo.svg', type: 'image/svg+xml' }],
+  },
+  alternates: {
+    canonical: '/',
   },
 };
 

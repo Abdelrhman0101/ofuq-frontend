@@ -1,7 +1,7 @@
 export default function Head() {
   return (
     <>
-      <title>مجتمع أفق</title>
+      {/* نترك العنوان موحدًا من layout، ونضيف الميتاداتا لاحقًا إن لزم */}
     </>
   );
 }

@@ -39,7 +39,7 @@ export default function AboutPage() {
       <div className="about-container">
         {/* Header Section */}
         <div className="about-header">
-          <h1 className="about-title">منصة <span className="brand-accent">أفق</span> للتعليم عن بعد</h1>
+          <h1 className="about-title">منصة <span className="brand-accent">أفق</span> للتعليم والتدريب</h1>
         </div>
 
         {/* تعريف المنصة */}
