@@ -114,7 +114,7 @@ export default function WorldUsersMap() {
     <section className={styles['world-map-section']}>
       <div className={styles['world-map-wrapper']}>
         <div className={styles['section-header']}>
-          <h2 className={styles['section-title']}>انتشار طلابنا حول العالم</h2>
+          <h2 className={styles['section-title']}>رواد المنصة حول العالم</h2>
           <p className={styles['section-subtitle']}>مرّر الفأرة على النقاط لمعرفة البلد وعدد الطلاب</p>
         </div>
 
