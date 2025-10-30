@@ -19,7 +19,7 @@ const VideoSection: React.FC<VideoSectionProps> = ({ videoUrl, title, thumbnailU
   return (
     <section className={styles.videoSection}>
       <div className={styles.container}>
-        {title ? <h2 className={styles.title}>{title}</h2> : null}
+        {/* {title ? <h2 className={styles.title}>{title}</h2> : null} */}
         <div className={styles.videoWrapper}>
           {isEmbed ? (
             <iframe

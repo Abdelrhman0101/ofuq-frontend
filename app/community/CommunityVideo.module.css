@@ -1,0 +1,122 @@
+/* Language switch styles for Community page */
+.switchContainer {
+  padding: 24px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.switchButtons {
+  display: inline-flex;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  padding: 6px;
+}
+
+.switchBtn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #333;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.switchBtn:hover {
+  background: #f4f4f4;
+}
+
+.switchBtnActive {
+  background: #0070f3;
+  color: #fff;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 3rem;
+  color: #2d3748;
+  font-family: 'Cairo', sans-serif;
+  background: linear-gradient(135deg, #019EBB, #4142D0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.languageSwitchContainer {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 3rem;
+  padding: 0.5rem;
+  background: rgba(248, 250, 252, 0.8);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(1, 158, 187, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.languageButton {
+  padding: 1rem 2rem;
+  border: none;
+  background: transparent;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-family: 'Cairo', sans-serif;
+  color: #718096;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-width: 100px;
+  text-align: center;
+}
+
+.languageButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.6s ease;
+}
+
+.languageButton:hover::before {
+  left: 100%;
+}
+
+.languageButton:hover {
+  color: #019EBB;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(1, 158, 187, 0.2);
+}
+
+.languageButton.active {
+  background: linear-gradient(135deg, #019EBB, #028BAB);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(1, 158, 187, 0.3);
+}
+
+.languageButton.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent);
+  border-radius: 16px;
+}
