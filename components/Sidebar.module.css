@@ -36,8 +36,9 @@
 }
 
 .sidebar-logo img {
-  width: 76px;
-  height: 76px;
+  width: 172px;
+  height: 172px;
+  /* object-fit: contain; */
 }
 
 .sidebar-title {

@@ -124,19 +124,6 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
   return (
     <header className="header">
       <div className="header-container">
-        {/* زر القائمة للموبايل */}
-        <div className="header-left">
-          <button 
-            className="mobile-menu-toggle"
-            onClick={onToggleSidebar}
-            aria-label="فتح/إغلاق القائمة"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
-            </svg>
-          </button>
-        </div>
-        
         {/* أيقونة الإشعارات وقائمة البروفايل */}
         <div className="header-right">
           {isLoggedIn ? (
@@ -198,19 +185,19 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
               </div>
 
               {/* أيقونة الإشعارات */}
-              <div className="notifications-icon" onClick={toggleNotifications} ref={notificationsRef}>
+              {/* <div className="notifications-icon" onClick={toggleNotifications} ref={notificationsRef}>
                 <img src={NotificationIcon} alt="Notifications" width="24" height="24" />
-                <span className="notification-badge">3</span>
+                <span className="notification-badge">3</span> */}
 
                 {/* قائمة الإشعارات */}
-                {isNotificationsOpen && (
+                {/* {isNotificationsOpen && (
                   <div className="notifications-menu">
                     <div className="notifications-header">
                       <h3>الإشعارات</h3>
                       <span className="notifications-count">3 جديد</span>
-                    </div>
+                    </div> */}
                     
-                    <div className="notification-item unread">
+                    {/* <div className="notification-item unread">
                       <div className="notification-icon">
                         <img src={NewBadgeIcon} alt="New Badge" width="16" height="16" />
                       </div>
@@ -239,9 +226,9 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                         <p className="notification-time">منذ ساعة</p>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  </div> */}
+                {/* )} */}
+              {/* </div> */}
             </>
           ) : (
             /* عرض أزرار تسجيل الدخول وإنشاء الحساب للمستخدمين غير المسجلين */
@@ -260,6 +247,19 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
               </button>
             </div>
           )}
+        </div>
+        
+        {/* زر القائمة للموبايل */}
+        <div className="header-left">
+          <button 
+            className="mobile-menu-toggle"
+            onClick={onToggleSidebar}
+            aria-label="فتح/إغلاق القائمة"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+            </svg>
+          </button>
         </div>
       </div>
     </header>

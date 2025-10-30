@@ -17,8 +17,36 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
     setOpenDropdown((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const isActive = (href: string) => pathname === href || pathname?.startsWith(href + '/');
-
+  // const isActive = (href: string) => pathname === href || pathname?.startsWith(href + '/');
+ const isActive = (href: string) => {
+    if (!pathname) return false;
+    
+    // Exact match for the main admin page
+    if (href === '/admin' && pathname === '/admin') {
+      return true;
+    }
+    
+    // For other pages, we need to be more specific to avoid conflicts
+    if (href !== '/admin') {
+      // Check for exact match first
+      if (pathname === href) {
+        return true;
+      }
+      
+      // For sub-routes, check if pathname starts with href + '/'
+      // But make sure we're not matching a longer path that starts with the same prefix
+      if (pathname.startsWith(href + '/')) {
+        // Special handling for diplomas vs question-bank
+        if (href === '/admin/diplomas' && pathname.includes('/question-bank')) {
+          return false; // Don't highlight diplomas when in question-bank
+        }
+        return true;
+      }
+    }
+    
+    return false;
+  };
+  
   const handleNavigate = () => {
     // Close sidebar on navigation in mobile view
     onClose?.();
@@ -28,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
     <aside className={`${styles.sidebar} ${isMobileOpen ? styles.open : ''}`}>
       <div className={styles['sidebar-header']}>
         <div className={styles['sidebar-logo']}>
-          <img src="/mahad_alofk2.png" alt="منصة أفق للتعليم عن بعد" />
+          <img src="/favicon.ico" alt="منصة أفق للتعليم عن بعد" />
         </div>
         <h2 className={styles['sidebar-title']}>لوحة الإدارة</h2>
         <p className={styles['sidebar-subtitle']}>إدارة المنصة والمحتوى</p>

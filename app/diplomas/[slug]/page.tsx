@@ -249,12 +249,12 @@ export default function DiplomaDetailsPage() {
                 <h2 className={styles.detailsTitle}>نبذة عن الدبلومة</h2>
                 <p className={styles.detailsDescription}>{diploma?.description}</p>
                 <div className={styles.detailsMeta}>
-                  <div className={styles.metaItem}>
+                  {/* <div className={styles.metaItem}>
                     <strong>الحالة:</strong> 
                     <span className={diploma?.is_free ? styles.freeTag : styles.paidTag}>
                       {diploma?.is_free ? 'مجاني' : 'مدفوعة'}
                     </span>
-                  </div>
+                  </div> */}
                   <div className={styles.metaItem}>
                     <strong>السعر:</strong> 
                     <span className={styles.priceTag}>
