@@ -298,17 +298,47 @@ export const getCourseDetails = async (courseId: string | number): Promise<Cours
  * [User] جلب نسبة التقدم في الكورس
  */
 export const getCourseProgress = async (
-  courseId: number | string
+  courseId: number | string
 ): Promise<number> => {
-  try {
-    const response = await apiClient.get<any>(`/courses/${courseId}/progress`);
-    const overall = response?.data?.course_progress?.overall_progress;
-    if (typeof overall === 'number') return overall;
-    return Number(overall ?? 0);
-  } catch (error: any) {
-    console.error('Error fetching course progress:', error);
-    return 0;
-  }
+  try {
+    const response = await apiClient.get<any>(`/courses/${courseId}/progress`);
+    const overall = response?.data?.course_progress?.overall_progress;
+    if (typeof overall === 'number') return overall;
+    return Number(overall ?? 0);
+  } catch (error: any) {
+    console.error('Error fetching course progress:', error);
+    return 0;
+  }
+};
+
+/**
+ * فحص صلاحية الوصول إلى محتوى الكورس عبر مسار الحماية الرسمي
+ * يستخدم نفس المنطق المستخدم داخل عرض الدروس والاختبارات.
+ * 200 → مسموح، 403 → غير مسجل بالدبلومة/الكورس، 401 → غير مصرح (غير مسجل دخولًا)
+ */
+export type CourseAccessResult = {
+  allowed: boolean;
+  reason?: 'forbidden' | 'unauthenticated';
+  statusCode?: number;
+  data?: any;
+};
+
+export const checkCourseAccess = async (
+  courseId: number | string
+): Promise<CourseAccessResult> => {
+  try {
+    const res = await apiClient.get<any>(`/courses/${courseId}/progress`);
+    return { allowed: true, statusCode: 200, data: res?.data };
+  } catch (error: any) {
+    const status = error?.response?.status;
+    if (status === 403) {
+      return { allowed: false, reason: 'forbidden', statusCode: 403 };
+    }
+    if (status === 401) {
+      return { allowed: false, reason: 'unauthenticated', statusCode: 401 };
+    }
+    throw error;
+  }
 };
 
 export interface CourseProgressDetails {

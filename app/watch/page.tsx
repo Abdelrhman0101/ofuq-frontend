@@ -10,16 +10,16 @@ import VideoSection from '../../components/VideoSection';
 import CourseContent from '../../components/CourseContent';
 import ScrollToTop from '../../components/ScrollToTop';
 import styles from './watch.module.css'; // تأكد من أن هذا المسار صحيح
-import Quiz from '../../components/Quiz';
-import SimulationQuiz from '../../components/SimulationQuiz';
 import FinalExam from '../../components/FinalExam';
 import Certificate from '../../components/Certificate';
-import { getUserLesson, completeLesson, Lesson } from '../../utils/lessonService';
+import { getUserLesson, completeLesson, getLessonNavigation, type LessonNavigation, Lesson } from '../../utils/lessonService';
 
-import { submitQuizAnswers, getLessonQuiz } from '../../utils/quizService';
+import { getLessonQuiz } from '../../utils/quizService';
 import { getBackendAssetUrl } from '../../utils/url';
 import { isAuthenticated } from '../../utils/authService';
-import { Course, getCourseDetails, getCourseProgress, getCourseProgressDetails } from '../../utils/courseService';
+import { Course, getCourseDetails, getCourseProgress, getCourseProgressDetails, checkCourseAccess } from '../../utils/courseService';
+import Toast from '../../components/Toast';
+import '@/styles/toast.css';
 
 // تعريف أنواع البيانات
 interface QuizQuestion {
@@ -68,11 +68,21 @@ function WatchPageContent() {
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showQuizPopup, setShowQuizPopup] = useState(false);
+  // ألغينا نافذة الكويز بين الدروس
   const [showFinalExam, setShowFinalExam] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
   const [courseProgress, setCourseProgress] = useState<any>(null);
   const [simulationMode, setSimulationMode] = useState(SIMULATION_ENABLED);
+  const [lessonNav, setLessonNav] = useState<LessonNavigation | null>(null);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info' | 'confirm'>('warning');
+
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' | 'confirm' = 'warning') => {
+    setToastMessage(message);
+    setToastType(type);
+    setToastVisible(true);
+  };
 
   // حالات الكويز
   const [quizData, setQuizData] = useState<LessonQuiz | null>(null);
@@ -92,26 +102,39 @@ function WatchPageContent() {
       try {
         setLoading(true);
         setError(null);
-
-        // التحقق من تسجيل الدخول
-        if (!isAuthenticated()) {
-          router.push('/auth');
-          return;
-        }
-
+        
         // التحقق من وجود المعاملات المطلوبة
         if (!lessonId || !chapterId || !courseId) {
           setError('معاملات غير صحيحة في الرابط');
           return;
         }
-
-        // تحميل بيانات الدرس
-        const lessonData = await getUserLesson(lessonId);
-        setLesson(lessonData.lesson);
+        
+        // حارس الوصول: استخدم GET /api/courses/{courseId}/progress للتحقق النهائي
+        try {
+          const access = await checkCourseAccess(courseId);
+          if (!access.allowed) {
+            showToast('غير مسموح بالدخول، يرجى الاشتراك في الدبلومة', 'warning');
+            setTimeout(() => {
+              router.push(`/course-details/${courseId}`);
+            }, 1500);
+            return;
+          }
+        } catch (guardErr) {
+          console.warn('تعذر تنفيذ حارس الوصول للكورس:', guardErr);
+          showToast('تعذر التحقق من الوصول للمحتوى', 'error');
+          setTimeout(() => {
+            router.push(`/course-details/${courseId}`);
+          }, 1500);
+          return;
+        }
 
         // تحميل بيانات الكورس
-         const courseData = await getCourseDetails(courseId);
-         setCourse(courseData);
+        const courseData = await getCourseDetails(courseId);
+        setCourse(courseData);
+
+        // تحميل بيانات الدرس بعد التأكد من الوصول
+        const lessonData = await getUserLesson(lessonId);
+        setLesson(lessonData.lesson);
 
         // تحميل تقدم الكورس
         try {
@@ -136,6 +159,14 @@ function WatchPageContent() {
           setQuizData(null);
         }
 
+        // جلب بيانات تنقل الدرس (السابق/التالي وهل الحالي الأخير)
+        try {
+          const nav = await getLessonNavigation(lessonId);
+          setLessonNav(nav);
+        } catch (navError) {
+          console.warn('تعذر جلب بيانات تنقل الدرس:', navError);
+        }
+
       } catch (err) {
         console.error('خطأ في تحميل البيانات:', err);
         setError('حدث خطأ في تحميل البيانات');
@@ -147,66 +178,32 @@ function WatchPageContent() {
     loadData();
   }, [lessonId, chapterId, courseId, router]);
 
-  // حساب الدروس السابقة والتالية
+  // حساب الدروس السابقة والتالية اعتمادًا على واجهة التنقل
   const { prevLesson, nextLesson } = useMemo(() => {
-    if (!course || !chapterId || !lessonId) return { prevLesson: null, nextLesson: null };
+    if (!course || !lessonNav) return { prevLesson: null, nextLesson: null };
 
-    const chapters = course.chapters || [];
-    const sortedChapters = chapters
-      .filter(ch => Array.isArray(ch.lessons) && ch.lessons.length > 0)
-      .slice()
-      .sort((a, b) => ((a as any).order ?? 0) - ((b as any).order ?? 0));
+    const findChapterId = (lid: number): number | null => {
+      const chapters = course.chapters || [];
+      for (const ch of chapters) {
+        if (Array.isArray(ch.lessons) && ch.lessons.some((ls: any) => Number(ls.id) === Number(lid))) {
+          return Number(ch.id);
+        }
+      }
+      return null;
+    };
 
-    let allLessons: Array<{ id: number; chapterId: number; order: number }> = [];
-    
-    sortedChapters.forEach(chapter => {
-      const sortedLessons = (chapter.lessons || [])
-        .slice()
-        .sort((a, b) => ((a as any).order ?? 0) - ((b as any).order ?? 0));
-      
-      sortedLessons.forEach(lesson => {
-        allLessons.push({
-          id: lesson.id,
-          chapterId: chapter.id,
-          order: ((lesson as any).order ?? 0)
-        });
-      });
-    });
-
-    const currentIndex = allLessons.findIndex(l => l.id === lessonId);
-    const prev = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
-    const next = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
-
+    const prevId = lessonNav.prev_lesson_id;
+    const nextId = lessonNav.next_lesson_id;
+    const prev = prevId ? { id: prevId, chapterId: findChapterId(prevId) ?? (chapterId ?? 0) } : null;
+    const next = nextId ? { id: nextId, chapterId: findChapterId(nextId) ?? (chapterId ?? 0) } : null;
     return { prevLesson: prev, nextLesson: next };
-  }, [course, chapterId, lessonId]);
+  }, [course, lessonNav, chapterId]);
 
-  // دالة للتحقق من كون الدرس الحالي هو آخر درس في الدبلومة
-  const isLastLessonInDiploma = useMemo(() => {
-    if (!course || !lesson || !course.chapters || !course.category_id) return false;
-    
-    // ترتيب الفصول حسب الترتيب
-    const sortedChapters = course.chapters
-      .filter(ch => Array.isArray(ch.lessons) && ch.lessons.length > 0)
-      .slice()
-      .sort((a, b) => ((a as any).order ?? 0) - ((b as any).order ?? 0));
-    
-    if (sortedChapters.length === 0) return false;
-    
-    // الحصول على آخر فصل
-    const lastChapter = sortedChapters[sortedChapters.length - 1];
-    
-    // ترتيب دروس آخر فصل
-    const sortedLessons = (lastChapter.lessons || [])
-      .slice()
-      .sort((a, b) => ((a as any).order ?? 0) - ((b as any).order ?? 0));
-    
-    if (sortedLessons.length === 0) return false;
-    
-    // آخر درس في آخر فصل
-    const lastLesson = sortedLessons[sortedLessons.length - 1];
-    
-    return lesson.id === lastLesson.id;
-  }, [course, lesson]);
+  // مؤشرات الحالة من واجهة التنقل
+  const isLastLesson = useMemo(() => {
+    return Boolean(lessonNav?.is_last_lesson || lessonNav?.next_lesson_id == null);
+  }, [lessonNav]);
+  const isNextLast = useMemo(() => Boolean(lessonNav?.is_next_last), [lessonNav]);
   
   // دالة إنهاء الدبلومة
   const handleDiplomaCompletion = async () => {
@@ -256,35 +253,28 @@ function WatchPageContent() {
 
     if (!target || !courseId) return;
 
-    // إذا كان الانتقال للأمام
+    // إذا كان الانتقال للأمام: أكمِل الدرس الحالي دائمًا ثم انتقل
     if (target.id > (lessonId || 0)) {
-      // وضع المحاكاة: اعرض المودال إذا كانت هناك أسئلة
-      if (simulationMode && isQuizRequired) {
-        console.log('[Watch] opening quiz popup (simulation)');
-        setShowQuizPopup(true);
-        return;
-      }
-
-      // الوضع الحقيقي
-      if (!simulationMode) {
-        // إذا كان هناك كويز مطلوب ولم يُنه، اعرض المودال
-        if (isQuizRequired && !quizFinished) {
-          console.log('[Watch] opening quiz popup (real)');
-          setShowQuizPopup(true);
-          return;
-        }
-        // إذا لم يكن هناك كويز لهذا الدرس، اعتبره مكتملاً قبل الانتقال
-        if (!isQuizRequired && lessonId) {
-          console.log('[Watch] auto-completing lesson (no quiz)');
-          try { await completeLesson(lessonId); } catch (e) { console.warn('تعذر إكمال الدرس بدون كويز:', e); }
-          // تحديث شريط التقدم
-          try { const progress = await getCourseProgress(courseId); setCourseProgress(progress); } catch { }
-        }
+      if (lessonId) {
+        console.log('[Watch] completing current lesson before moving forward');
+        try { await completeLesson(lessonId); } catch (e) { console.warn('تعذر إكمال الدرس قبل الانتقال:', e); }
+        // تحديث شريط التقدم
+        try { const progress = await getCourseProgress(courseId); setCourseProgress(progress); } catch { }
       }
     }
 
     // التأكد من تمرير كل المعرفات اللازمة
     router.push(`/watch?lessonId=${target.id}&chapterId=${target.chapterId}&courseId=${courseId}`);
+  };
+
+  const goToMyExams = async () => {
+    if (!lessonId) return;
+    try {
+      await completeLesson(lessonId);
+    } catch (e) {
+      console.warn('تعذر إكمال الدرس الأخير قبل التحويل:', e);
+    }
+    router.push('/user/my_exams');
   };
 
   // عرض الشهادة
@@ -324,6 +314,13 @@ function WatchPageContent() {
   return (
     <div className={styles['watch-page']} style={{ width: '100%', minHeight: '100vh' }}>
       <HomeHeader />
+      <Toast
+        message={toastMessage}
+        type={toastType}
+        isVisible={toastVisible}
+        onClose={() => setToastVisible(false)}
+        duration={2500}
+      />
 
       <main className={styles['watch-main']} style={{ width: '100%', maxWidth: '100%', margin: 0, padding: 0 }}>
         {/* Video Section */}
@@ -360,22 +357,31 @@ function WatchPageContent() {
               <span>السابق</span>
             </button>
 
-            <button
-              className={styles['lesson-nav-btn']}
-              onClick={() => {
-                if (isLastLessonInDiploma) {
-                  handleDiplomaCompletion();
-                } else {
-                  navigateToLesson(nextLesson);
-                }
-              }}
-              disabled={(!nextLesson && !isLastLessonInDiploma) || sequenceBlocked}
-            >
-              <span>{isLastLessonInDiploma ? 'إنهاء الدبلومة' : 'التالي'}</span>
-              <svg className={styles['lesson-nav-icon']} viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            </button>
+            {isLastLesson ? (
+              <button
+                className={styles['lesson-nav-btn']}
+                onClick={goToMyExams}
+              >
+                <span>اختباراتي</span>
+                <svg className={styles['lesson-nav-icon']} viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </button>
+            ) : (
+              <button
+                className={styles['lesson-nav-btn']}
+                onClick={() => navigateToLesson(nextLesson)}
+                disabled={!nextLesson || sequenceBlocked}
+              >
+                <span>التالي</span>
+                <svg className={styles['lesson-nav-icon']} viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </button>
+            )}
+            {isNextLast && (
+              <div style={{ marginInlineStart: '12px', color: '#7f8c8d' }}>ملاحظة: الدرس القادم هو الأخير</div>
+            )}
           </div>
         </div>
 
@@ -395,57 +401,14 @@ function WatchPageContent() {
               currentLessonId={lessonId}
               currentChapterId={chapterId}
               courseProgress={courseProgress}
-              onLessonClick={(lessonId, chapterId) => {
-                router.push(`/watch?lessonId=${lessonId}&chapterId=${chapterId}&courseId=${courseId}`);
+              onLessonClick={(lsId, chId) => {
+                navigateToLesson({ id: lsId, chapterId: chId });
               }}
             />
           )}
         </div>
 
-        {/* Quiz Popup */}
-        {showQuizPopup && quizData && (
-          simulationMode ? (
-            <SimulationQuiz
-              questions={quizData.questions}
-              onClose={() => setShowQuizPopup(false)}
-              onComplete={(score) => {
-                console.log('Quiz completed with score:', score);
-                setShowQuizPopup(false);
-                setQuizFinished(true);
-              }}
-            />
-          ) : (
-            <Quiz
-              questions={quizData.questions}
-              onClose={() => setShowQuizPopup(false)}
-              onComplete={async (answers) => {
-                try {
-                  // Transform answers format from { [key: number]: number } to the expected format
-                  const formattedAnswers = Object.entries(answers).map(([questionId, selectedIndex]) => ({
-                    question_id: parseInt(questionId),
-                    selected_indices: selectedIndex
-                  }));
-                  
-                  const result = await submitQuizAnswers(quizData.quiz?.id || quizData.id, formattedAnswers);
-                  console.log('Quiz result:', result);
-                  setQuizFinished(true);
-                  setShowQuizPopup(false);
-                  
-                  // تحديث تقدم الكورس
-                  try {
-                    const progress = await getCourseProgress(courseId!);
-                    setCourseProgress(progress);
-                  } catch (e) {
-                    console.warn('تعذر تحديث تقدم الكورس:', e);
-                  }
-                } catch (error) {
-                  console.error('خطأ في إرسال إجابات الكويز:', error);
-                  alert('حدث خطأ في إرسال الإجابات. يرجى المحاولة مرة أخرى.');
-                }
-              }}
-            />
-          )
-        )}
+        {/* تم إلغاء نافذة الكويز بين الدروس */}
       </main>
 
       <Footer />

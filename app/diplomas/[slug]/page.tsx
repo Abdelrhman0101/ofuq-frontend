@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 export const dynamic = 'force-dynamic';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { FiBook, FiStar, FiDollarSign, FiEye, FiPlay, FiUser } from 'react-icons/fi';
 import HomeHeader from '../../../components/HomeHeader';
@@ -10,6 +10,8 @@ import Footer from '../../../components/Footer';
 import ScrollToTop from '../../../components/ScrollToTop';
 import SocialMediaFloat from '../../../components/SocialMediaFloat';
 import EnrollmentInfoModal from '../../../components/EnrollmentInfoModal';
+import Toast from '../../../components/Toast';
+import '@/styles/toast.css';
 import { getPublicDiplomaDetails, enrollInDiploma, getMyDiplomas, type Diploma, type MyDiploma } from '../../../utils/categoryService';
 import { type Course } from '../../../utils/courseService';
 import { getBackendAssetUrl } from '../../../utils/url';
@@ -22,6 +24,7 @@ type DiplomaDetails = Diploma & { courses?: Course[] };
 export default function DiplomaDetailsPage() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const slug = params?.slug;
   const coursesRef = useRef<HTMLElement>(null);
 
@@ -32,6 +35,18 @@ export default function DiplomaDetailsPage() {
   const [isEnrollmentModalOpen, setIsEnrollmentModalOpen] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState<boolean>(false);
   const [checkingEnrollment, setCheckingEnrollment] = useState<boolean>(false);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info' | 'confirm'>('info');
+
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' | 'confirm' = 'info', duration = 3000) => {
+    setToastMessage(message);
+    setToastType(type);
+    setToastVisible(true);
+    if (duration > 0) {
+      setTimeout(() => setToastVisible(false), duration);
+    }
+  };
 
   // Check if user is enrolled in this diploma
   const checkEnrollmentStatus = async () => {
@@ -71,6 +86,16 @@ export default function DiplomaDetailsPage() {
     };
     run();
   }, [slug]);
+
+  // عرض تنبيه عند الوصول من صفحة المقرر بضرورة الاشتراك
+  useEffect(() => {
+    try {
+      const notice = searchParams?.get('notice');
+      if (notice === 'enroll_required') {
+        showToast('يرجى الاشتراك في الدبلومة لعرض محتويات هذا المقرر', 'warning', 4000);
+      }
+    } catch {}
+  }, [searchParams]);
 
   // Check enrollment status when diploma is loaded
   useEffect(() => {
@@ -340,6 +365,13 @@ export default function DiplomaDetailsPage() {
       <Footer />
       <ScrollToTop />
       <SocialMediaFloat />
+      <Toast
+        message={toastMessage}
+        type={toastType}
+        isVisible={toastVisible}
+        onClose={() => setToastVisible(false)}
+        duration={3000}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import '@/styles/course-details.css'
 import '@/styles/home-header.css'
 import '@/styles/course-cards.css'
 import '@/styles/hero-search-section.css'
+import '@/styles/toast.css'
 import 'react-phone-number-input/style.css'
 
 const SITE_TITLE = 'منصة أفق للتعليم والتدريب';

@@ -201,28 +201,65 @@ export const updateLessonAdmin = async (lessonId: number, data: UpdateLessonData
  * [Admin] حذف درس
  */
 export const deleteLessonAdmin = async (lessonId: number): Promise<void> => {
-  try {
-    console.log(`[DeleteLessonAdmin] DELETE /admin/lessons/${lessonId}`);
-    await apiClient.delete(`/admin/lessons/${lessonId}`);
-  } catch (error: any) {
-    console.error('Error deleting lesson:', error);
-    let message = 'فشل في حذف الدرس';
-    if (error.response?.data?.message) {
-      message = error.response.data.message;
-    }
-    throw new Error(message);
-  }
+  try {
+    console.log(`[DeleteLessonAdmin] DELETE /admin/lessons/${lessonId}`);
+    await apiClient.delete(`/admin/lessons/${lessonId}`);
+  } catch (error: any) {
+    console.error('Error deleting lesson:', error);
+    let message = 'فشل في حذف الدرس';
+    if (error.response?.data?.message) {
+      message = error.response.data.message;
+    }
+    throw new Error(message);
+  }
 };
 
 /**
- * [Admin] جلب دروس فصل معين
- */
+ * [Admin] جلب دروس فصل معين
+ */
 export const getChapterLessons = async (chapterId: number): Promise<Lesson[]> => {
-  try {
-    const res = await apiClient.get(`/admin/chapters/${chapterId}/lessons`);
-    const data = (res as any)?.data?.data ?? (res as any)?.data ?? [];
-    return Array.isArray(data) ? data : [];
-  } catch (err: any) {
-    throw new Error(err?.message || 'فشل في جلب الدروس');
+  try {
+    const res = await apiClient.get(`/admin/chapters/${chapterId}/lessons`);
+    const data = (res as any)?.data?.data ?? (res as any)?.data ?? [];
+    return Array.isArray(data) ? data : [];
+  } catch (err: any) {
+    throw new Error(err?.message || 'فشل في جلب الدروس');
 }
+};
+
+/**
+ * [User] جلب بيانات تنقل الدرس (السابق/التالي وهل الحالي هو الأخير)
+ */
+export interface LessonNavigation {
+  current_lesson_id: number;
+  prev_lesson_id: number | null;
+  next_lesson_id: number | null;
+  last_lesson_id: number;
+  is_last_lesson: boolean;
+  is_next_last: boolean;
+  finish_course_available?: boolean;
+}
+
+export const getLessonNavigation = async (
+  lessonId: number | string
+): Promise<LessonNavigation> => {
+  try {
+    const res = await apiClient.get<any>(`/lessons/${lessonId}/navigation`);
+    const raw = res?.data;
+    const payload = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    const data = payload?.data ?? payload ?? {};
+
+    return {
+      current_lesson_id: Number(data.current_lesson_id ?? lessonId),
+      prev_lesson_id: data.prev_lesson_id != null ? Number(data.prev_lesson_id) : null,
+      next_lesson_id: data.next_lesson_id != null ? Number(data.next_lesson_id) : null,
+      last_lesson_id: Number(data.last_lesson_id ?? data.next_lesson_id ?? lessonId),
+      is_last_lesson: Boolean(data.is_last_lesson ?? (data.next_lesson_id == null)),
+      is_next_last: Boolean(data.is_next_last ?? false),
+      finish_course_available: Boolean(data.finish_course_available ?? false),
+    };
+  } catch (error: any) {
+    console.error('Error fetching lesson navigation:', error);
+    throw new Error('فشل في جلب بيانات تنقل الدرس');
+  }
 };

@@ -2,14 +2,19 @@
 
 import React, { useState } from 'react';
 import '../styles/certificate-card.css';
+import { ensureCourseCertificateFile, ensureDiplomaCertificateFile, ensureCourseCertificateFileBySummary, ensureDiplomaCertificateFileBySummary } from '../utils/certificateService';
 
 interface CertificateCardProps {
   courseName: string;
   completionDate: string;
   certificateId?: string;
   certificateImage?: string;
-  downloadUrl?: string;
-  verificationUrl?: string;
+  downloadUrl?: string; // إن كان مسجلًا مسبقًا في file_path
+  verificationUrl?: string; // للرابط العام للتحقق
+  type?: 'course' | 'diploma';
+  courseId?: number; // للمقررات
+  categoryId?: number; // للدبلومات
+  userName?: string; // من "شهاداتي" للاستخدام عند عدم توفر IDs
 }
 
 const CertificateCard: React.FC<CertificateCardProps> = ({
@@ -18,21 +23,85 @@ const CertificateCard: React.FC<CertificateCardProps> = ({
   certificateId = "CERT-001",
   certificateImage,
   downloadUrl,
-  verificationUrl
+  verificationUrl,
+  type,
+  courseId,
+  categoryId,
+  userName
 }) => {
   const [showModal, setShowModal] = useState(false);
 
-  const handleViewCertificate = () => {
-    if (downloadUrl) {
-      window.open(downloadUrl, '_blank');
+  const ensureFilePath = async (): Promise<string | null> => {
+    try {
+      console.log('[CertificateCard] ensureFilePath', { type, courseId, categoryId, downloadUrl });
+      if (downloadUrl) {
+        console.log('[CertificateCard] using existing downloadUrl');
+        return downloadUrl;
+      }
+      if (type === 'course' && typeof courseId !== 'undefined') {
+        console.log('[CertificateCard] generating course certificate PDF');
+        const url = await ensureCourseCertificateFile(courseId);
+        console.log('[CertificateCard] course certificate ready', { url });
+        return url;
+      }
+      if (type === 'diploma' && typeof categoryId !== 'undefined') {
+        console.log('[CertificateCard] generating diploma certificate PDF');
+        const url = await ensureDiplomaCertificateFile(categoryId);
+        console.log('[CertificateCard] diploma certificate ready', { url });
+        return url;
+      }
+
+      // Fallback: توليد من ملخص "شهاداتي" عندما لا تتوفر معرفات course/category
+      if (type === 'course' && !courseId && certificateId && userName && verificationUrl) {
+        console.log('[CertificateCard] summary fallback: generating course certificate PDF');
+        const url = await ensureCourseCertificateFileBySummary({
+          certificateId: Number(certificateId),
+          userName,
+          title: courseName,
+          completionDate,
+          verificationUrl,
+        });
+        console.log('[CertificateCard] course summary certificate ready', { url });
+        return url;
+      }
+      if (type === 'diploma' && !categoryId && certificateId && userName && verificationUrl) {
+        console.log('[CertificateCard] summary fallback: generating diploma certificate PDF');
+        const url = await ensureDiplomaCertificateFileBySummary({
+          certificateId: Number(certificateId),
+          userName,
+          title: courseName,
+          completionDate,
+          verificationUrl,
+        });
+        console.log('[CertificateCard] diploma summary certificate ready', { url });
+        return url;
+      }
+      return null;
+    } catch (e) {
+      console.error('Failed to ensure certificate file:', e);
+      alert('فشل في توليد الشهادة. حاول مرة أخرى لاحقًا.');
+      return null;
+    }
+  };
+
+  const handleViewCertificate = async () => {
+    const fileUrl = await ensureFilePath();
+    if (fileUrl) {
+      window.open(fileUrl, '_blank');
       return;
     }
     setShowModal(true);
   };
 
-  const handleDownloadCertificate = () => {
-    if (downloadUrl) {
-      window.open(downloadUrl, '_blank');
+  const handleDownloadCertificate = async () => {
+    const fileUrl = await ensureFilePath();
+    if (fileUrl) {
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      link.download = `certificate-${certificateId || 'file'}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       return;
     }
     if (certificateImage) {
@@ -48,20 +117,26 @@ const CertificateCard: React.FC<CertificateCardProps> = ({
     }
   };
 
-  const handleShareCertificate = () => {
-    const url = verificationUrl || window.location.href;
-    if (navigator.share && (certificateImage || downloadUrl)) {
-      navigator.share({
-        title: `شهادة إتمام ${courseName}`,
-        text: `حصلت على شهادة إتمام دورة ${courseName} من منصة الأفق`,
-        url
-      }).catch(console.error);
-    } else {
-      navigator.clipboard.writeText(url).then(() => {
-        alert('تم نسخ رابط الشهادة إلى الحافظة');
-      }).catch(() => {
-        alert('لا يمكن مشاركة الشهادة في الوقت الحالي');
-      });
+  const handleShareCertificate = async () => {
+    const ensured = await ensureFilePath();
+    const shareUrl = ensured || verificationUrl || window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `شهادة إتمام ${courseName}`,
+          text: `حصلت على شهادة إتمام دورة ${courseName} من منصة الأفق`,
+          url: shareUrl
+        });
+        return;
+      } catch (err) {
+        console.warn('Share failed, falling back to clipboard.', err);
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert('تم نسخ رابط الشهادة إلى الحافظة');
+    } catch {
+      alert('لا يمكن مشاركة الشهادة في الوقت الحالي');
     }
   };
 
