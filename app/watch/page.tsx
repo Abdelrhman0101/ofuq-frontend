@@ -178,32 +178,45 @@ function WatchPageContent() {
     loadData();
   }, [lessonId, chapterId, courseId, router]);
 
-  // حساب الدروس السابقة والتالية اعتمادًا على واجهة التنقل
-  const { prevLesson, nextLesson } = useMemo(() => {
-    if (!course || !lessonNav) return { prevLesson: null, nextLesson: null };
-
-    const findChapterId = (lid: number): number | null => {
-      const chapters = course.chapters || [];
-      for (const ch of chapters) {
-        if (Array.isArray(ch.lessons) && ch.lessons.some((ls: any) => Number(ls.id) === Number(lid))) {
-          return Number(ch.id);
+  // بناء تسلسل الدروس اعتمادًا على بيانات الكورس كـ fallback آمن
+  const flatLessons = useMemo(() => {
+    if (!course) return [] as Array<{ id: number; chapterId: number }>;
+    const items: Array<{ id: number; chapterId: number }> = [];
+    (course.chapters || []).forEach((ch: any) => {
+      const lessons = Array.isArray(ch.lessons) ? ch.lessons : [];
+      // نستخدم ترتيب الدروس كما هو مرسل من الباك إند
+      lessons.forEach((ls: any) => {
+        if (ls && ls.id != null) {
+          items.push({ id: Number(ls.id), chapterId: Number(ch.id) });
         }
-      }
-      return null;
-    };
+      });
+    });
+    return items;
+  }, [course]);
 
-    const prevId = lessonNav.prev_lesson_id;
-    const nextId = lessonNav.next_lesson_id;
-    const prev = prevId ? { id: prevId, chapterId: findChapterId(prevId) ?? (chapterId ?? 0) } : null;
-    const next = nextId ? { id: nextId, chapterId: findChapterId(nextId) ?? (chapterId ?? 0) } : null;
+  const currentIndex = useMemo(() => {
+    if (!lessonId) return -1;
+    return flatLessons.findIndex((l) => Number(l.id) === Number(lessonId));
+  }, [flatLessons, lessonId]);
+
+  // حساب الدروس السابقة والتالية اعتمادًا على تسلسل الكورس (بدلاً من الاعتماد فقط على واجهة التنقل)
+  const { prevLesson, nextLesson } = useMemo(() => {
+    if (!course || currentIndex < 0) return { prevLesson: null, nextLesson: null };
+    const prev = currentIndex > 0 ? flatLessons[currentIndex - 1] : null;
+    const next = currentIndex >= 0 && currentIndex < flatLessons.length - 1 ? flatLessons[currentIndex + 1] : null;
     return { prevLesson: prev, nextLesson: next };
-  }, [course, lessonNav, chapterId]);
+  }, [course, flatLessons, currentIndex]);
 
-  // مؤشرات الحالة من واجهة التنقل
+  // مؤشرات الحالة اعتمادًا على تسلسل الكورس لضمان عدم اعتبار كل درس كالأخير
   const isLastLesson = useMemo(() => {
-    return Boolean(lessonNav?.is_last_lesson || lessonNav?.next_lesson_id == null);
-  }, [lessonNav]);
-  const isNextLast = useMemo(() => Boolean(lessonNav?.is_next_last), [lessonNav]);
+    if (currentIndex < 0) return false;
+    return currentIndex === flatLessons.length - 1;
+  }, [flatLessons, currentIndex]);
+
+  const isNextLast = useMemo(() => {
+    if (currentIndex < 0) return false;
+    return currentIndex === flatLessons.length - 2;
+  }, [flatLessons, currentIndex]);
   
   // دالة إنهاء الدبلومة
   const handleDiplomaCompletion = async () => {
