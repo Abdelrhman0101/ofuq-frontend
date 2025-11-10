@@ -1,3 +1,6 @@
+"use client";
+
+import React, { useEffect, useRef } from 'react';
 import styles from './VideoSection.module.css';
 
 interface VideoSectionProps {
@@ -16,6 +19,48 @@ const VideoSection: React.FC<VideoSectionProps> = ({ videoUrl, title, thumbnailU
     ? useIframe
     : /player\.mediadelivery\.net|youtube\.com|youtu\.be|vimeo\.com/.test(videoUrl);
 
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // منع التحميل وأوامر المطور من الواجهة الأمامية فقط
+  useEffect(() => {
+    if (isEmbed) return;
+
+    const handleContextMenu = (e: Event) => {
+      e.preventDefault();
+    };
+
+    const handleKeydown = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+      if ((e.ctrlKey && key === 's') ||
+          (e.ctrlKey && key === 'u') ||
+          (e.key === 'F12') ||
+          (e.ctrlKey && e.shiftKey && (key === 'i' || key === 'c' || key === 'j'))) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    const handleDragStart = (e: Event) => {
+      e.preventDefault();
+    };
+
+    const handleCopy = (e: ClipboardEvent) => {
+      e.preventDefault();
+    };
+
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('keydown', handleKeydown);
+    document.addEventListener('dragstart', handleDragStart);
+    document.addEventListener('copy', handleCopy);
+
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('keydown', handleKeydown);
+      document.removeEventListener('dragstart', handleDragStart);
+      document.removeEventListener('copy', handleCopy);
+    };
+  }, [isEmbed]);
+
   return (
     <section className={styles.videoSection}>
       <div className={styles.container}>
@@ -28,6 +73,7 @@ const VideoSection: React.FC<VideoSectionProps> = ({ videoUrl, title, thumbnailU
               className={styles.iframe}
               allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
               allowFullScreen={true}
+              referrerPolicy="no-referrer"
               title={alt || title || 'Video Player'}
             />
           ) : (
@@ -42,6 +88,7 @@ const VideoSection: React.FC<VideoSectionProps> = ({ videoUrl, title, thumbnailU
               poster={thumbnailUrl}
               aria-label={alt || title || 'Course video'}
               onEnded={onEnded}
+              ref={videoRef}
             >
               <source src={videoUrl} />
               متصفحك لا يدعم تشغيل الفيديو.

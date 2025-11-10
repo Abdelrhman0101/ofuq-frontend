@@ -128,18 +128,8 @@ function WatchPageContent() {
           return;
         }
 
-        // مزامنة توكن المصادقة مع كعكة خفية لاستخدام بروكسي البث
-        try {
-          const t = getAuthToken();
-          if (t) {
-            await fetch('/api/session/sync-auth', {
-              method: 'POST',
-              headers: { Authorization: `Bearer ${t}` },
-            });
-          }
-        } catch (syncErr) {
-          console.warn('تعذر مزامنة توكن البث الآمن:', syncErr);
-        }
+        // الاعتماد فقط على التوكن بدون أي مزامنة كوكيز
+        // لا يوجد أي تعامل مع الكوكيز هنا حسب طلبك
 
         // تحميل بيانات الكورس
         const courseData = await getCourseDetails(courseId);
@@ -149,23 +139,9 @@ function WatchPageContent() {
         const lessonData = await getUserLesson(lessonId);
         setLesson(lessonData.lesson);
 
-        // محاولة استخدام بروكسي البث الآمن، مع سقوط إلى الرابط المباشر إذا فشل
-        try {
-          const proxied = `/api/stream/lesson/${lessonId}`;
-          const direct = getBackendAssetUrl(String(lessonData?.lesson?.video_url || ''));
-          // اختبار سريع للبروكسي دون تحميل كامل المحتوى
-          const testResp = await fetch(proxied, { headers: { Range: 'bytes=0-0' } });
-          if (testResp.ok) {
-            setResolvedVideoUrl(proxied);
-          } else if (direct) {
-            setResolvedVideoUrl(direct);
-          } else {
-            setResolvedVideoUrl('');
-          }
-        } catch (probeErr) {
-          const direct = getBackendAssetUrl(String(lessonData?.lesson?.video_url || ''));
-          setResolvedVideoUrl(direct);
-        }
+        // استخدام الرابط المباشر فقط مع تحويله لمسار كامل من الباك إند
+        const direct = getBackendAssetUrl(String(lessonData?.lesson?.video_url || ''));
+        setResolvedVideoUrl(direct);
 
         // تحميل تقدم الكورس
         try {
