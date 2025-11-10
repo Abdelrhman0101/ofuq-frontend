@@ -91,7 +91,7 @@ function WatchPageContent() {
   // المتغيرات المحسوبة
   const sequenceBlocked = false; // يمكن تحديد منطق منع التسلسل هنا
   const thumbnailUrl = lesson?.thumbnail ? getBackendAssetUrl(lesson.thumbnail) : '';
-  const videoUrl = lesson?.id ? `/api/stream/lesson/${lesson.id}` : '';
+  const [resolvedVideoUrl, setResolvedVideoUrl] = useState<string>('');
   const isQuizRequired = quizData && quizData.questions && quizData.questions.length > 0;
   const isLocked = false; // يمكن تحديد منطق القفل هنا
   const lockMessage = '';
@@ -148,6 +148,24 @@ function WatchPageContent() {
         // تحميل بيانات الدرس بعد التأكد من الوصول
         const lessonData = await getUserLesson(lessonId);
         setLesson(lessonData.lesson);
+
+        // محاولة استخدام بروكسي البث الآمن، مع سقوط إلى الرابط المباشر إذا فشل
+        try {
+          const proxied = `/api/stream/lesson/${lessonId}`;
+          const direct = getBackendAssetUrl(String(lessonData?.lesson?.video_url || ''));
+          // اختبار سريع للبروكسي دون تحميل كامل المحتوى
+          const testResp = await fetch(proxied, { headers: { Range: 'bytes=0-0' } });
+          if (testResp.ok) {
+            setResolvedVideoUrl(proxied);
+          } else if (direct) {
+            setResolvedVideoUrl(direct);
+          } else {
+            setResolvedVideoUrl('');
+          }
+        } catch (probeErr) {
+          const direct = getBackendAssetUrl(String(lessonData?.lesson?.video_url || ''));
+          setResolvedVideoUrl(direct);
+        }
 
         // تحميل تقدم الكورس
         try {
@@ -362,7 +380,7 @@ function WatchPageContent() {
           ) : (
             <VideoSection
               thumbnailUrl={thumbnailUrl}
-              videoUrl={videoUrl}
+              videoUrl={resolvedVideoUrl}
               alt={lesson?.title || 'Course Video'}
               isLocked={isLocked}
               lockMessage={lockMessage}

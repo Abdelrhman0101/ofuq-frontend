@@ -287,7 +287,7 @@ const CourseDetailsPage = () => {
               return (
                 <VideoSection 
                   thumbnailUrl={thumbnail}
-                  videoUrl={previewVideoUrl}
+                  videoUrl={getBackendAssetUrl(previewVideoUrl)}
                   alt={`${courseData.title} Preview Video`}
                 />
               );
