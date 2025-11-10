@@ -35,6 +35,10 @@ const VideoSection: React.FC<VideoSectionProps> = ({ videoUrl, title, thumbnailU
               className={styles.video}
               controls={!isLocked}
               playsInline
+              controlsList="nodownload noplaybackrate"
+              disablePictureInPicture
+              preload="metadata"
+              onContextMenu={(e) => e.preventDefault()}
               poster={thumbnailUrl}
               aria-label={alt || title || 'Course video'}
               onEnded={onEnded}

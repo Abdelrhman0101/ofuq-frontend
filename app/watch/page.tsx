@@ -16,7 +16,7 @@ import { getUserLesson, completeLesson, getLessonNavigation, type LessonNavigati
 
 import { getLessonQuiz } from '../../utils/quizService';
 import { getBackendAssetUrl } from '../../utils/url';
-import { isAuthenticated } from '../../utils/authService';
+import { isAuthenticated, getAuthToken } from '../../utils/authService';
 import { Course, getCourseDetails, getCourseProgress, getCourseProgressDetails, checkCourseAccess } from '../../utils/courseService';
 import Toast from '../../components/Toast';
 import '@/styles/toast.css';
@@ -91,7 +91,7 @@ function WatchPageContent() {
   // المتغيرات المحسوبة
   const sequenceBlocked = false; // يمكن تحديد منطق منع التسلسل هنا
   const thumbnailUrl = lesson?.thumbnail ? getBackendAssetUrl(lesson.thumbnail) : '';
-  const videoUrl = lesson?.video_url ? getBackendAssetUrl(lesson.video_url) : '';
+  const videoUrl = lesson?.id ? `/api/stream/lesson/${lesson.id}` : '';
   const isQuizRequired = quizData && quizData.questions && quizData.questions.length > 0;
   const isLocked = false; // يمكن تحديد منطق القفل هنا
   const lockMessage = '';
@@ -126,6 +126,19 @@ function WatchPageContent() {
             router.push(`/course-details/${courseId}`);
           }, 1500);
           return;
+        }
+
+        // مزامنة توكن المصادقة مع كعكة خفية لاستخدام بروكسي البث
+        try {
+          const t = getAuthToken();
+          if (t) {
+            await fetch('/api/session/sync-auth', {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${t}` },
+            });
+          }
+        } catch (syncErr) {
+          console.warn('تعذر مزامنة توكن البث الآمن:', syncErr);
         }
 
         // تحميل بيانات الكورس

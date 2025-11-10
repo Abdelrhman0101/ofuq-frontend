@@ -1,142 +1,145 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import CertificateCard from '../../../components/CertificateCard';
-import '../../../styles/my-courses.css';
-import { isAuthenticated } from '../../../utils/authService';
-import { getMyCertificates, getDownloadUrl, DiplomaCertificate, getDiplomaVerificationUrl, getCourseVerificationUrl } from '../../../utils/certificateService';
-import { http } from '@/lib/http';
+import React, { useEffect, useMemo, useState } from 'react';
+import '../../../styles/my-certificates.css';
+import { isAuthenticated, getAuthToken } from '../../../utils/authService';
+import { getMyCourseCertificates, CourseCertificate } from '../../../utils/certificateService';
+import { getBackendAssetUrl } from '../../../utils/url';
 
-const LOG_PREFIX = '[MyCertificates]';
+function formatDateLabel(cert: CourseCertificate): string {
+  const d = cert.issued_at || cert.completion_date || '';
+  return String(d);
+}
 
 export default function MyCertificatesPage() {
-  const [certificates, setCertificates] = useState<DiplomaCertificate[]>([]);
+  const [items, setItems] = useState<CourseCertificate[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadCertificates = async () => {
+    let cancelled = false;
+    (async () => {
       try {
-        console.log(LOG_PREFIX, 'init loadCertificates');
         setLoading(true);
         if (!isAuthenticated()) {
-          console.warn(LOG_PREFIX, 'user not authenticated');
           setError('يرجى تسجيل الدخول لعرض شهاداتك');
-          setCertificates([]);
+          setItems([]);
           return;
         }
-        console.log(LOG_PREFIX, 'authenticated, calling getMyCertificates', {
-          baseURL: http.defaults.baseURL,
-          endpoint: '/my-certificates'
-        });
-        const data = await getMyCertificates();
-        console.log(LOG_PREFIX, 'getMyCertificates succeeded', {
-          count: data?.length ?? 0,
-          sample: data && data.length ? {
-            id: data[0].id,
-            type: data[0].type,
-            file_path: data[0].file_path,
-            course_id: data[0].course_id,
-            category_id: data[0].category_id,
-            uuid: data[0].uuid
-          } : null
-        });
-        setCertificates(data);
-      } catch (err) {
-        console.error(LOG_PREFIX, 'Failed to load certificates', {
-          message: (err as any)?.message,
-          error: err
-        });
-        setError('فشل في تحميل الشهادات');
+        const data = await getMyCourseCertificates();
+        if (!cancelled) setItems(data);
+      } catch (e: any) {
+        if (!cancelled) setError(e?.message || 'فشل في تحميل الشهادات');
       } finally {
-        setLoading(false);
-        console.log(LOG_PREFIX, 'loadCertificates finished');
+        if (!cancelled) setLoading(false);
       }
-    };
-    loadCertificates();
+    })();
+    return () => { cancelled = true; };
   }, []);
 
-  useEffect(() => {
-    console.log(LOG_PREFIX, 'state update', { loading, error, certificatesCount: certificates.length });
-  }, [loading, error, certificates]);
+  const handleView = (cert: CourseCertificate) => {
+    let target = '';
+    if (cert.file_path) {
+      // طبّع المسار باستخدام NEXT_PUBLIC_ASSETS_BASE_URL حتى لا يفتح على localhost:3000
+      target = getBackendAssetUrl(cert.file_path);
+    } else if (cert.verification_url) {
+      target = cert.verification_url;
+    }
+    if (!target) {
+      alert('لا يوجد رابط عرض متاح لهذه الشهادة');
+      return;
+    }
+    window.open(target, '_blank');
+  };
+
+  const handleDownload = async (cert: CourseCertificate) => {
+    try {
+      const url = cert.download_url;
+      if (!url) {
+        alert('رابط تنزيل غير متاح لهذه الشهادة');
+        return;
+      }
+      const token = getAuthToken();
+      if (!token) {
+        alert('يرجى تسجيل الدخول لتنزيل الشهادة');
+        return;
+      }
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        throw new Error('فشل في تنزيل الشهادة');
+      }
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objectUrl;
+      const baseName = cert.serial_number || cert.course_title || `certificate-${cert.id}`;
+      a.download = `${baseName}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(objectUrl);
+      a.remove();
+    } catch (e) {
+      alert((e as any)?.message || 'حدث خطأ أثناء التنزيل');
+    }
+  };
+
+  const tableBody = useMemo(() => {
+    return items.map((cert, idx) => (
+      <tr key={cert.id}>
+        <td className="mc-index">{idx + 1}</td>
+        <td className="mc-title">{cert.course_title}</td>
+        <td className="mc-serial">{cert.serial_number || '-'}</td>
+        <td className="mc-date">{formatDateLabel(cert)}</td>
+        <td className="mc-actions">
+          <button className="mc-btn mc-download" onClick={() => handleDownload(cert)}>تحميل</button>
+        </td>
+        <td className="mc-actions">
+          <button className="mc-btn mc-view" onClick={() => handleView(cert)}>عرض</button>
+        </td>
+      </tr>
+    ));
+  }, [items]);
 
   return (
-    <div className="my-courses-page">
+    <div className="my-certificates-page">
       <div className="page-header">
         <h1>شهاداتي</h1>
-        <p>عرض جميع الشهادات التي حصلت عليها من الدورات المكتملة</p>
+        <p>عرض شهادات الكورسات المكتملة</p>
       </div>
 
-      <div className="courses-container">
-        {loading && (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            minHeight: '200px',
-            fontSize: '16px'
-          }}>
-            جاري تحميل الشهادات...
-          </div>
-        )}
+      {loading && (
+        <div className="mc-loading">جاري تحميل الشهادات...</div>
+      )}
 
-        {!loading && error && (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            minHeight: '200px',
-            fontSize: '16px',
-            color: '#e74c3c'
-          }}>
-            {error}
-          </div>
-        )}
+      {!loading && error && (
+        <div className="mc-error">{error}</div>
+      )}
 
-        {!loading && !error && certificates.length === 0 && (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            minHeight: '200px',
-            fontSize: '16px'
-          }}>
-            لا توجد شهادات متاحة حالياً
-          </div>
-        )}
+      {!loading && !error && items.length === 0 && (
+        <div className="mc-empty">لا توجد شهادات متاحة حالياً</div>
+      )}
 
-        {!loading && !error && certificates.map((cert) => {
-          const fileUrl = getDownloadUrl(cert.file_path);
-          const verificationUrl = cert.category_id
-            ? getDiplomaVerificationUrl(cert.uuid)
-            : getCourseVerificationUrl(cert.uuid);
-
-          console.log(LOG_PREFIX, 'render certificate', {
-            id: cert.id,
-            type: cert.type,
-            file_path: cert.file_path,
-            course_id: cert.course_id,
-            category_id: cert.category_id,
-            computed: { fileUrl, verificationUrl }
-          });
-
-          return (
-            <CertificateCard
-              key={cert.id}
-              courseName={cert.diploma_name}
-              completionDate={cert.issued_at}
-              certificateId={String(cert.id)}
-              certificateImage={'/certificates/certificate-template.png'}
-              downloadUrl={fileUrl}
-              verificationUrl={verificationUrl}
-              type={cert.type}
-              courseId={cert.course_id as number | undefined}
-              categoryId={cert.category_id as number | undefined}
-              userName={cert.user_name}
-            />
-          );
-        })}
-      </div>
+      {!loading && !error && items.length > 0 && (
+        <div className="mc-table-wrap">
+          <table className="mc-table" dir="rtl">
+            <thead>
+              <tr>
+                <th>ترقيم</th>
+                <th>اسم المقرر</th>
+                <th>السريال</th>
+                <th>التاريخ</th>
+                <th>زرار التحميل</th>
+                <th>زرار العرض</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tableBody}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

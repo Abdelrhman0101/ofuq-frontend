@@ -22,6 +22,22 @@ export interface DiplomaCertificate {
 }
 
 /**
+ * واجهة شهادة المقرر كما تُعاد من /my-certificates
+ * تحتوي الحقول اللازمة للعرض في جدول "شهاداتي" (كورسات فقط)
+ */
+export interface CourseCertificate {
+  id: number;
+  course_title: string;
+  issued_at?: string;
+  completion_date?: string;
+  serial_number?: string;
+  verification_token?: string;
+  verification_url?: string;
+  file_path?: string;
+  download_url?: string;
+}
+
+/**
  * واجهة البيانات التي تعود من صفحة التحقق العامة
  */
 export interface VerifiedCertificateData {
@@ -36,14 +52,14 @@ export interface VerifiedCertificateData {
  * (نفترض أن الباك اند سيحدّث هذا الـ endpoint ليعيد شهادات الدبلومات)
  */
 export async function getMyCertificates(): Promise<DiplomaCertificate[]> {
-  try {
+	 try {
     const res = await apiClient.get('/my-certificates');
-    const data = res.data;
-    const list = Array.isArray(data?.certificates)
-      ? data.certificates
-      : Array.isArray(data?.data?.certificates)
-     ? data.data.certificates
-     : [];
+	   const data = res.data;
+	   const list = Array.isArray(data?.certificates)
+	   	 ? data.certificates
+	   	 : Array.isArray(data?.data?.certificates)
+	   	 ? data.data.certificates
+	   	 : [];
 
     // تحويل البيانات (إذا لزم الأمر) أو الاعتماد على الباك اند لإرسال الشكل الجديد
     return list.map((cert: any) => ({
@@ -62,6 +78,36 @@ export async function getMyCertificates(): Promise<DiplomaCertificate[]> {
   } catch (error: any) {
     console.error('Error fetching my certificates:', error);
     throw new Error(error.response?.data?.message || 'فشل في جلب الشهادات');
+  }
+}
+
+/**
+ * [User] جلب شهادات كورسات الطالب بصيغة مباشرة كما يقدّمها الباك إند
+ */
+export async function getMyCourseCertificates(): Promise<CourseCertificate[]> {
+  try {
+    const res = await apiClient.get('/my-certificates');
+    const data = res.data;
+    const list = Array.isArray(data?.certificates)
+      ? data.certificates
+      : Array.isArray(data?.data?.certificates)
+      ? data.data.certificates
+      : [];
+
+    return list.map((c: any) => ({
+      id: Number(c.id),
+      course_title: String(c.course_title || ''),
+      issued_at: c.issued_at ? String(c.issued_at) : undefined,
+      completion_date: c.completion_date ? String(c.completion_date) : undefined,
+      serial_number: c.serial_number ? String(c.serial_number) : undefined,
+      verification_token: c.verification_token ? String(c.verification_token) : undefined,
+      verification_url: c.verification_url ? String(c.verification_url) : undefined,
+      file_path: c.file_path ? String(c.file_path) : undefined,
+      download_url: c.download_url ? String(c.download_url) : undefined,
+    }));
+  } catch (error: any) {
+    console.error('Error fetching my course certificates:', error);
+    throw new Error(error.response?.data?.message || 'فشل في جلب شهادات الكورسات');
   }
 }
 

@@ -302,7 +302,7 @@ const CourseDetailsPage = () => {
                   {catSlug ? (
                     <Link href={`/diplomas/${catSlug}`} className="preview-notice-link">{catName}</Link>
                   ) : (
-                    <Link href="/diplomas" className="preview-notice-link">الدبلومات</Link>
+                    <Link href="/diploms" className="preview-notice-link">الدبلومات</Link>
                   )}.
                 </div>
               );
