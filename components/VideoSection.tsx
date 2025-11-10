@@ -20,6 +20,7 @@ const VideoSection: React.FC<VideoSectionProps> = ({ videoUrl, title, thumbnailU
     : /player\.mediadelivery\.net|youtube\.com|youtu\.be|vimeo\.com/.test(videoUrl);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const isHls = /\.m3u8(\?.*)?$/.test(videoUrl || '');
 
   // منع التحميل وأوامر المطور من الواجهة الأمامية فقط
   useEffect(() => {
@@ -61,6 +62,69 @@ const VideoSection: React.FC<VideoSectionProps> = ({ videoUrl, title, thumbnailU
     };
   }, [isEmbed]);
 
+  // تحميل وتشغيل HLS عبر hls.js عند الحاجة (سفاري يستخدم HLS الأصلي)
+  useEffect(() => {
+    if (!videoRef.current || !isHls) return;
+    const video = videoRef.current;
+
+    // إذا كان المتصفح يدعم HLS أصلياً (سفاري)
+    if (video && typeof video.canPlayType === 'function' && video.canPlayType('application/vnd.apple.mpegurl')) {
+      try {
+        // تعيين المصدر مباشرة
+        (video as HTMLVideoElement).src = videoUrl;
+      } catch {
+        // تجاهل أي أخطاء بسيطة
+      }
+      return;
+    }
+
+    let hls: any = null;
+    const loadScript = () => new Promise<void>((resolve, reject) => {
+      const existing = document.querySelector('script[data-hlsjs]') as HTMLScriptElement | null;
+      if (existing) {
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+      script.async = true;
+      script.setAttribute('data-hlsjs', 'true');
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Failed to load hls.js'));
+      document.head.appendChild(script);
+    });
+
+    const setupHls = async () => {
+      try {
+        if (!(window as any).Hls) {
+          await loadScript();
+        }
+        const HlsCtor = (window as any).Hls;
+        if (HlsCtor && HlsCtor.isSupported()) {
+          hls = new HlsCtor({
+            // يمكن ضبط إعدادات HLS هنا
+            maxBufferLength: 30,
+          });
+          hls.loadSource(videoUrl);
+          hls.attachMedia(video);
+          hls.on(HlsCtor.Events.ERROR, (_evt: any, data: any) => {
+            if (data?.fatal && typeof hls?.recoverMediaError === 'function') {
+              try { hls.recoverMediaError(); } catch { /* ignore */ }
+            }
+          });
+        }
+      } catch (err) {
+        // إذا فشل hls.js، لا نكسر التشغيل كلياً
+        console.warn('HLS setup failed:', err);
+      }
+    };
+
+    setupHls();
+    return () => {
+      try { hls?.destroy?.(); } catch { /* ignore */ }
+    };
+  }, [videoUrl, isHls]);
+
   return (
     <section className={styles.videoSection}>
       <div className={styles.container}>
@@ -85,12 +149,13 @@ const VideoSection: React.FC<VideoSectionProps> = ({ videoUrl, title, thumbnailU
               disablePictureInPicture
               preload="metadata"
               onContextMenu={(e) => e.preventDefault()}
+              crossOrigin="anonymous"
               poster={thumbnailUrl}
               aria-label={alt || title || 'Course video'}
               onEnded={onEnded}
               ref={videoRef}
             >
-              <source src={videoUrl} />
+              {isHls ? null : <source src={videoUrl} />}
               متصفحك لا يدعم تشغيل الفيديو.
             </video>
           )}
