@@ -263,7 +263,10 @@
 }
 
 .sidebar-header {
-  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
   border-bottom: 1px solid #e9ecef;
 }
 

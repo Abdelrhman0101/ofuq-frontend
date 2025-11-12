@@ -382,3 +382,19 @@ export async function ensureDiplomaCertificateFileBySummary(summary: Certificate
   await updateDiplomaCertificateFile(summary.certificateId, filePath);
   return filePath;
 }
+
+/**
+ * طلب إصدار شهادة مقرر جديدة
+ */
+export async function requestCertificate(courseId: number | string): Promise<{ certificate_status: string }> {
+  const res = await apiClient.post(`/courses/${courseId}/request-certificate`);
+  return res.data;
+}
+
+/**
+ * الحصول على حالة شهادة المقرر
+ */
+export async function getCertificateStatus(courseId: number | string): Promise<{ status: string }> {
+  const res = await apiClient.get(`/courses/${courseId}/certificate-status`);
+  return res.data;
+}

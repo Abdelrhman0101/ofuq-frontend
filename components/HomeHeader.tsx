@@ -92,6 +92,7 @@ const HomeHeader = () => {
               <Link href="/" className={clsx(styles['nav-link'], pathname === '/' && styles['active'])}>الرئيسية</Link>
               <Link href="/diploms" className={clsx(styles['nav-link'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && styles['active'])}>دبلومات منصة أفق</Link>
               <Link href="/community" className={clsx(styles['nav-link'], pathname?.startsWith('/community') && styles['active'])}>مجتمع أفق</Link>
+              <Link href="/verify-certificate" className={clsx(styles['nav-link'], pathname?.startsWith('/verify-certificate') && styles['active'])}>التحقق من الشهادة</Link>
               <Link href="/about" className={clsx(styles['nav-link'], pathname?.startsWith('/about') && styles['active'])}>من نحن</Link>
             </nav>
           </div>
@@ -173,6 +174,7 @@ const HomeHeader = () => {
             <Link href="/" className={clsx(styles['sidebar-link'], pathname === '/' && styles['active'])} onClick={closeSidebar}>الرئيسية</Link>
             <Link href="/diploms" className={clsx(styles['sidebar-link'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && styles['active'])} onClick={closeSidebar}>دبلومات منصة أفق</Link>
             <Link href="/community" className={clsx(styles['sidebar-link'], pathname?.startsWith('/community') && styles['active'])} onClick={closeSidebar}>مجتمع أفق</Link>
+            <Link href="/verify-certificate" className={clsx(styles['sidebar-link'], pathname?.startsWith('/verify-certificate') && styles['active'])} onClick={closeSidebar}>التحقق من الشهادة</Link>
             <Link href="/about" className={clsx(styles['sidebar-link'], pathname?.startsWith('/about') && styles['active'])} onClick={closeSidebar}>عنّا</Link>
           </nav>
 

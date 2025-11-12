@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/exam-details.css';
 import { FinalExamMetaData, getCourseFinalExamMeta, getQuizAttempts, QuizAttempt } from '../utils/quizService';
+import { requestCertificate, getCertificateStatus } from '../utils/certificateService';
 
 interface ExamDetailsProps {
   courseId: number;
@@ -16,6 +17,32 @@ const ExamDetails: React.FC<ExamDetailsProps> = ({ courseId, courseName, complet
   const [attempts, setAttempts] = useState<QuizAttempt[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [certificateStatus, setCertificateStatus] = useState<string | null>(null);
+  const [loadingCertificate, setLoadingCertificate] = useState(true);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [requestingCertificate, setRequestingCertificate] = useState<boolean>(false);
+  const [requestError, setRequestError] = useState<string | null>(null);
+
+  const handleRequestCertificate = async () => {
+    setRequestingCertificate(true);
+    setRequestError(null);
+    
+    try {
+      const response = await requestCertificate(courseId);
+      if (response.certificate_status) {
+        setCertificateStatus(response.certificate_status);
+      } else {
+        // إذا لم يُرجع الرد حالة، نفترض أنها pending
+        setCertificateStatus('pending');
+      }
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || 'حدث خطأ، يرجى المحاولة لاحقاً';
+      setRequestError(errorMessage);
+      console.error('Certificate request failed:', error);
+    } finally {
+      setRequestingCertificate(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -38,6 +65,79 @@ const ExamDetails: React.FC<ExamDetailsProps> = ({ courseId, courseName, complet
     load();
     return () => { cancelled = true; };
   }, [courseId]);
+
+  // Fetch certificate status from "الدود" when component loads or attempts change
+  useEffect(() => {
+    let cancelled = false;
+    
+    async function fetchCertificateStatus() {
+      if (!courseId) return;
+      
+      setLoadingCertificate(true);
+      setCertificateStatus(null);
+      
+      try {
+        const response = await getCertificateStatus(courseId);
+        if (!cancelled && response?.status) {
+          setCertificateStatus(response.status);
+          // حفظ رابط التحميل إذا كانت الشهادة مكتملة
+          // ملاحظة: getCertificateStatus لا يعيد file_path، يجب استدعاء دالة أخرى لاحقًا
+        }
+      } catch (error: any) {
+        if (!cancelled) {
+          if (error?.response?.status === 404) {
+            // Certificate doesn't exist yet - this is expected
+            setCertificateStatus(null);
+          } else {
+            console.warn('Failed to fetch certificate status:', error);
+            setCertificateStatus(null);
+          }
+        }
+      } finally {
+        if (!cancelled) setLoadingCertificate(false);
+      }
+    }
+    
+    fetchCertificateStatus();
+    return () => { cancelled = true; };
+  }, [courseId]);
+
+  // Polling effect - keep asking about certificate status when it's pending
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+    
+    if (certificateStatus === 'pending') {
+      // Start polling every 5 seconds
+      intervalId = setInterval(() => {
+        getCertificateStatus(courseId)
+          .then(data => {
+            if (data?.status === 'completed' || data?.status === 'failed') {
+              // Stop polling and update the UI
+              if (intervalId) {
+                clearInterval(intervalId);
+              }
+              setCertificateStatus(data.status);
+              // ملاحظة: getCertificateStatus لا يعيد file_path، يجب استدعاء دالة أخرى لاحقًا
+            }
+            // If still pending, continue polling
+          })
+          .catch(error => {
+            console.warn('Polling error:', error);
+            // Stop polling on error
+            if (intervalId) {
+              clearInterval(intervalId);
+            }
+          });
+      }, 5000); // 5 seconds
+    }
+    
+    // Cleanup function: stop polling when user leaves the page or status changes
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [certificateStatus, courseId]);
 
   return (
     <div className="exam-details-container">
@@ -127,6 +227,93 @@ const ExamDetails: React.FC<ExamDetailsProps> = ({ courseId, courseName, complet
               </table>
             </div>
           </div>
+
+          {/* Certificate Section */}
+                  {!loading && !error && attempts.length > 0 && (
+                    <div className="lessons-table-container">
+                      <h2 className="table-title">الشهادة</h2>
+                      <div className="table-wrapper">
+                        <div className="certificate-section">
+                          {(() => {
+                            const latestAttempt = attempts[0]; // Get the most recent attempt
+                            const grade = latestAttempt?.score ?? 0;
+                            const passed = latestAttempt?.passed ?? false;
+                            
+                            if (grade < 50 || !passed) {
+                              return (
+                                <div className="certificate-not-eligible">
+                                  <p>يجب عليك اجتياز الاختبار النهائي للحصول على الشهادة.</p>
+                                </div>
+                              );
+                            }
+                            
+                            if (loadingCertificate) {
+                              return (
+                                <div className="certificate-loading">
+                                  <span className="spinner"></span>
+                                  <p>جاري التحقق من حالة الشهادة...</p>
+                                </div>
+                              );
+                            }
+                            
+                            if (certificateStatus === 'completed') {
+                              return (
+                                <div className="certificate-completed">
+                                  <p className="certificate-message">🎉 تهانينا! تم إصدار شهادتك بنجاح.</p>
+                                  <a 
+                                    href={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/storage/${downloadUrl}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    download
+                                    className="download-certificate-btn"
+                                  >
+                                    تحميل الشهادة
+                                  </a>
+                                </div>
+                              );
+                            }
+                            
+                            if (certificateStatus === 'pending') {
+                               return (
+                                 <div className="certificate-pending">
+                                   <p className="certificate-message">⏳ جاري إنشاء شهادتك... سيتم إشعارك عند اكتمالها.</p>
+                                   <p className="certificate-instructions">يتم التحقق من الحالة كل بضع ثوانٍ...</p>
+                                 </div>
+                               );
+                             }
+                            
+                            if (certificateStatus === null) {
+                              return (
+                                <div className="certificate-request">
+                                  <p className="certificate-message">✅ مبروك! لقد اجتزت الاختبار بنجاح.</p>
+                                  <p className="certificate-instructions">يمكنك الآن طلب شهادتك الرسمية.</p>
+                                  <button 
+                                    className="request-certificate-btn"
+                                    onClick={handleRequestCertificate}
+                                    disabled={requestingCertificate}
+                                  >
+                                    {requestingCertificate ? (
+                                      <>
+                                        <span className="spinner"></span>
+                                        جاري الطلب...
+                                      </>
+                                    ) : (
+                                      'طلب الشهادة'
+                                    )}
+                                  </button>
+                                  {requestError && (
+                                    <p className="certificate-error">{requestError}</p>
+                                  )}
+                                </div>
+                              );
+                            }
+                            
+                            return null;
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                  )}
         </>
       )}
     </div>

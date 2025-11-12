@@ -126,6 +126,7 @@ const Footer = () => {
           <motion.h3 className={styles['footer-title']} whileHover={{ scale: 1.02 }}>تصفح الموقع</motion.h3>
           <div className={styles['footer-links']}>
             <Link href="/about" className={styles['footer-link']}>عنّا</Link>
+            <Link href="/verify-certificate" className={styles['footer-link']}>التحقق من الشهادة</Link>
             <Link href="/privacy" className={styles['footer-link']}>سياسة الخصوصية</Link>
             <Link href="/terms" className={styles['footer-link']}>الشروط والأحكام</Link>
           </div>
