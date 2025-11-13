@@ -2,25 +2,27 @@ import apiClient from './apiClient';
 
 // ... (الواجهات Interfaces تبقى كما هي)
 export interface Course {
-  id: number;
-  title: string;
-  description: string;
-  price: number;
-  instructor_id: number;
-  category_id: number; // معرف الدبلومة
-  cover_image?: string;
-  video_url?: string | null;
-  is_free: boolean;
-  status: 'draft' | 'published' | 'archived';
-  created_at?: string;
-  updated_at?: string;
-  // Optional fields
-  duration?: number;
-  chapters_count?: number;
-  rating?: number | string;
-  students_count?: number;
-  reviews_count?: number;
-  average_rating?: number;
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  instructor_id: number;
+  category_id: number; // معرف الدبلومة
+  cover_image?: string;
+  video_url?: string | null;
+  is_free: boolean;
+  status: 'draft' | 'published' | 'archived';
+  created_at?: string;
+  updated_at?: string;
+  // Optional fields
+  duration?: number;
+  chapters_count?: number;
+  rating?: number | string;
+  students_count?: number;
+  reviews_count?: number;
+  average_rating?: number;
+  // ترتيب عرض الكورس في القوائم (اختياري)
+  rank?: number | null;
   // تمت الإضافة: حالة النشر كقيمة منطقية لاستخدامها في لوحات الإدارة
   is_published?: boolean;
   instructor?: {

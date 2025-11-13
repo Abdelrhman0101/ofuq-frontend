@@ -263,3 +263,31 @@ export const getLessonNavigation = async (
     throw new Error('فشل في جلب بيانات تنقل الدرس');
   }
 };
+
+/**
+ * [User] جلب حالة مشاهدة الدرس للمستخدم الحالي
+ * يعيد إحدى الحالات: 'completed' | 'in_progress' | 'not_enrolled'
+ */
+export type LessonWatchStatus = 'completed' | 'in_progress' | 'not_enrolled';
+
+export const getLessonWatchStatus = async (
+  lessonId: number | string
+): Promise<LessonWatchStatus> => {
+  try {
+    console.log('[LessonWatchStatus][request]', { lessonId });
+    const res = await apiClient.get<any>(`/lessons/${lessonId}/status`);
+    const raw = res?.data;
+    const payload = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    const statusRaw = String(payload?.status ?? '').trim();
+    console.log('[LessonWatchStatus][response]', { lessonId, payload });
+    if (statusRaw === 'completed' || statusRaw === 'in_progress' || statusRaw === 'not_enrolled') {
+      return statusRaw as LessonWatchStatus;
+    }
+    // في حالة رد غير متوقع نعتبرها in_progress
+    return 'in_progress';
+  } catch (error: any) {
+    // لا نكسر الواجهة؛ نعيد in_progress عند الأخطاء (مثل 401 أو فشل الشبكة)
+    console.warn('[LessonWatchStatus][error]', { lessonId, error: error?.message || error });
+    return 'in_progress';
+  }
+};

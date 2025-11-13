@@ -10,14 +10,21 @@ interface AuthGuardProps {
 
 export default function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter();
+  const [isMounted, setIsMounted] = React.useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     // Check if user is not authenticated
     if (!isAuthenticated()) {
       router.replace('/auth');
       return;
     }
   }, [router]);
+
+  // Prevent hydration issues
+  if (!isMounted) {
+    return null;
+  }
 
   // Only render children if user is authenticated
   if (!isAuthenticated()) {

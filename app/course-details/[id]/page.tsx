@@ -368,7 +368,7 @@ const CourseDetailsPage = () => {
         </div>
       </main>
       
-      {/* Popular Courses Section */}
+      {/* Popular Courses Section
       <section className="popular-courses-section">
         <div className="popular-courses-container">
           <div className="popular-courses-header">
@@ -406,7 +406,7 @@ const CourseDetailsPage = () => {
             )}
           </div>
         </div>
-      </section>
+      </section> */}
       
       <Footer />
       

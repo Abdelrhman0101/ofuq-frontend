@@ -35,6 +35,7 @@ export default function EditCoursePage() {
   const [isFree, setIsFree] = useState(false);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [rank, setRank] = useState<string>('');
 
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -71,6 +72,7 @@ export default function EditCoursePage() {
         setDuration(String(c.duration ?? ""));
         setIsFree(Boolean(c.is_free));
         setPrice(String(c.price ?? 0));
+        setRank(c.rank != null ? String(c.rank) : '');
         const existingCover = getBackendAssetUrl(c.cover_image ?? (c as any).cover_image_url);
         setCoverPreview(existingCover || null);
       } catch (err: any) {
@@ -130,6 +132,9 @@ export default function EditCoursePage() {
       fd.append("duration", duration);
       fd.append("price", price || "0");
       fd.append("is_free", isFree ? "1" : "0");
+      if (rank && rank.trim() !== '') {
+        fd.append('rank', rank.trim());
+      }
       if (coverFile) fd.append("cover_image", coverFile);
       await updateCourse(courseId, fd);
       showToast("تم تعديل المقرر بنجاح", "success");
@@ -257,6 +262,13 @@ export default function EditCoursePage() {
                 <input id="price" type="number" min={0} value={price} onChange={e=>setPrice(e.target.value)} className={styles.input} required />
               </div>
             )}
+          </div>
+
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label htmlFor="rank">الترتيب (اختياري)</label>
+              <input id="rank" type="number" min={1} value={rank} onChange={e=>setRank(e.target.value)} className={styles.input} placeholder="مثال: 1" />
+            </div>
           </div>
 
           <div className={styles.formRow}>

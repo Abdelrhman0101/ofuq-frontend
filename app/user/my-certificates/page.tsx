@@ -1,0 +1,227 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { getMyCertificates, DiplomaCertificate, CourseCertificate } from '@/utils/certificateService';
+import { isAuthenticated } from '@/utils/authService';
+import CertificateCard from '@/components/CertificateCard';
+import '@/styles/my-certificates.css';
+import '@/components/Toast';
+
+interface CertificateData {
+  id: number;
+  uuid: string;
+  diploma_name: string;
+  user_name: string;
+  issued_at: string;
+  file_path?: string;
+  qr_path?: string;
+  category_id?: number;
+  course_id?: number;
+  type: 'diploma' | 'course';
+}
+
+export default function MyCertificatesPage() {
+  const [diplomaCertificates, setDiplomaCertificates] = useState<DiplomaCertificate[]>([]);
+  const [courseCertificates, setCourseCertificates] = useState<CourseCertificate[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'diplomas' | 'courses'>('diplomas');
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const authenticated = await isAuthenticated();
+      if (!authenticated) {
+        router.push('/login');
+        return;
+      }
+      fetchCertificates();
+    };
+
+    checkAuth();
+  }, [router]);
+
+  const fetchCertificates = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // جلب جميع الشهادات
+      const allCertificates = await getMyCertificates();
+      
+      // فصل شهادات الدبلومات عن شهادات الكورسات
+      const diplomas = allCertificates.filter(cert => cert.type === 'diploma' || !cert.type);
+      const courses = allCertificates.filter(cert => cert.type === 'course')
+        .map(cert => ({
+          ...cert as any,
+          course_title: cert.diploma_name, // استخدام diploma_name كـ course_title للتوافق
+          uuid: cert.uuid || '', // تأكد من وجود uuid
+          file_path: cert.file_path || '', // تأكد من وجود file_path
+          issued_at: cert.issued_at || '' // تأكد من وجود issued_at
+        }));
+      
+      setDiplomaCertificates(diplomas);
+      setCourseCertificates(courses);
+    } catch (err: any) {
+      console.error('Error fetching certificates:', err);
+      setError(err.message || 'فشل في تحميل الشهادات');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ar-SA', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const handleShareCertificate = (certificate: DiplomaCertificate | CourseCertificate) => {
+    const verificationUrl = (certificate as DiplomaCertificate).qr_path || `${window.location.origin}/verify-certificate/${(certificate as DiplomaCertificate).uuid}`;
+    const title = (certificate as DiplomaCertificate).diploma_name || (certificate as CourseCertificate).course_title || 'الشهادة';
+    if (navigator.share) {
+      navigator.share({
+        title: `شهادتي في ${title}`,
+        text: `أنا فخور بمشاركة شهادتي في ${title}!`,
+        url: verificationUrl,
+      });
+    } else {
+      navigator.clipboard.writeText(verificationUrl);
+      alert('تم نسخ رابط التحقق من الشهادة!');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="my-certificates-page">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>جاري تحميل الشهادات...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="my-certificates-page">
+        <div className="error-container">
+          <div className="error-icon">⚠️</div>
+          <h3>حدث خطأ</h3>
+          <p>{error}</p>
+          <button onClick={fetchCertificates} className="retry-btn">
+            حاول مرة أخرى
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="my-certificates-page">
+      <div className="certificates-container">
+        <div className="page-header">
+          <h1>شهاداتي</h1>
+          <p className="page-subtitle">جميع شهاداتك المهنية في مكان واحد</p>
+        </div>
+
+        {/* تبويبات التنقل */}
+        <div className="certificates-tabs">
+          <button
+            className={`tab-btn ${activeTab === 'diplomas' ? 'active' : ''}`}
+            onClick={() => setActiveTab('diplomas')}
+          >
+            <span className="tab-icon">🎓</span>
+            شهادات الدبلومات
+            <span className="tab-count">{diplomaCertificates.length}</span>
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'courses' ? 'active' : ''}`}
+            onClick={() => setActiveTab('courses')}
+          >
+            <span className="tab-icon">📚</span>
+            شهادات الكورسات
+            <span className="tab-count">{courseCertificates.length}</span>
+          </button>
+        </div>
+
+        {/* محتوى التبويبات */}
+        <div className="tab-content">
+          {activeTab === 'diplomas' && (
+            <div className="certificates-section">
+              <h2 className="section-title">الشهادات المهنية (الدبلومات)</h2>
+              {diplomaCertificates.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-icon">🎓</div>
+                  <h3>لا توجد شهادات دبلومات</h3>
+                  <p>لم تحصل على أي شهادات دبلومات بعد. أكمل متطلبات الدبلومات للحصول على شهاداتك.</p>
+                  <button 
+                    className="browse-btn"
+                    onClick={() => router.push('/diplomas')}
+                  >
+                    تصفح الدبلومات
+                  </button>
+                </div>
+              ) : (
+                <div className="certificates-grid">
+                  {diplomaCertificates.map((certificate) => (
+                    <CertificateCard
+                      key={certificate.id}
+                      courseName={certificate.diploma_name}
+                      completionDate={formatDate(certificate.issued_at || '')}
+                      certificateId={certificate.uuid}
+                      downloadUrl={certificate.file_path}
+                      verificationUrl={`${window.location.origin}/verify-certificate/${certificate.uuid}`}
+                      type="diploma"
+                      categoryId={certificate.category_id}
+                      userName={certificate.user_name}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'courses' && (
+            <div className="certificates-section">
+              <h2 className="section-title">شهادات الكورسات</h2>
+              {courseCertificates.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-icon">📚</div>
+                  <h3>لا توجد شهادات كورسات</h3>
+                  <p>لم تحصل على أي شهادات كورسات بعد. أكمل الكورسات للحصول على شهاداتك.</p>
+                  <button 
+                    className="browse-btn"
+                    onClick={() => router.push('/courses')}
+                  >
+                    تصفح الكورسات
+                  </button>
+                </div>
+              ) : (
+                <div className="certificates-grid">
+                  {courseCertificates.map((certificate) => (
+                    <CertificateCard
+                      key={certificate.id}
+                      courseName={certificate.course_title}
+                      completionDate={formatDate(certificate.issued_at || '')}
+                      certificateId={(certificate as any).uuid}
+                      downloadUrl={(certificate as any).file_path}
+                      verificationUrl={`${window.location.origin}/verify-certificate/${(certificate as any).uuid}`}
+                      type="course"
+                      courseId={(certificate as any).course_id}
+                      userName={(certificate as any).user_name}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

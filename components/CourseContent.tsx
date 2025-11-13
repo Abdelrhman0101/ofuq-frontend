@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import InstructorProfile from './InstructorProfile';
 import '../styles/student-reviews.css';
+import { getLessonWatchStatus, LessonWatchStatus } from '@/utils/lessonService';
+import { FaCheckCircle } from 'react-icons/fa';
 
 interface CourseContentProps {
   rating: number;
@@ -64,7 +66,17 @@ const CourseContent: React.FC<CourseContentProps> = ({
 }) => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
-  const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
+  const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>(() => {
+    // فتح جميع الأقسام افتراضياً عند التحميل الأول
+    const initial: Record<string, boolean> = {};
+    if (Array.isArray(chapters) && chapters.length > 0) {
+      chapters.forEach((ch) => {
+        initial[`chapter-${ch.id}`] = true;
+      });
+    }
+    return initial;
+  });
+  const [lessonStatuses, setLessonStatuses] = useState<Record<number, LessonWatchStatus>>({});
 
   // Detect if we have real backend content (with numeric lesson IDs)
   const hasRealContent = Array.isArray(chapters) && chapters.length > 0 && chapters.some(ch => Array.isArray(ch.lessons) && ch.lessons.some(l => typeof l.id === 'number' && l.id > 0));
@@ -145,6 +157,64 @@ const CourseContent: React.FC<CourseContentProps> = ({
           },
         ];
 
+  // فتح جميع الأقسام افتراضياً بعد توفر المحتوى، إذا لم تكن مهيأة بعد
+  React.useEffect(() => {
+    if (Object.keys(expandedSections).length > 0) return;
+    const openMap: Record<string, boolean> = {};
+    contentSections.forEach((s) => {
+      openMap[s.id] = true;
+    });
+    if (Object.keys(openMap).length > 0) {
+      setExpandedSections(openMap);
+    }
+  }, [chapters]);
+
+  // جلب حالة مشاهدة كل درس للمستخدم الحالي (إن كان مشتركًا ومحتوى حقيقي)
+  React.useEffect(() => {
+    console.log('[CourseContent][LessonStatusEffect][start]', { isEnrolled, hasRealContent, chaptersCount: (chapters || []).length });
+    if (!isEnrolled || !hasRealContent) return;
+    try {
+      const ids: number[] = (chapters || [])
+        .flatMap((ch) => (ch.lessons || []).map((l) => l.id))
+        .filter((id): id is number => typeof id === 'number' && id > 0);
+      if (ids.length === 0) return;
+
+      // عدم إعادة الجلب إذا كانت الحالات موجودة بالفعل لنفس القائمة
+      const uniqueIds = Array.from(new Set(ids));
+      console.log('[CourseContent][LessonStatusEffect][uniqueIds]', uniqueIds);
+      Promise.allSettled(
+        uniqueIds.map((id) =>
+          getLessonWatchStatus(id).then((status) => {
+            console.log('[CourseContent][LessonStatusEffect][fetched]', { id, status });
+            return { id, status };
+          })
+        )
+      ).then((settled) => {
+        const map: Record<number, LessonWatchStatus> = {};
+        settled.forEach((res) => {
+          if (res.status === 'fulfilled') {
+            map[res.value.id] = res.value.status;
+          }
+        });
+        if (Object.keys(map).length > 0) {
+          console.log('[CourseContent][LessonStatusEffect][applyMap]', map);
+          setLessonStatuses((prev) => ({ ...prev, ...map }));
+        }
+      }).catch((err) => {
+        console.warn('[CourseContent][LessonStatusEffect][error]', err?.message || err);
+      });
+    } catch (e) {
+      console.warn('[CourseContent][LessonStatusEffect][prepareError]', e);
+    }
+  }, [isEnrolled, hasRealContent, chapters]);
+
+  // تتبع تغيّر الحالات بعد التحديث
+  React.useEffect(() => {
+    if (!isEnrolled || !hasRealContent) return;
+    const keys = Object.keys(lessonStatuses);
+    console.log('[CourseContent][LessonStatusEffect][stateUpdated]', { count: keys.length, keys });
+  }, [lessonStatuses, isEnrolled, hasRealContent]);
+
   const handleLessonNavigate = (lessonId: number, chapterId?: number, canWatch?: boolean, isPreview?: boolean) => {
     // Prevent navigating for sample/fallback content
     if (!hasRealContent) {
@@ -189,10 +259,10 @@ const CourseContent: React.FC<CourseContentProps> = ({
                 <div key={section.id} className="dropdown-section">
                   <button 
                     className={`dropdown-header ${expandedSections[section.id] ? 'expanded' : ''}`}
+                    aria-expanded={!!expandedSections[section.id]}
                     onClick={() => toggleSection(section.id)}
                   >
                     <div className="dropdown-title-container">
-                      <span className="dropdown-number">0{index + 1}:34</span>
                       <span className="dropdown-title">{section.title}</span>
                     </div>
                     <svg 
@@ -206,9 +276,22 @@ const CourseContent: React.FC<CourseContentProps> = ({
                   {expandedSections[section.id] && (
                     <div className="dropdown-content">
                       {section.lessons.map((lesson, lessonIndex) => (
-                        <div key={`lesson-${lesson.id}-${lessonIndex}`} className={`lesson-item ${activeLessonId === lesson.id ? 'active' : ''}`}>
+                        <div
+                          key={`lesson-${lesson.id}-${lessonIndex}`}
+                          className={`lesson-item ${activeLessonId === lesson.id ? 'active' : ''}`}
+                          data-lesson-id={lesson.id}
+                          data-status={lessonStatuses[lesson.id] || 'unknown'}
+                        >
                           <div className="lesson-info">
-                            <span className="lesson-time">0{lessonIndex + 1}:34</span>
+                            {lessonStatuses[lesson.id] === 'completed' && (
+                              <span
+                                className="lesson-completed"
+                                title="تم مشاهدة هذا الدرس"
+                                aria-label="تم مشاهدة هذا الدرس"
+                              >
+                                <FaCheckCircle className="completed-icon" size={18} />
+                              </span>
+                            )}
                             <span className="lesson-title">{lesson.title}</span>
                           </div>
                           <button
@@ -570,17 +653,10 @@ const CourseContent: React.FC<CourseContentProps> = ({
           display: flex;
           align-items: center;
           gap: 10px;
+          flex: 1;
         }
 
-        .lesson-time {
-          background-color: #f8f9fa;
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-size: 12px;
-          color: #666;
-          min-width: 40px;
-          text-align: center;
-        }
+       
 
         .lesson-duration {
           background-color: #f8f9fa;
@@ -632,11 +708,26 @@ const CourseContent: React.FC<CourseContentProps> = ({
           font-size: 14px;
           text-align: right;
           flex: 1;
+          min-width: 0; /* يمنع دفع الأيقونة خارج الحاوية */
         }
 
         .lesson-item.active .lesson-title {
           color: #1a237e;
           font-weight: 600;
+        }
+
+        .lesson-completed {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          margin-left: 6px; /* وضع الأيقونة قبل العنوان */
+          flex: 0 0 auto;
+        }
+
+        .completed-icon {
+          width: 18px;
+          height: 18px;
+          color: #2ecc71; /* لون الأيقونة عبر react-icons */
         }
       `}</style>
     </div>

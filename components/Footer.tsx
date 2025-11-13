@@ -12,6 +12,10 @@ const Footer = () => {
   const phoneNumber = '201554517102';
   const phoneDial = '+201554517102';
   const whatsappLink = `https://wa.me/${phoneNumber}`;
+  const techSupportNumber = '201555855857';
+  const techSupportDial = '+201555855857';
+  const techSupportWhatsappMessage = 'دعم فني لمنصة أفق:\n\n';
+  const techSupportWhatsappLink = `https://wa.me/${techSupportNumber}?text=${encodeURIComponent(techSupportWhatsappMessage)}`;
   const emailAddress = 'info@ofuq.academy';
   const locationText = 'القاهرة - مصر';
 
@@ -34,7 +38,7 @@ const Footer = () => {
               </Link>
             </div>
             <p className={styles['footer-description']}>
-              أفق مؤسسة تعليمية رائدة متخصصة في بناء وتقديم برامج دبلوم احترافية في مجالات متنوعة تجمع بين الأصالة والمعاصرة. تأسست الشركة لسد الفجوة بين التعليم النظري والممارسة العملية من خلال مناهج علمية مبتكرة ومتكاملة تواكب احتياجات سوق العمل وتحديات العصر.
+              أفق منصة تعليمية رائدة متخصصة في بناء وتقديم برامج دبلوم احترافية في مجالات متنوعة تجمع بين الأصالة والمعاصرة. تأسست المنصة لسد الفجوة بين التعليم النظري والممارسة العملية من خلال مناهج علمية مبتكرة ومتكاملة تواكب احتياجات سوق العمل وتحديات العصر.
             </p>
           </div>
         </div>
@@ -51,33 +55,71 @@ const Footer = () => {
               <span>{locationText}</span>
             </motion.div>
 
-            <motion.div className={styles['contact-item']} whileHover={{ scale: 1.01 }}>
-              <FaWhatsapp className={`${styles['contact-icon']} ${styles['whatsapp']}`} />
-              <span className={styles['phone-wrap']}>
-                <span className={styles['phone-number']}>{phoneNumber}</span>
-                <span className={styles['phone-plus']}>+</span>
-              </span>
-              <div className={styles['contact-actions']}>
-                <motion.a
-                  href={`tel:${phoneDial}`}
-                  className={`${styles['contact-btn']} ${styles['contact-btn-outline']}`}
-                  aria-label="اتصال"
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <FaPhone style={{ marginLeft: 6 }} />
-                  اتصال
-                </motion.a>
-                <motion.a
-                  href={whatsappLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`${styles['contact-btn']} ${styles['contact-btn-primary']}`}
-                  aria-label="واتساب"
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <FaWhatsapp style={{ marginLeft: 6 }} />
-                  واتساب
-                </motion.a>
+            {/* للاستفسارات الأكاديمية */}
+            <motion.div className={`${styles['contact-item']} ${styles['contact-item-stacked']}`} whileHover={{ scale: 1.01 }}>
+              <div className={styles['contact-label']}>للاستفسارات الأكاديمية</div>
+              <div className={styles['contact-row']}>
+                <FaWhatsapp className={`${styles['contact-icon']} ${styles['whatsapp']}`} />
+                <span className={styles['phone-wrap']}>
+                  <span className={styles['phone-number']}>{phoneNumber}</span>
+                  <span className={styles['phone-plus']}>+</span>
+                </span>
+                <div className={styles['contact-actions']}>
+                  <motion.a
+                    href={`tel:${phoneDial}`}
+                    className={`${styles['contact-btn']} ${styles['contact-btn-outline']}`}
+                    aria-label="اتصال"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <FaPhone style={{ marginLeft: 6 }} />
+                    اتصال
+                  </motion.a>
+                  <motion.a
+                    href={whatsappLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`${styles['contact-btn']} ${styles['contact-btn-primary']}`}
+                    aria-label="واتساب"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <FaWhatsapp style={{ marginLeft: 6 }} />
+                    واتساب
+                  </motion.a>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* للدعم الفني التقني */}
+            <motion.div className={`${styles['contact-item']} ${styles['contact-item-stacked']}`} whileHover={{ scale: 1.01 }}>
+              <div className={styles['contact-label']}>للدعم الفني التقني</div>
+              <div className={styles['contact-row']}>
+                <FaWhatsapp className={`${styles['contact-icon']} ${styles['whatsapp']}`} />
+                <span className={styles['phone-wrap']}>
+                  <span className={styles['phone-number']}>{techSupportNumber}</span>
+                  <span className={styles['phone-plus']}>+</span>
+                </span>
+                <div className={styles['contact-actions']}>
+                  {/* <motion.a
+                    href={`tel:${techSupportDial}`}
+                    className={`${styles['contact-btn']} ${styles['contact-btn-outline']}`}
+                    aria-label="اتصال"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <FaPhone style={{ marginLeft: 6 }} />
+                    اتصال
+                  </motion.a> */}
+                  <motion.a
+                    href={techSupportWhatsappLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`${styles['contact-btn']} ${styles['contact-btn-primary']}`}
+                    aria-label="واتساب"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <FaWhatsapp style={{ marginLeft: 6 }} />
+                    واتساب
+                  </motion.a>
+                </div>
               </div>
             </motion.div>
 

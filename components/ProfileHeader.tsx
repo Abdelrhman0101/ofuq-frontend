@@ -17,6 +17,7 @@ const ProfileHeader = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [avatarClicked, setAvatarClicked] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -32,6 +33,7 @@ const ProfileHeader = () => {
 
   // Check authentication status on mount (same logic as HomeHeader)
   useEffect(() => {
+    setIsMounted(true);
     const authenticated = isAuthenticated();
     setIsLoggedIn(authenticated);
     if (authenticated) {
@@ -69,6 +71,10 @@ const ProfileHeader = () => {
   };
 
   const profileImageUrl = user?.profile_picture ? getBackendAssetUrl(user.profile_picture) : '/avatar.jpg';
+
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <>

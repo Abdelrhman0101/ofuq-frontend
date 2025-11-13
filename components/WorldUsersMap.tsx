@@ -99,6 +99,32 @@ export default function WorldUsersMap() {
     [distribution]
   );
 
+  // خريطة بيانات الدول (بالإنجليزية المطبّعة) -> { العدد، الاسم بالعربية }
+  const countryDataMap = useMemo(() => {
+    const m = new Map<string, { count: number; nameAr: string }>();
+    for (const item of distribution) {
+      const englishName = arabicToEnglishCountry(item.country_ar);
+      if (!englishName) continue;
+      const key = normalizeEnglish(String(englishName));
+      m.set(key, { count: item.students_count, nameAr: item.country_ar });
+    }
+    return m;
+  }, [distribution]);
+
+  // أقصى عدد طلاب لاستخدامه في التلوين التدريجي
+  const maxStudents = useMemo(
+    () => (distribution.length ? Math.max(...distribution.map((d) => d.students_count)) : 1),
+    [distribution]
+  );
+
+  // لون تعبئة للدول بحسب كثافة الطلاب
+  const getCountryFill = (count: number) => {
+    const max = Math.max(1, maxStudents);
+    const t = Math.sqrt(count / max); // توزيع لطيف
+    const alpha = Math.min(0.5, 0.15 + t * 0.5); // من 0.15 إلى 0.5
+    return `rgba(1, 158, 187, ${alpha})`;
+  };
+
   // نسب تقدم ذكية للحلقات (يمكن تعديل الأهداف حسب الحاجة)
   const MAX_COUNTRIES = 195;
   const TARGET_STUDENTS = 5000;
@@ -115,7 +141,7 @@ export default function WorldUsersMap() {
       <div className={styles['world-map-wrapper']}>
         <div className={styles['section-header']}>
           <h2 className={styles['section-title']}>رواد المنصة حول العالم</h2>
-          <p className={styles['section-subtitle']}>مرّر الفأرة على النقاط لمعرفة البلد وعدد الطلاب</p>
+          <p className={styles['section-subtitle']}>مرّر الفأرة على الدول الملوّنة لمعرفة البلد وعدد الطلاب</p>
         </div>
 
         <div className={styles['map-container']}>
@@ -145,145 +171,78 @@ export default function WorldUsersMap() {
             <Geographies geography={geoUrl}>
               {({ geographies }: { geographies: any[] }) => (
                 <>
-                  {geographies.map((geo: any) => (
-                    <Geography
-                      key={geo.rsmKey}
-                      geography={geo}
-                      fill="rgba(100, 116, 139, 0.1)"
-                      stroke="rgba(1, 158, 187, 0.2)"
-                      strokeWidth={0.8}
-                      style={{
-                        default: { outline: "none" },
-                        hover: { 
-                          fill: "rgba(1, 158, 187, 0.05)",
-                          stroke: "rgba(1, 158, 187, 0.3)",
-                          outline: "none"
-                        },
-                        pressed: { outline: "none" }
-                      }}
-                    />
-                  ))}
+                  {geographies.map((geo: any) => {
+                    const props = geo?.properties || {};
+                    const candidate = props.name || props.NAME || props.NAME_EN || props.ADMIN || "";
+                    const cNorm = normalizeEnglish(String(candidate));
 
-                  {sortedDistribution.map((item, index) => {
-                    const englishName = arabicToEnglishCountry(item.country_ar);
-                    if (!englishName) return null;
-                    const matchedGeo = geographies.find((g: any) => {
-                      const props = g?.properties || {};
-                      const candidate = props.name || props.NAME || props.NAME_EN || props.ADMIN || "";
-                      const cNorm = normalizeEnglish(candidate);
-                      const eNorm = normalizeEnglish(englishName);
-                      return cNorm === eNorm || cNorm.includes(eNorm) || eNorm.includes(cNorm);
-                    });
-                    if (!matchedGeo) return null;
-                    const [lon, lat] = geoCentroid(matchedGeo) as [number, number];
-                    
-                    // حساب حجم العلامة بناءً على عدد الطلاب
-                    const baseRadius = 4;
-                    const maxRadius = 12;
-                    const radius = Math.max(baseRadius, Math.min(maxRadius, baseRadius + Math.sqrt(item.students_count) * 0.8));
-                    
-                    // تأخير الحركة لكل علامة
-                    const animationDelay = index * 0.1;
-                    
-                  return (
-                    <Marker key={`${item.country_ar}-${lon}-${lat}`} coordinates={[lon, lat]}> 
-                      <g
-                        onMouseEnter={(e) => {
+                    let matched = countryDataMap.get(cNorm);
+                    if (!matched) {
+                      // تجنّب for..of على Map لتفادي شرط downlevelIteration
+                      countryDataMap.forEach((val, key) => {
+                        if (!matched && (key === cNorm || key.includes(cNorm) || cNorm.includes(key))) {
+                          matched = val;
+                        }
+                      });
+                    }
+
+                    const hasStudents = !!matched;
+                    const fillColor = hasStudents ? getCountryFill(matched!.count) : "rgba(100, 116, 139, 0.1)";
+
+                    return (
+                      <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        fill={fillColor}
+                        stroke="rgba(1, 158, 187, 0.2)"
+                        strokeWidth={0.8}
+                        onMouseEnter={() => {
+                          if (!hasStudents) return;
+                          const [lon, lat] = geoCentroid(geo) as [number, number];
                           setHoverInfo({
-                            nameAr: item.country_ar,
-                            count: item.students_count,
+                            nameAr: matched!.nameAr,
+                            count: matched!.count,
                             offsetX: 0,
                             offsetY: -80,
                           });
-                          setHoverKey(item.country_ar);
+                          setHoverKey(matched!.nameAr);
                           setHoverCoords([lon, lat]);
                         }}
-                        onMouseLeave={() => { setHoverInfo(null); setHoverKey(null); }}
-                        className={styles['marker-group']}
-                        style={{
-                          animationDelay: `${animationDelay}s`
+                        onMouseLeave={() => {
+                          setHoverInfo(null);
+                          setHoverKey(null);
+                          setHoverCoords(null);
                         }}
-                      >
-                        {/* دائرة الوهج الخارجية */}
-                        <circle 
-                          r={radius + 4} 
-                          fill="rgba(1, 158, 187, 0.2)"
-                          className={styles['marker-outer-glow']}
-                          style={{
-                            animation: `markerPulse 3s ease-in-out infinite ${animationDelay}s`,
-                            pointerEvents: 'none'
-                          }}
-                        />
-                        
-                        {/* إضافة طبقة إضافية للتوهج الخارجي */}
-                        <circle 
-                          r={radius + 8} 
-                          fill="url(#markerGradient)"
-                          className={styles['marker-outer-glow']}
-                          style={{
-                            animationDelay: `${index * 0.2}s`,
-                            pointerEvents: 'none'
-                          }}
-                        />
-                          
-                          {/* العلامة الرئيسية */}
-                          <circle 
-                            r={radius} 
-                            fill={hoverKey === item.country_ar ? "url(#markerGradientHover)" : "url(#markerGradient)"}
-                            className={styles['marker-glow']}
-                            filter="url(#markerGlow)"
-                            style={{
-                              cursor: 'pointer',
-                              animation: `markerPulse 3s ease-in-out infinite ${animationDelay}s`
-                            }}
-                          />
-                          
-                          {/* نقطة مركزية صغيرة */}
-                          <circle 
-                            r={2} 
-                            fill="#ffffff"
-                            opacity="0.9"
-                            style={{
-                              animation: `markerPulse 3s ease-in-out infinite ${animationDelay + 0.5}s`
-                            }}
-                          />
-                          
-                          {/* التولتيب يُعرض في طبقة Overlay فقط لمنع التكرار */}
-                        </g>
-                      </Marker>
-                  );
-                })}
+                        style={{
+                          default: { outline: "none" },
+                          hover: {
+                            fill: hasStudents ? "rgba(1, 158, 187, 0.5)" : "rgba(1, 158, 187, 0.05)",
+                            stroke: "rgba(1, 158, 187, 0.3)",
+                            outline: "none",
+                          },
+                          pressed: { outline: "none" },
+                        }}
+                      />
+                    );
+                  })}
 
-                {/* Overlay لرفع العنصر المُشار إليه والتولتيب فوق الجميع */}
-                {hoverKey && hoverCoords && (() => {
-                  const hi = distribution.find(d => d.country_ar === hoverKey);
-                  if (!hi) return null;
-                  const baseRadius = 4;
-                  const maxRadius = 12;
-                  const radius = Math.max(baseRadius, Math.min(maxRadius, baseRadius + Math.sqrt(hi.students_count) * 0.8));
-                  return (
-                    <Marker key={`hover-overlay-${hoverKey}`} coordinates={hoverCoords}>
-                      <g className={`${styles['marker-group']} ${styles['marker-overlay'] ?? ''}`} style={{ pointerEvents: 'none' }}>
-                        <circle r={radius + 4} fill="rgba(1, 158, 187, 0.2)" className={styles['marker-outer-glow']} />
-                        <circle r={radius + 8} fill="url(#markerGradient)" className={styles['marker-outer-glow']} />
-                        <circle r={radius} fill="url(#markerGradientHover)" className={styles['marker-glow']} filter="url(#markerGlow)" />
-                        <circle r={2} fill="#ffffff" opacity="0.9" />
-                        {hoverInfo && (
-                          <g transform={`translate(${hoverInfo.offsetX}, ${hoverInfo.offsetY})`} className={styles['tooltip-group']}>
-                            <rect x="2" y="2" rx={10} ry={10} width={180} height={60} fill="rgba(0, 0, 0, 0.1)" className={styles['tooltip-shadow']} />
-                            <rect rx={10} ry={10} width={180} height={60} fill="white" stroke="#019EBB" strokeWidth="2" className={styles['tooltip-rect']} />
-                            <rect rx={10} ry={10} width={180} height={24} fill="url(#markerGradient)" />
-                            <text x={90} y={16} className={styles['tooltip-country']} textAnchor="middle" dominantBaseline="middle" fontWeight="700" fontSize="13" fill="white">{hoverInfo.nameAr}</text>
-                            <g className={styles['tooltip-body']}>
-                              <text x={90} y={40} className={styles['student-count']} textAnchor="middle" dominantBaseline="middle" fill="#019EBB" fontWeight="700" fontSize="18">{hoverInfo.count.toLocaleString()}</text>
-                              <text x={90} y={54} className={styles['tooltip-label']} textAnchor="middle" dominantBaseline="middle" fill="#64748b" fontWeight="500" fontSize="11">طالب</text>
-                            </g>
+                  {/* Overlay للتولتيب فوق الدولة المفعلة */}
+                  {hoverInfo && hoverCoords && (
+                    <Marker key={`hover-overlay`} coordinates={hoverCoords}>
+                      <g style={{ pointerEvents: 'none' }}>
+                        <g transform={`translate(${hoverInfo.offsetX}, ${hoverInfo.offsetY})`} className={styles['tooltip-group']}>
+                          <rect x="2" y="2" rx={10} ry={10} width={180} height={60} fill="rgba(0, 0, 0, 0.1)" className={styles['tooltip-shadow']} />
+                          <rect rx={10} ry={10} width={180} height={60} fill="white" stroke="#019EBB" strokeWidth="2" className={styles['tooltip-rect']} />
+                          <rect rx={10} ry={10} width={180} height={24} fill="url(#markerGradient)" />
+                          <text x={90} y={16} className={styles['tooltip-country']} textAnchor="middle" dominantBaseline="middle" fontWeight="700" fontSize="13" fill="white">{hoverInfo.nameAr}</text>
+                          <g className={styles['tooltip-body']}>
+                            <text x={90} y={40} className={styles['student-count']} textAnchor="middle" dominantBaseline="middle" fill="#019EBB" fontWeight="700" fontSize="18">{hoverInfo.count.toLocaleString()}</text>
+                            <text x={90} y={54} className={styles['tooltip-label']} textAnchor="middle" dominantBaseline="middle" fill="#64748b" fontWeight="500" fontSize="11">طالب</text>
                           </g>
-                        )}
+                        </g>
                       </g>
                     </Marker>
-                  );
-                })()}
+                  )}
                 </>
               )}
             </Geographies>

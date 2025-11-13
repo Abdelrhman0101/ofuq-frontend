@@ -112,7 +112,8 @@
 
 .hero-text {
   padding: 0 20px;
-  text-align: center;
+  text-align: right; /* ضبط المحتوى لليمين */
+  direction: rtl;    /* تأكيد اتجاه النص العربي */
 }
 
 .section-title {
@@ -121,15 +122,14 @@
   color: #019EBB;
   margin-bottom: 24px;
   position: relative;
-  text-align: center;
+  text-align: right; /* العنوان يمين */
 }
 
 .section-title::after {
   content: '';
   position: absolute;
   bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 0; /* خط الزخرفة بمحاذاة اليمين */
   width: 90px;
   height: 4px;
   background: linear-gradient(90deg, #019EBB, #28b6cc);
@@ -142,6 +142,9 @@
   color: #555;
   max-width: 880px;
   margin: 0 auto;
+  text-align: justify;      /* وصف مبرر */
+  text-align-last: right;   /* السطر الأخير بمحاذاة اليمين */
+  direction: rtl;           /* اتجاه عربي لضبط المحاذاة */
 }
 
 .hero-image {

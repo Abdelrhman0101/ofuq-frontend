@@ -30,7 +30,8 @@ function NewCoursePageComponent() {
     duration: '',
     price: '0',
     is_free: false,
-    cover_image: null as File | null
+    cover_image: null as File | null,
+    rank: ''
   });
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
@@ -172,6 +173,9 @@ function NewCoursePageComponent() {
       formDataToSend.append('duration', formData.duration);
       formDataToSend.append('price', formData.price);
       formDataToSend.append('is_free', formData.is_free ? '1' : '0');
+      if (formData.rank && formData.rank.trim() !== '') {
+        formDataToSend.append('rank', formData.rank.trim());
+      }
       if (formData.cover_image) {
         formDataToSend.append('cover_image', formData.cover_image);
       }
@@ -317,6 +321,14 @@ function NewCoursePageComponent() {
               <label className={styles.checkbox} style={{ marginTop: '30px' }}>
                 <input type="checkbox" id="is_free" name="is_free" checked={formData.is_free} onChange={handleInputChange} /> مقرر مجاني
               </label>
+            </div>
+          </div>
+
+          {/* Rank (optional) */}
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label htmlFor="rank">الترتيب (اختياري)</label>
+              <input type="number" id="rank" name="rank" value={formData.rank} onChange={handleInputChange} placeholder="مثال: 1" className={styles.input} min="1" />
             </div>
           </div>
 

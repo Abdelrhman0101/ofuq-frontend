@@ -94,6 +94,28 @@
   border-radius: 12px;
 }
 
+/* نسخة مكدّسة من عنصر الاتصال لعرض عنوان فوق المحتوى */
+.contact-item-stacked {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.contact-label {
+  font-weight: 700;
+  color: #ffba00;
+  font-size: 0.95rem;
+}
+
+.contact-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
 .contact-icon {
   color: #ffba00;
   font-size: 18px;
