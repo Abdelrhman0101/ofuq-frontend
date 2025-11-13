@@ -276,7 +276,7 @@ export default function ExamCard({
         </div>
         <div className="course-content">
           <h3 className="course-title">{exam.name}</h3>
-          <p className="course-subject">{exam.subject}</p>
+          {/* <p className="course-subject">{exam.subject}</p> */}
           
           <div className="exam-progress">
             <div className="progress-bar">
@@ -288,10 +288,10 @@ export default function ExamCard({
             <p className="progress-text">{getProgressText(exam.progress)}</p>
           </div>
           
-          <div className="course-instructor">
+          {/* <div className="course-instructor">
             <img src={exam.instructor.avatar} alt={exam.instructor.name} />
             <span>{exam.instructor.name}</span>
-          </div>
+          </div> */}
           
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <button className="exam-card-btn" onClick={handleExamClick}>
