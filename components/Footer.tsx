@@ -187,7 +187,15 @@ const Footer = () => {
       {/* Second Row - Copyright */}
       <div className={styles['footer-bottom']}>
         <p className={styles['copyright']}>
-            Developed by Dawam Tech منصة أفق. Copyright © All Rights Reserved. 
+            <motion.a
+              href="https://dwam-tech.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.05, color: '#00aaff' }}
+              transition={{ type: 'spring', stiffness: 300 }}
+            >
+              Developed by Dwam Tech منصة أفق. Copyright © All Rights Reserved.
+            </motion.a>
         </p>
       </div>
 

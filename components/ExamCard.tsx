@@ -351,7 +351,7 @@ export default function ExamCard({
         isVisible={toastVisible}
         onClose={() => setToastVisible(false)}
       />
-      {items.slice(0, 4).map((exam) => (
+      {items.map((exam) => (
         <SingleExamCard key={exam.id} exam={exam} />
       ))}
     </div>
