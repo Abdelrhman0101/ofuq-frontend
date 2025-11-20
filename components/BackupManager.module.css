@@ -27,6 +27,23 @@
   font-size: 14px;
 }
 
+.meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.metaItem {
+  background: #edf2f7;
+  color: #2d3748;
+  border: 1px solid #e2e8f0;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .createButton {
   background: linear-gradient(135deg, #019EBB 0%, #028BAB 100%);
   color: white;
@@ -161,6 +178,12 @@
 .downloadButton:hover {
   background: #3182ce;
   transform: translateY(-1px);
+}
+
+.downloadButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .restoreButton {
@@ -328,4 +351,44 @@
 .confirmButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.errorDetails {
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 12px;
+}
+
+.errorHeader {
+  font-weight: 700;
+  color: #c53030;
+  margin-bottom: 8px;
+}
+
+.errorDetails pre {
+  background: #fff;
+  border: 1px dashed #feb2b2;
+  padding: 10px;
+  border-radius: 6px;
+  color: #742a2a;
+  max-height: 200px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+.copyButton {
+  margin-top: 8px;
+  background: #e2e8f0;
+  color: #2d3748;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.copyButton:hover {
+  background: #cbd5e0;
 }

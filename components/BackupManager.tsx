@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaDatabase, FaDownload, FaRedo, FaTrash, FaPlus, FaUpload, FaExclamationTriangle, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import styles from './BackupManager.module.css';
+import Toast from './Toast';
 
 interface Backup {
     path: string;
@@ -22,6 +23,17 @@ export default function BackupManager() {
     const [showRestoreModal, setShowRestoreModal] = useState(false);
     const [selectedBackup, setSelectedBackup] = useState<Backup | null>(null);
     const [confirmationCode, setConfirmationCode] = useState('');
+    const [restoreError, setRestoreError] = useState<string | null>(null);
+
+    // Meta from API
+    const [diskName, setDiskName] = useState<string>('');
+    const [totalBackups, setTotalBackups] = useState<number>(0);
+
+    // Toast state
+    const [toastMessage, setToastMessage] = useState('');
+    const [toastVisible, setToastVisible] = useState(false);
+    const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info' | 'confirm'>('info');
+    const [backupPendingDeletion, setBackupPendingDeletion] = useState<Backup | null>(null);
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
@@ -40,6 +52,8 @@ export default function BackupManager() {
 
             if (response.data.success) {
                 setBackups(response.data.backups);
+                setDiskName(response.data.disk || '');
+                setTotalBackups(response.data.total_backups || response.data.backups?.length || 0);
             } else {
                 showToast('فشل تحميل النسخ الاحتياطية', 'error');
             }
@@ -155,14 +169,18 @@ export default function BackupManager() {
         }
     };
 
-    const deleteBackup = async (backup: Backup) => {
-        if (!confirm(`هل أنت متأكد من حذف النسخة الاحتياطية من ${backup.date}؟`)) {
-            return;
-        }
+    const deleteBackup = (backup: Backup) => {
+        setBackupPendingDeletion(backup);
+        setToastMessage(`هل أنت متأكد من حذف النسخة الاحتياطية: ${backup.date}؟`);
+        setToastType('confirm');
+        setToastVisible(true);
+    };
 
+    const confirmDelete = async () => {
+        if (!backupPendingDeletion) return;
         try {
             const token = localStorage.getItem('auth_token');
-            const filename = backup.path.split('/').pop();
+            const filename = backupPendingDeletion.path.split('/').pop();
 
             const response = await axios.delete(`${API_URL}/admin/backups/${encodeURIComponent(filename!)}`, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -175,7 +193,15 @@ export default function BackupManager() {
         } catch (error: any) {
             console.error('Error deleting backup:', error);
             showToast('فشل الحذف', 'error');
+        } finally {
+            setBackupPendingDeletion(null);
+            setToastVisible(false);
         }
+    };
+
+    const cancelDelete = () => {
+        setBackupPendingDeletion(null);
+        setToastVisible(false);
     };
 
     const openRestoreModal = (backup: Backup) => {
@@ -194,6 +220,7 @@ export default function BackupManager() {
 
         try {
             setRestoring(selectedBackup.path);
+            setRestoreError(null);
             const token = localStorage.getItem('auth_token');
             const filename = selectedBackup.path.split('/').pop();
 
@@ -214,14 +241,28 @@ export default function BackupManager() {
             }
         } catch (error: any) {
             console.error('Error restoring backup:', error);
-            showToast(error.response?.data?.message || 'فشل الاسترجاع', 'error');
+            const errMsg = error.response?.data?.message || 'فشل الاسترجاع';
+            const errDetails = error.response?.data?.error_output;
+            const passwordProvided = error.response?.data?.password_provided;
+            const composed = [
+                errMsg,
+                typeof passwordProvided !== 'undefined' ? `كلمة المرور مُمرَّرة: ${passwordProvided ? 'نعم' : 'لا'}` : null,
+                errDetails ? `تفاصيل الخطأ:\n${String(errDetails).slice(0, 1500)}` : null,
+            ].filter(Boolean).join('\n\n');
+            setRestoreError(composed);
+            showToast(errMsg, 'error');
         } finally {
             setRestoring(null);
         }
     };
 
-    const showToast = (message: string, type: 'success' | 'error') => {
-        alert(`${type === 'success' ? 'نجح' : 'خطأ'}: ${message}`);
+    const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' | 'confirm' = 'info') => {
+        setToastMessage(message);
+        setToastType(type);
+        setToastVisible(true);
+        if (type !== 'error' && type !== 'confirm') {
+            setTimeout(() => setToastVisible(false), 3000);
+        }
     };
 
     const getFilename = (path: string) => {
@@ -234,6 +275,10 @@ export default function BackupManager() {
                 <div>
                     <h2><FaDatabase style={{ marginLeft: '8px', verticalAlign: 'middle' }} />النسخ الاحتياطية للبيانات</h2>
                     <p>يتم إنشاء نسخة احتياطية تلقائياً كل 3 أيام الساعة 2:00 صباحاً</p>
+                    <div className={styles.meta}>
+                        {diskName && <span className={styles.metaItem}>الديسك: {diskName}</span>}
+                        <span className={styles.metaItem}>عدد النسخ: {totalBackups}</span>
+                    </div>
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
                     <label className={styles.uploadButton} style={{ opacity: uploading ? 0.6 : 1 }}>
@@ -294,6 +339,7 @@ export default function BackupManager() {
                                         <button
                                             onClick={() => downloadBackup(backup)}
                                             className={styles.downloadButton}
+                                            disabled={!backup.exists}
                                             title="تحميل"
                                         >
                                             <FaDownload style={{ marginLeft: '6px' }} />تحميل
@@ -348,6 +394,25 @@ export default function BackupManager() {
                             />
                         </div>
 
+                        {restoreError && (
+                            <div className={styles.errorDetails}>
+                                <div className={styles.errorHeader}>فشل الاسترجاع</div>
+                                <pre>{restoreError}</pre>
+                                <button
+                                    className={styles.copyButton}
+                                    onClick={() => {
+                                        if (restoreError) {
+                                            navigator.clipboard.writeText(restoreError).then(() => {
+                                                showToast('تم نسخ تفاصيل الخطأ', 'success');
+                                            });
+                                        }
+                                    }}
+                                >
+                                    نسخ تفاصيل الخطأ
+                                </button>
+                            </div>
+                        )}
+
                         <div className={styles.modalActions}>
                             <button
                                 onClick={() => setShowRestoreModal(false)}
@@ -366,6 +431,16 @@ export default function BackupManager() {
                     </div>
                 </div>
             )}
+
+            {/* Toasts */}
+            <Toast
+                message={toastMessage}
+                type={toastType}
+                isVisible={toastVisible}
+                onClose={() => setToastVisible(false)}
+                onConfirm={confirmDelete}
+                onCancel={cancelDelete}
+            />
         </div>
     );
 }
