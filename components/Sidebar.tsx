@@ -17,38 +17,30 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
     setOpenDropdown((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // const isActive = (href: string) => pathname === href || pathname?.startsWith(href + '/');
- const isActive = (href: string) => {
+  const isActive = (href: string) => {
     if (!pathname) return false;
-    
-    // Exact match for the main admin page
+
     if (href === '/admin' && pathname === '/admin') {
       return true;
     }
-    
-    // For other pages, we need to be more specific to avoid conflicts
+
     if (href !== '/admin') {
-      // Check for exact match first
       if (pathname === href) {
         return true;
       }
-      
-      // For sub-routes, check if pathname starts with href + '/'
-      // But make sure we're not matching a longer path that starts with the same prefix
+
       if (pathname.startsWith(href + '/')) {
-        // Special handling for diplomas vs question-bank
         if (href === '/admin/diplomas' && pathname.includes('/question-bank')) {
-          return false; // Don't highlight diplomas when in question-bank
+          return false;
         }
         return true;
       }
     }
-    
+
     return false;
   };
-  
+
   const handleNavigate = () => {
-    // Close sidebar on navigation in mobile view
     onClose?.();
   };
 
@@ -96,8 +88,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
               <span>بنك الأسئلة</span>
             </Link>
           </li>
-          
-
 
           <li className={styles['nav-item']}>
             <Link
@@ -121,67 +111,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
             </Link>
           </li>
 
-          {/* Reports Dropdown */}
-          {/* <li className={`${styles['nav-item']} ${styles['nav-dropdown']}`}>
-            <button
-              type="button"
-              className={`${styles['nav-link']} ${styles['dropdown-toggle']}`}
-              onClick={() => toggleDropdown('reports')}
+          <li className={styles['nav-item']}>
+            <Link
+              href="/admin/database-backups"
+              className={`${styles['nav-link']} ${isActive('/admin/database-backups') ? styles.active : ''}`}
+              onClick={handleNavigate}
             >
-              <span>
-                <span className={styles['nav-icon']}>📊</span>
-                التقارير
-              </span>
-              <span className={`${styles['dropdown-arrow']} ${openDropdown['reports'] ? styles.open : ''}`}>▾</span>
-            </button>
-            <div className={`${styles['dropdown-menu']} ${openDropdown['reports'] ? styles.open : ''}`}>
-              <Link
-                href="/admin/reports/financial"
-                className={`${styles['dropdown-link']} ${isActive('/admin/reports/financial') ? styles.active : ''}`}
-                onClick={handleNavigate}
-              >
-                التقارير المالية
-              </Link>
-              <Link
-                href="/admin/reports/visits"
-                className={`${styles['dropdown-link']} ${isActive('/admin/reports/visits') ? styles.active : ''}`}
-                onClick={handleNavigate}
-              >
-                تقارير الزيارات
-              </Link>
-            </div>
-          </li> */}
-
-          {/* Policies Dropdown */}
-          {/* <li className={`${styles['nav-item']} ${styles['nav-dropdown']}`}>
-            <button
-              type="button"
-              className={`${styles['nav-link']} ${styles['dropdown-toggle']}`}
-              onClick={() => toggleDropdown('policies')}
-            >
-              <span>
-                <span className={styles['nav-icon']}>📜</span>
-                السياسات
-              </span>
-              <span className={`${styles['dropdown-arrow']} ${openDropdown['policies'] ? styles.open : ''}`}>▾</span>
-            </button>
-            <div className={`${styles['dropdown-menu']} ${openDropdown['policies'] ? styles.open : ''}`}>
-              <Link
-                href="/admin/policies/terms"
-                className={`${styles['dropdown-link']} ${isActive('/admin/policies/terms') ? styles.active : ''}`}
-                onClick={handleNavigate}
-              >
-                الشروط والأحكام
-              </Link>
-              <Link
-                href="/admin/policies/privacy"
-                className={`${styles['dropdown-link']} ${isActive('/admin/policies/privacy') ? styles.active : ''}`}
-                onClick={handleNavigate}
-              >
-                سياسة الخصوصية
-              </Link>
-            </div>
-          </li> */}
+              <span className={styles['nav-icon']}>�</span>
+              <span>النسخ الاحتياطية</span>
+            </Link>
+          </li>
 
           <li className={styles['nav-item']}>
             <Link
