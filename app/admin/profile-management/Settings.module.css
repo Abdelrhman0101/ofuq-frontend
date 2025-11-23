@@ -1,0 +1,36 @@
+/* Admin Settings/Profile Management - CSS Module with scoped :global */
+
+.settingsPage {
+  padding: 20px;
+  background-color: #f8fafc;
+  min-height: 100vh;
+  direction: rtl;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.settingsPage :global(.settings-header) { text-align: center; margin-bottom: 20px; }
+.settingsPage :global(.settings-title) { margin: 0; font-size: 2rem; color: #1f2937; }
+.settingsPage :global(.settings-subtitle) { margin-top: 8px; color: #6b7280; }
+
+.settingsPage :global(.profile-section),
+.settingsPage :global(.password-section) {
+  max-width: 800px;
+  margin: 0 auto 24px auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  padding: 20px;
+}
+
+.settingsPage :global(.form-group) { margin-bottom: 16px; }
+.settingsPage :global(.form-label) { display: block; margin-bottom: 6px; color: #374151; font-weight: 600; }
+.settingsPage :global(.form-input) {
+  width: 100%; padding: 12px 14px; border: 2px solid #e5e7eb; border-radius: 10px; background: #fff; transition: border-color 0.2s ease; text-align: right;
+}
+.settingsPage :global(.form-input:focus) { outline: none; border-color: #0299BA; box-shadow: 0 0 0 3px rgba(2,153,186,0.1); }
+
+.settingsPage :global(.save-button) {
+  display: inline-block; padding: 10px 16px; border-radius: 10px; border: none; background: #0299BA; color: #fff; font-weight: 600; cursor: pointer; transition: filter 0.2s ease;
+}
+.settingsPage :global(.save-button:disabled) { opacity: 0.6; cursor: not-allowed; }
+.settingsPage :global(.save-button:hover) { filter: brightness(1.1); }

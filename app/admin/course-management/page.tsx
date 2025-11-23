@@ -6,8 +6,7 @@ import { useSearchParams } from "next/navigation";
 import Toast from "@/components/Toast";
 import CourseDetailsPopup from "@/components/CourseDetailsPopup";
 import { getCourses, deleteCourse, getAdminCourse, type Course } from "@/utils/courseService";
-import "@/styles/toast.css";
-import "@/styles/admin-courses.css";
+import styles from "./AdminCourses.module.css";
 
 export default function AdminCoursesPage() {
   const searchParams = useSearchParams();
@@ -101,45 +100,45 @@ export default function AdminCoursesPage() {
   };
 
   return (
-    <div className="admin-courses-container">
-      <div className="admin-courses-header">
-        <h1 className="admin-courses-title">
+    <div className={styles["admin-courses-container"]}>
+      <div className={styles["admin-courses-header"]}>
+        <h1 className={styles["admin-courses-title"]}>
           {categoryId ? `إدارة مقررات الدبلوم #${categoryId}` : 'إدارة المقررات'}
         </h1>
-        <p className="admin-courses-subtitle">
+        <p className={styles["admin-courses-subtitle"]}>
           {categoryId ? 'إدارة وتنظيم مقررات هذا الدبلوم' : 'إدارة وتنظيم جميع المقررات التعليمية'}
         </p>
       </div>
 
-      <div className="admin-courses-actions">
+      <div className={styles["admin-courses-actions"]}>
         <Link 
           href={categoryId ? `/admin/courses/new?categoryId=${categoryId}` : "/admin/courses/new"} 
-          className="btn-primary"
+          className={styles["btn-primary"]}
         >
           + إنشاء مقرر جديد
         </Link>
         {categoryId && (
-          <Link href="/admin/courses" className="btn-secondary">
+          <Link href="/admin/courses" className={styles["btn-secondary"]}>
             العودة إلى إدارة الدبلومات
           </Link>
         )}
       </div>
 
       {loading && (
-        <div className="loading">
-          <div className="spinner"></div>
+        <div className={styles["loading"]}>
+          <div className={styles["spinner"]}></div>
         </div>
       )}
       
       {error && (
-        <div className="message message-error">
+        <div className={`${styles["message"]} ${styles["message-error"]}`}>
           {error}
         </div>
       )}
 
       {!loading && !error && (
-        <div className="courses-table-container" dir="rtl">
-          <table className="courses-table">
+        <div className={styles["courses-table-container"]} dir="rtl">
+          <table className={styles["courses-table"]}>
             <thead>
               <tr>
                 <th>المعرف</th>
@@ -153,10 +152,10 @@ export default function AdminCoursesPage() {
               {courses.length === 0 && (
                 <tr>
                   <td colSpan={6}>
-                    <div className="empty-state">
-                      <div className="empty-state-icon">📚</div>
-                      <div className="empty-state-title">لا توجد مقررات</div>
-                      <div className="empty-state-description">لم يتم إنشاء أي مقررات بعد. ابدأ بإنشاء مقرر جديد.</div>
+                    <div className={styles["empty-state"]}>
+                      <div className={styles["empty-state-icon"]}>📚</div>
+                      <div className={styles["empty-state-title"]}>لا توجد مقررات</div>
+                      <div className={styles["empty-state-description"]}>لم يتم إنشاء أي مقررات بعد. ابدأ بإنشاء مقرر جديد.</div>
                     </div>
                   </td>
                 </tr>
@@ -165,9 +164,9 @@ export default function AdminCoursesPage() {
                 <tr key={c.id}>
                   <td>{c.id}</td>
                   <td>
-                    <div className="course-title">{c.title}</div>
+                    <div className={styles["course-title"]}>{c.title}</div>
                     {c.description && (
-                      <div className="course-description">
+                      <div className={styles["course-description"]}>
                         {c.description.length > 100 
                           ? c.description.substring(0, 100) + '...' 
                           : c.description}
@@ -175,10 +174,10 @@ export default function AdminCoursesPage() {
                     )}
                   </td>
                   <td>
-                    <span className={`course-status ${
-                      c.status === 'published' ? 'status-active' :
-                      c.status === 'draft' ? 'status-draft' : 
-                      'status-archived'
+                    <span className={`${styles["course-status"]} ${
+                      c.status === 'published' ? styles["status-active"] :
+                      c.status === 'draft' ? styles["status-draft"] : 
+                      styles["status-archived"]
                     }`}>
                       {c.status === 'published' ? 'نشط' : 
                        c.status === 'draft' ? 'مسودة' : 
@@ -188,17 +187,17 @@ export default function AdminCoursesPage() {
                   
                   <td>{c.chapters_count ?? c.chapters?.length ?? 0}</td>
                   <td>
-                    <div className="table-actions">
+                    <div className={styles["table-actions"]}>
                       <button 
-                        className="btn-small btn-details" 
+                        className={`${styles["btn-small"]} ${styles["btn-details"]}`}
                         onClick={() => handleViewCourseDetails(c.id)}
                         disabled={loadingCourseDetails}
                       >
                         {loadingCourseDetails ? 'جاري التحميل...' : 'عرض التفاصيل'}
                       </button>
-                      <Link href={`/admin/courses/${c.id}/chapters`} className="btn-small btn-view">اضافة محتوي</Link>
-                      <Link href={`/admin/courses/${c.id}`} className="btn-small btn-edit">تعديل</Link>
-                      <button className="btn-small btn-delete" onClick={() => confirmDelete(c.id)}>حذف</button>
+                      <Link href={`/admin/courses/${c.id}/chapters`} className={`${styles["btn-small"]} ${styles["btn-view"]}`}>اضافة محتوي</Link>
+                      <Link href={`/admin/courses/${c.id}`} className={`${styles["btn-small"]} ${styles["btn-edit"]}`}>تعديل</Link>
+                      <button className={`${styles["btn-small"]} ${styles["btn-delete"]}`} onClick={() => confirmDelete(c.id)}>حذف</button>
                     </div>
                   </td>
                 </tr>

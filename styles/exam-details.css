@@ -265,6 +265,34 @@
   margin: 0;
 }
 
+/* Certificate Preview Block */
+.certificate-preview-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 8px;
+}
+
+.certificate-preview-iframe {
+  width: 100%;
+  max-width: 900px;
+  height: 480px;
+  border: none;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.certificate-download-btn {
+  display: inline-block;
+  margin-top: 14px;
+  text-decoration: none;
+}
+
 .certificate-request {
   background: linear-gradient(135deg, #E3F2FD, #F3E5F5);
   border: 2px solid #2196F3;
@@ -489,6 +517,10 @@
     width: 100%;
     max-width: 500px;
   }
+
+  .certificate-preview-iframe {
+    height: 380px;
+  }
   
   .table-title {
     font-size: 1.5rem;
@@ -592,6 +624,10 @@
     width: 100%;
     max-width: 400px;
     margin-left: 24%;
+  }
+
+  .certificate-preview-iframe {
+    height: 320px;
   }
   
   .table-title {

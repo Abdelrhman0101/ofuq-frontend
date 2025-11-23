@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import '../../../styles/dashboard.css';
-import '../../../styles/settings.css';
+import styles from './Settings.module.css';
 import ProfileTab from '../../../components/settings/ProfileTab';
 import PasswordTab from '../../../components/settings/PasswordTab';
 import { getProfile, updateProfile, changePassword } from '../../../utils/authService';
@@ -150,7 +149,7 @@ export default function Settings() {
   // لا توجد تفضيلات بعد الآن
 
   return (
-    <div className="dashboard-container settings-page">
+    <div className={`dashboard-container settings-page ${styles.settingsPage}`}>
       <div className="settings-header">
         <h1 className="settings-title">الإعدادات</h1>
         <p className="settings-subtitle">إدارة إعدادات حسابك</p>

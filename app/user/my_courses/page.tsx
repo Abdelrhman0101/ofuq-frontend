@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { getMyDiplomas, MyDiploma } from '../../../utils/categoryService';
 import { getBackendAssetUrl } from '../../../utils/url';
 import { isAuthenticated } from '../../../utils/authService';
-import '../../../styles/my-courses.css';
+import styles from './MyCourses.module.css';
 
 interface DiplomaCard {
   id: number;
@@ -70,7 +70,7 @@ export default function MyDiplomas() {
   };
 
   return (
-    <div className="my-courses-page">
+    <div className={`my-courses-page ${styles.myCoursesPage}`}>
       <div className="page-header">
         <h1>الدبلومات والمقررات</h1>
         <p>جميع الدبلومات التي تتابعها</p>

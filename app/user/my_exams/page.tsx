@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import ExamCard from '../../../components/ExamCard';
 import ExamDetails from '../../../components/ExamDetails';
-import '../../../styles/my-courses.css';
+import styles from '../my_courses/MyCourses.module.css';
 import Toast from '../../../components/Toast';
 
 interface SelectedExam {
@@ -50,7 +50,7 @@ export default function MyExams() {
   };
 
   return (
-    <div className="my-courses-page">
+    <div className={`my-courses-page ${styles.myCoursesPage}`}>
       <Toast
         message={toastMessage}
         type={toastType}

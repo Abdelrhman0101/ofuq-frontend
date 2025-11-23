@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getMyCertificates, DiplomaCertificate, CourseCertificate } from '@/utils/certificateService';
 import { isAuthenticated } from '@/utils/authService';
 import CertificateCard from '@/components/CertificateCard';
-import '@/styles/my-certificates.css';
+import styles from './MyCertificates.module.css';
 import '@/components/Toast';
 
 interface CertificateData {
@@ -97,7 +97,7 @@ export default function MyCertificatesPage() {
 
   if (loading) {
     return (
-      <div className="my-certificates-page">
+      <div className={`my-certificates-page ${styles.myCertificatesPage}`}>
         <div className="loading-container">
           <div className="loading-spinner"></div>
           <p>جاري تحميل الشهادات...</p>
@@ -108,7 +108,7 @@ export default function MyCertificatesPage() {
 
   if (error) {
     return (
-      <div className="my-certificates-page">
+      <div className={`my-certificates-page ${styles.myCertificatesPage}`}>
         <div className="error-container">
           <div className="error-icon">⚠️</div>
           <h3>حدث خطأ</h3>
@@ -122,7 +122,7 @@ export default function MyCertificatesPage() {
   }
 
   return (
-    <div className="my-certificates-page">
+    <div className={`my-certificates-page ${styles.myCertificatesPage}`}>
       <div className="certificates-container">
         <div className="page-header">
           <h1>شهاداتي</h1>

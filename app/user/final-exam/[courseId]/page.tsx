@@ -11,7 +11,7 @@ import {
 } from "@/utils/quizService";
 import Toast from "@/components/Toast";
 import "@/styles/toast.css";
-import "@/styles/quiz.css";
+import styles from "./FinalExam.module.css";
 
 export default function CourseFinalExamPage() {
   const params = useParams();
@@ -173,7 +173,7 @@ export default function CourseFinalExamPage() {
   }, [submitted, router]);
 
   return (
-    <div className="quiz-container">
+    <div className={`quiz-container ${styles.finalExamPage}`}>
       <Toast
         message={toastMessage}
         type={toastType}

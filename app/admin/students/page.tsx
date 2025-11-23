@@ -1,7 +1,10 @@
 import StudentsManagement from '../../../components/students managment/StudentsManagement';
-import '@/styles/students-management.css';
-import '@/styles/toast.css';
+import styles from './Students.module.css';
 
 export default function StudentsPage() {
-  return <StudentsManagement />;
+  return (
+    <div className={styles["studentsPage"]}>
+      <StudentsManagement />
+    </div>
+  );
 }

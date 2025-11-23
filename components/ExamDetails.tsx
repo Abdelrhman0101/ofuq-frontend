@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/exam-details.css';
 import { FinalExamMetaData, getCourseFinalExamMeta, getQuizAttempts, QuizAttempt } from '../utils/quizService';
-import { requestCertificate, getCertificateStatus } from '../utils/certificateService';
+import { requestCertificate, getCertificateStatus, getDownloadUrl } from '../utils/certificateService';
 
 interface ExamDetailsProps {
   courseId: number;
@@ -80,8 +80,12 @@ const ExamDetails: React.FC<ExamDetailsProps> = ({ courseId, courseName, complet
         const response = await getCertificateStatus(courseId);
         if (!cancelled && response?.status) {
           setCertificateStatus(response.status);
-          // حفظ رابط التحميل إذا كانت الشهادة مكتملة
-          // ملاحظة: getCertificateStatus لا يعيد file_path، يجب استدعاء دالة أخرى لاحقًا
+          if (response.status === 'completed') {
+            const url = getDownloadUrl(response.file_url ?? response.file_path ?? '');
+            setDownloadUrl(url || null);
+          } else {
+            setDownloadUrl(null);
+          }
         }
       } catch (error: any) {
         if (!cancelled) {
@@ -117,7 +121,12 @@ const ExamDetails: React.FC<ExamDetailsProps> = ({ courseId, courseName, complet
                 clearInterval(intervalId);
               }
               setCertificateStatus(data.status);
-              // ملاحظة: getCertificateStatus لا يعيد file_path، يجب استدعاء دالة أخرى لاحقًا
+              if (data?.status === 'completed') {
+                const url = getDownloadUrl(data.file_url ?? data.file_path ?? '');
+                setDownloadUrl(url || null);
+              } else {
+                setDownloadUrl(null);
+              }
             }
             // If still pending, continue polling
           })
@@ -260,15 +269,19 @@ const ExamDetails: React.FC<ExamDetailsProps> = ({ courseId, courseName, complet
                               return (
                                 <div className="certificate-completed">
                                   <p className="certificate-message">🎉 تهانينا! تم إصدار شهادتك بنجاح.</p>
-                                  <a 
-                                    href={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/storage/${downloadUrl}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    download
-                                    className="download-certificate-btn"
-                                  >
-                                    تحميل الشهادة
-                                  </a>
+                                  {downloadUrl ? (
+                                    <a
+                                      href={downloadUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      download
+                                      className="certificate-download-btn"
+                                    >
+                                      تحميل الشهادة
+                                    </a>
+                                  ) : (
+                                    <p className="certificate-instructions">جارٍ تجهيز رابط التحميل...</p>
+                                  )}
                                 </div>
                               );
                             }

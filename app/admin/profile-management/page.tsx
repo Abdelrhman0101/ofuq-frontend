@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser, updateProfile, changePassword, signout } from '../../../utils/authService';
-import '../../../styles/settings.css';
+import styles from './Settings.module.css';
 
 export default function AdminProfileManagementPage() {
   const router = useRouter();
@@ -80,7 +80,7 @@ export default function AdminProfileManagementPage() {
   };
 
   return (
-    <div className="settings-page" style={{ direction: 'rtl' }}>
+    <div className={styles["settingsPage"]} style={{ direction: 'rtl' }}>
       <div className="settings-header">
         <h1 className="settings-title">إدارة حساب الأدمن</h1>
         <p className="settings-subtitle">تعديل الاسم وتغيير كلمة المرور</p>

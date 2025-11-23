@@ -2,11 +2,11 @@
 
 import React from 'react';
 import VisitsReportsTable from '../../../../components/VisitsReportsTable';
-import '../../../../styles/visits-reports.css';
+import styles from './VisitsReports.module.css';
 
 const VisitsReportsPage = () => {
   return (
-    <div className="visits-reports-page">
+    <div className={styles["visitsPage"]}>
       <VisitsReportsTable />
     </div>
   );

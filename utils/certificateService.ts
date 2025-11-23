@@ -393,8 +393,11 @@ export async function requestCertificate(courseId: number | string): Promise<{ c
 
 /**
  * الحصول على حالة شهادة المقرر
+ * يعيد الحالة بالإضافة إلى مسار الملف إن توفر
  */
-export async function getCertificateStatus(courseId: number | string): Promise<{ status: string }> {
+export async function getCertificateStatus(
+  courseId: number | string
+): Promise<{ status: string; file_path?: string | null; file_url?: string | null }> {
   const res = await apiClient.get(`/courses/${courseId}/certificate-status`);
   return res.data;
 }

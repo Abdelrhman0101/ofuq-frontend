@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
 import AdminAuthGuard from '@/components/AdminAuthGuard';
-import '@/styles/admin.css';
+import styles from './Admin.module.css';
 
 export default function AdminLayout({
   children,
@@ -23,14 +23,14 @@ export default function AdminLayout({
 
   return (
     <AdminAuthGuard>
-      <div className="admin-dashboard">
+      <div className={styles["admin-dashboard"]}>
         <Header onToggleSidebar={toggleMobileSidebar} />
-        <div className="admin-content">
+        <div className={styles["admin-content"]}>
           <Sidebar 
             isMobileOpen={isMobileSidebarOpen} 
             onClose={closeMobileSidebar}
           />
-          <main className="admin-main">
+          <main className={styles["admin-main"]}>
             {children}
           </main>
         </div>

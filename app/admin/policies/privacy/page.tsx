@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import '../../../../styles/privacy-policy.css';
+import styles from './PrivacyPolicy.module.css';
 
 const PrivacyPolicyPage: React.FC = () => {
   const [content, setContent] = useState('');
@@ -123,7 +123,7 @@ const PrivacyPolicyPage: React.FC = () => {
   };
 
   return (
-    <div className="privacy-policy-container">
+    <div className={styles["privacyPage"]}>
       <div className="page-header">
         <h1>سياسة الخصوصية</h1>
         <p>إدارة وتحرير سياسة الخصوصية للموقع</p>

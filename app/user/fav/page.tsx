@@ -6,7 +6,7 @@ import CourseGrid from "../../../components/CourseGrid";
 import type { Course as GridCourse } from "../../../components/CourseGrid";
 
 import "../../../styles/course-cards.css";
-import "../../../styles/fav.css";
+import styles from "./Fav.module.css";
 import { getMyFavoriteCourses, getMyEnrollments, getCourseProgress, Course, removeCourseFromFavorites } from "../../../utils/courseService";
 import { getBackendAssetUrl } from "../../../utils/url";
 
@@ -121,7 +121,7 @@ export default function FavPage() {
   const closeUnpurchasedModal = () => setIsUnpurchasedModalOpen(false);
 
   return (
-    <section className="fav-section">
+    <section className={`fav-section ${styles.favPage}`}>
       <div className="fav-header">
         <h1 className="fav-title">المفضلة</h1>
       </div>

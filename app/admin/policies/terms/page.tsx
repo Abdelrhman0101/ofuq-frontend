@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import '../../../../styles/terms-conditions.css';
+import styles from './TermsConditions.module.css';
 
 const TermsConditionsPage: React.FC = () => {
   const [content, setContent] = useState('');
@@ -123,7 +123,7 @@ const TermsConditionsPage: React.FC = () => {
   };
 
   return (
-    <div className="terms-conditions-container">
+    <div className={styles["termsPage"]}>
       <div className="page-header">
         <h1>الشروط والأحكام</h1>
         <p>إدارة وتحرير الشروط والأحكام للموقع</p>

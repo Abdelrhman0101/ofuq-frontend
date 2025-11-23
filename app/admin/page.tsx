@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import styles from './Admin.module.css';
 import { getAdminCategories } from '../../utils/categoryService';
 import { getStudentsStatus, EnrolledDiplomaItem } from '../../utils/studentsService';
 import WorldUsersMap from '../../components/WorldUsersMap';
@@ -72,31 +73,31 @@ export default function AdminDashboard() {
 
   return (
     <>
-      <div className="dashboard-header">
+      <div className={styles["dashboard-header"]}>
         <h1>لوحة التحكم الإدارية</h1>
         <p>مرحباً بك في لوحة التحكم الإدارية</p>
       </div>
 
       {error ? (
-        <div className="dashboard-error">{error}</div>
+        <div className={styles["dashboard-error"]}>{error}</div>
       ) : null}
 
-      <div className="dashboard-stats">
-        <div className="stat-card">
+      <div className={styles["dashboard-stats"]}>
+        <div className={styles["stat-card"]}>
           <h3>عدد الطلاب</h3>
-          <p className="stat-number">{loading ? '...' : totalStudents}</p>
+          <p className={styles["stat-number"]}>{loading ? '...' : totalStudents}</p>
         </div>
-        <div className="stat-card">
+        <div className={styles["stat-card"]}>
           <h3>عدد المقررات</h3>
-          <p className="stat-number">{loading ? '...' : totalCourses}</p>
+          <p className={styles["stat-number"]}>{loading ? '...' : totalCourses}</p>
         </div>
-        <div className="stat-card">
+        <div className={styles["stat-card"]}>
           <h3>عدد الدبلومات</h3>
-          <p className="stat-number">{loading ? '...' : totalDiplomas}</p>
+          <p className={styles["stat-number"]}>{loading ? '...' : totalDiplomas}</p>
         </div>
-        <div className="stat-card">
+        <div className={styles["stat-card"]}>
           <h3>عدد البلاد</h3>
-          <p className="stat-number">{loading ? '...' : countriesCount}</p>
+          <p className={styles["stat-number"]}>{loading ? '...' : countriesCount}</p>
         </div>
       </div>
 
@@ -105,14 +106,14 @@ export default function AdminDashboard() {
         <WorldUsersMap />
       </div>
 
-      <div className="quick-actions">
+      <div className={styles["quick-actions"]}>
         <h2>الإجراءات السريعة</h2>
-        <div className="actions-grid">
-          <a href="/admin/diplomas" className="action-card">
+        <div className={styles["actions-grid"]}>
+          <a href="/admin/diplomas" className={styles["action-card"]}>
             <h3>إدارة الدبلومات</h3>
             <p>إضافة وتعديل الدبلومات</p>
           </a>
-          <a href="/admin/students" className="action-card">
+          <a href="/admin/students" className={styles["action-card"]}>
             <h3>إدارة الطلاب</h3>
             <p>عرض وإدارة الطلاب المسجلين</p>
           </a>
@@ -120,7 +121,7 @@ export default function AdminDashboard() {
             <h3>التقارير</h3>
             <p>عرض تقارير الأداء والإحصائيات</p>
           </a> */}
-          <a href="/admin/profile-management" className="action-card">
+          <a href="/admin/profile-management" className={styles["action-card"]}>
             <h3>إدارة الملف الشخصي</h3>
             <p>إدارة معلومات المستخدم</p>
           </a>

@@ -2,11 +2,11 @@
 
 import React from 'react';
 import FinancialReportsTable from '../../../../components/FinancialReportsTable';
-import '../../../../styles/financial-reports.css';
+import styles from './FinancialReports.module.css';
 
 const FinancialReportsPage = () => {
   return (
-    <div className="financial-reports-page">
+    <div className={styles["financialPage"]}>
       <FinancialReportsTable />
     </div>
   );
