@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import '../styles/certificate-card.css';
-import { ensureCourseCertificateFile, ensureDiplomaCertificateFile, ensureCourseCertificateFileBySummary, ensureDiplomaCertificateFileBySummary } from '../utils/certificateService';
+import { ensureCourseCertificateFile, ensureDiplomaCertificateFile, ensureCourseCertificateFileBySummary, ensureDiplomaCertificateFileBySummary, getDownloadUrl } from '../utils/certificateService';
 
 interface CertificateCardProps {
   courseName: string;
@@ -35,8 +35,13 @@ const CertificateCard: React.FC<CertificateCardProps> = ({
     try {
       console.log('[CertificateCard] ensureFilePath', { type, courseId, categoryId, downloadUrl });
       if (downloadUrl) {
-        console.log('[CertificateCard] using existing downloadUrl');
-        return downloadUrl;
+        // طبّع مسار التخزين إلى رابط كامل على مضيف الباك إند
+        const normalized = getDownloadUrl(downloadUrl);
+        if (normalized) {
+          console.log('[CertificateCard] using normalized downloadUrl', { normalized });
+          return normalized;
+        }
+        console.log('[CertificateCard] downloadUrl present but not normalized, will try generation if possible');
       }
       if (type === 'course' && typeof courseId !== 'undefined') {
         console.log('[CertificateCard] generating course certificate PDF');

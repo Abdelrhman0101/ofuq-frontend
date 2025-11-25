@@ -127,7 +127,7 @@ const CourseDetailsPage = () => {
       const chapters = (courseData?.chapters || []).slice().sort((a: any, b: any) => Number(a?.order ?? 0) - Number(b?.order ?? 0));
       const firstLesson = chapters.length ? (chapters[0]?.lessons || []).slice().sort((a: any, b: any) => Number(a?.order ?? 0) - Number(b?.order ?? 0))[0] : null;
       if (firstLesson) {
-        router.push(`/watch?lessonId=${firstLesson.id}&chapterId=${chapters[0].id}&courseId=${courseId}`);
+        router.push(`/watch?lessonId=${firstLesson.id}&chapterId=${chapters[0].id}&courseId=${courseId}&completeOnOpen=1`);
       } else {
         router.push('/user/my_courses');
       }
@@ -163,7 +163,7 @@ const CourseDetailsPage = () => {
             const chapters = (courseData?.chapters || []).slice().sort((a: any, b: any) => Number(a?.order ?? 0) - Number(b?.order ?? 0));
             const firstLesson = chapters.length ? (chapters[0]?.lessons || []).slice().sort((a: any, b: any) => Number(a?.order ?? 0) - Number(b?.order ?? 0))[0] : null;
             if (firstLesson) {
-              router.push(`/watch?lessonId=${firstLesson.id}&chapterId=${chapters[0].id}&courseId=${courseId}`);
+              router.push(`/watch?lessonId=${firstLesson.id}&chapterId=${chapters[0].id}&courseId=${courseId}&completeOnOpen=1`);
             } else {
               router.push('/user/my_courses');
             }

@@ -295,7 +295,7 @@ export default function ExamCard({
           
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <button className="exam-card-btn" onClick={handleExamClick}>
-              عرض الاختبارات
+             الحصول علي شهادة المقرر
             </button>
             <button
               className="exam-card-btn"

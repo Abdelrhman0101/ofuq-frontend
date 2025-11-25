@@ -377,30 +377,76 @@
 
 .enrollButtonSecondary,
 .viewCoursesButtonSecondary {
-  background: var(--primary-color);
-  color: white;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+  color: #ffffff;
   border: none;
-  padding: 0.875rem 2rem;
-  border-radius: 12px;
+  padding: 0.9rem 2.2rem;
+  border-radius: 14px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 18px rgba(1, 158, 187, 0.25);
 }
 
 .enrollButtonSecondary:hover,
 .viewCoursesButtonSecondary:hover {
-  background: var(--primary-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, var(--primary-hover), var(--primary-dark));
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 10px 24px rgba(2, 139, 171, 0.35);
 }
 
 .viewCoursesButtonSecondary {
-  background: #10b981;
+  background: linear-gradient(135deg, #10b981, #059669);
 }
 
 .viewCoursesButtonSecondary:hover {
-  background: #059669;
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+/* Shine effect overlay */
+.enrollButtonSecondary::before,
+.viewCoursesButtonSecondary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-20deg);
+  opacity: 0;
+}
+
+.enrollButtonSecondary:hover::before,
+.viewCoursesButtonSecondary:hover::before {
+  animation: shine 0.9s ease;
+  opacity: 1;
+}
+
+@keyframes shine {
+  0% { left: -40%; }
+  100% { left: 120%; }
+}
+
+/* Small icon next to text */
+.buttonIconSmall {
+  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.5rem;
+  transition: transform 0.25s ease;
+}
+
+.enrollButtonSecondary:hover .buttonIconSmall,
+.viewCoursesButtonSecondary:hover .buttonIconSmall { transform: scale(1.15); }
+
+.enrollButtonSecondary:focus-visible,
+.viewCoursesButtonSecondary:focus-visible {
+  outline: 3px solid rgba(1, 158, 187, 0.35);
+  outline-offset: 2px;
 }
 
 /* Enhanced Courses Section */

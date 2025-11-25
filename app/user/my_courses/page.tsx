@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { getMyDiplomas, MyDiploma } from '../../../utils/categoryService';
 import { getBackendAssetUrl } from '../../../utils/url';
 import { isAuthenticated } from '../../../utils/authService';
+import { getDownloadUrl } from '../../../utils/certificateService';
 import styles from './MyCourses.module.css';
 
 interface DiplomaCard {
@@ -11,11 +12,14 @@ interface DiplomaCard {
   name: string;
   description: string;
   image: string;
-  status: 'active' | 'pending_payment';
+  status: 'active' | 'pending_payment' | 'completed';
   enrolled_at: string;
+  progress: number;
   courses_count?: number;
   slug?: string;
   category_id?: number;
+  certificate_url?: string;
+  can_download_certificate?: boolean;
 }
 
 export default function MyDiplomas() {
@@ -45,9 +49,12 @@ export default function MyDiplomas() {
           image: getBackendAssetUrl(enrollment.category.cover_image_url ?? ''),
           status: enrollment.status,
           enrolled_at: enrollment.enrolled_at,
+          progress: Math.round(enrollment.progress ?? 0),
           courses_count: enrollment.category.courses_count,
           slug: enrollment.category.slug,
           category_id: (enrollment.category as any)?.id,
+          certificate_url: getDownloadUrl(enrollment.certificate?.file_url || ''),
+          can_download_certificate: !!(enrollment.can_download_certificate && enrollment.certificate?.file_url),
         }));
 
         setDiplomas(diplomaCards);
@@ -61,12 +68,12 @@ export default function MyDiplomas() {
     load();
   }, []);
 
-  const getStatusText = (status: 'active' | 'pending_payment') => {
-    return status === 'active' ? 'نشط' : 'في انتظار الدفع';
+  const getStatusText = (status: 'active' | 'pending_payment' | 'completed') => {
+    return status === 'active' ? 'نشط' : status === 'completed' ? 'مكتمل' : 'في انتظار الدفع';
   };
 
-  const getStatusClass = (status: 'active' | 'pending_payment') => {
-    return status === 'active' ? 'status-active' : 'status-pending';
+  const getStatusClass = (status: 'active' | 'pending_payment' | 'completed') => {
+    return status === 'active' ? 'status-active' : status === 'completed' ? 'status-active' : 'status-pending';
   };
 
   return (
@@ -114,6 +121,24 @@ export default function MyDiplomas() {
                         </span>
                       )}
                     </div>
+                    {/* Progress Bar */}
+                    {(() => {
+                      const p = Math.max(0, Math.min(100, Math.round(diploma.progress || 0)));
+                      return (
+                        <div className="progress-wrapper">
+                          <div className="progress-bar">
+                            <div className="progress-fill" style={{ width: `${p}%` }} />
+                          </div>
+                          <div className="progress-status">
+                            {p === 100 ? (
+                              <span className="completed-badge">مكتمل</span>
+                            ) : (
+                              <span className="progress-label">{p}%</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
                     <div className="diploma-date">
                       تاريخ التسجيل: {new Date(diploma.enrolled_at).toLocaleDateString('ar-SA')}
                     </div>
@@ -124,6 +149,16 @@ export default function MyDiplomas() {
                       >
                         عرض الدبلومة
                       </button>
+                      {diploma.can_download_certificate && diploma.certificate_url && (
+                        <button 
+                          className="btn-primary"
+                          onClick={() => {
+                            window.open(diploma.certificate_url!, '_blank');
+                          }}
+                        >
+                          تحميل الشهادة
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

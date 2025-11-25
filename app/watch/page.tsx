@@ -62,6 +62,7 @@ function WatchPageContent() {
   const lessonId = searchParams.get('lessonId') ? parseInt(searchParams.get('lessonId')!) : null;
   const chapterId = searchParams.get('chapterId') ? parseInt(searchParams.get('chapterId')!) : null;
   const courseId = searchParams.get('courseId') ? parseInt(searchParams.get('courseId')!) : null;
+  const completeOnOpen = searchParams.get('completeOnOpen') === '1';
 
   // الحالات المحلية
   const [lesson, setLesson] = useState<Lesson | null>(null);
@@ -77,6 +78,7 @@ function WatchPageContent() {
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info' | 'confirm'>('warning');
+  const [autoCompleted, setAutoCompleted] = useState(false);
 
   const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' | 'confirm' = 'warning') => {
     setToastMessage(message);
@@ -184,6 +186,25 @@ function WatchPageContent() {
 
     loadData();
   }, [lessonId, chapterId, courseId, router]);
+
+  // إكمال تلقائي عند فتح الدرس إذا جئنا من زر "مشاهدة الآن"
+  useEffect(() => {
+    if (!completeOnOpen || !lessonId || autoCompleted) return;
+    (async () => {
+      try {
+        await completeLesson(lessonId);
+        setAutoCompleted(true);
+        // تحديث التقدم لإظهار الحالة فورًا
+        if (courseId) {
+          try { const progress = await getCourseProgress(courseId); setCourseProgress(progress); } catch {}
+        }
+        // ممكن إظهار توست بسيط للتأكيد
+        showToast('تم اعتبار هذا الدرس مكتمل عند الفتح', 'success');
+      } catch (e: any) {
+        console.warn('تعذر الإكمال التلقائي للدرس عند الفتح:', e?.message || e);
+      }
+    })();
+  }, [completeOnOpen, lessonId, courseId, autoCompleted]);
 
   // بناء تسلسل الدروس اعتمادًا على بيانات الكورس كـ fallback آمن
   const flatLessons = useMemo(() => {
@@ -394,13 +415,21 @@ function WatchPageContent() {
                 disabled={!nextLesson || sequenceBlocked}
               >
                 <span>التالي</span>
+                {isNextLast && (
+                  <span className={styles['final-badge']}>الأخير</span>
+                )}
                 <svg className={styles['lesson-nav-icon']} viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
               </button>
             )}
             {isNextLast && (
-              <div style={{ marginInlineStart: '12px', color: '#7f8c8d' }}>ملاحظة: الدرس القادم هو الأخير</div>
+              <div className={styles['last-lesson-note']} role="status" aria-live="polite">
+                <svg className={styles['note-icon']} viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 2L1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z" />
+                </svg>
+                <span>ملاحظة: الدرس القادم هو الأخير</span>
+              </div>
             )}
           </div>
         </div>
@@ -410,11 +439,14 @@ function WatchPageContent() {
           {course && (
             <CourseContent
               rating={Number(course.average_rating ?? course.rating ?? 0)}
-              courseTitle={course.title || 'عنوان الكورس'}
+              courseTitle={lesson?.title || 'عنوان الدرس'}
               lecturesCount={(course.chapters || []).reduce((acc, ch) => acc + ((ch.lessons || []).length), 0)}
               studentsCount={Number(course.students_count ?? 0)}
               hoursCount={Number(course.duration ?? 0)}
               courseDescription={course.description || ''}
+              hideOverview={true}
+              hideStats={true}
+              hideRating={true}
               courseId={String(course.id)}
               isEnrolled={true}
               chapters={course.chapters || []}

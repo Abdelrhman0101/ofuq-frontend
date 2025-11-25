@@ -20,7 +20,10 @@ type CacheEntry = { ts: number; ttl: number; response: AxiosResponse };
 const responseCache = new Map<string, CacheEntry>();
 const inflight = new Map<string, Promise<AxiosResponse>>();
 
-function buildKey(url: string, config?: AxiosRequestConfig): string {
+// امتداد صغير لإضافة دعم cacheTTL في تهيئة الطلب
+type RequestConfig = AxiosRequestConfig & { cacheTTL?: number };
+
+function buildKey(url: string, config?: RequestConfig): string {
   const token = getAuthToken() || '';
   const params = config?.params ? JSON.stringify(config.params) : '';
   // لا نستخدم الترويسات كاملة لتفادي تغيّرها، نكتفي بالتوكن إن وجد
@@ -36,8 +39,8 @@ function defaultTTL(url: string): number {
 
 // مُغلف بسيط حول http يُضيف التخزين المؤقت + منع التكرار لطلبات GET
 const apiClient = {
-  async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
-    const ttl = Number((config as any)?.cacheTTL ?? defaultTTL(url));
+  async get<T = any>(url: string, config?: RequestConfig): Promise<AxiosResponse<T>> {
+    const ttl = Number(config?.cacheTTL ?? defaultTTL(url));
     const key = buildKey(url, config);
 
     // إعادة رد مخزّن إذا كان صالحًا
@@ -52,7 +55,7 @@ const apiClient = {
       return existing as Promise<AxiosResponse<T>>;
     }
 
-    const req = http.get<T>(url, config)
+    const req = http.get<T>(url, config as AxiosRequestConfig)
       .then((resp) => {
         responseCache.set(key, { ts: Date.now(), ttl, response: resp as AxiosResponse });
         inflight.delete(key);

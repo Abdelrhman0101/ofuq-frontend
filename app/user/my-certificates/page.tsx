@@ -161,7 +161,7 @@ export default function MyCertificatesPage() {
                   <p>لم تحصل على أي شهادات دبلومات بعد. أكمل متطلبات الدبلومات للحصول على شهاداتك.</p>
                   <button 
                     className="browse-btn"
-                    onClick={() => router.push('/diplomas')}
+                    onClick={() => router.push('/diploms')}
                   >
                     تصفح الدبلومات
                   </button>

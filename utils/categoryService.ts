@@ -56,7 +56,7 @@ export interface UpdateDiplomaData {
  * واجهة رد التسجيل في الدبلومة
  */
 export interface EnrollmentResponse {
-  status: 'active' | 'pending_payment';
+  status: 'active' | 'pending_payment' | 'completed';
   message: string;
   // قد يرجع الباك اند بيانات إضافية
 }
@@ -66,9 +66,18 @@ export interface EnrollmentResponse {
  */
 export interface MyDiploma {
   id: number; // معرف التسجيل
-  status: 'active' | 'pending_payment';
+  status: 'active' | 'pending_payment' | 'completed';
   enrolled_at: string;
+  // نسبة إنجاز الطالب للدبلومة (0 - 100)
+  progress: number;
   category: Diploma; // تفاصيل الدبلومة
+  certificate?: {
+    id: number;
+    status: string;
+    serial_number?: string;
+    file_url?: string | null;
+  } | null;
+  can_download_certificate?: boolean;
 }
 
 // ---------------------------------------------------------------- //

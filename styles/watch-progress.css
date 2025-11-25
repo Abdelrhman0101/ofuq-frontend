@@ -311,6 +311,14 @@
   margin-top: 20px;
 }
 
+/* Ensure cards fill grid tracks (not fixed carousel widths) */
+.courses-grid .course-card {
+  width: 100%;
+  min-width: auto;
+  max-width: none;
+  flex: 1 1 auto;
+}
+
 /* Responsive design for exam cards */
 @media (max-width: 1024px) {
   .courses-grid {
@@ -430,6 +438,7 @@
   }
   
   .course-card {
+    /* Keep carousel-specific sizing, but grid overrides above ensure 100% width in grid */
     min-width: 220px;
     max-width: 220px;
     flex: 0 0 220px;
@@ -441,10 +450,7 @@
     font-size: 1rem;
   }
   
-  .courses-grid {
-    grid-template-columns:  1fr;
-    gap: 15px;
-  }
+  /* Do NOT override .courses-grid to single column here; keep two columns for tablets */
 }
 
 @media (max-width: 768px) {

@@ -5,6 +5,7 @@ import Link from "next/link";
 import styles from "./MyDiplomas.module.css";
 import { getMyDiplomas, type MyDiploma } from "@/utils/categoryService";
 import { getBackendAssetUrl } from "@/utils/url";
+import { getDownloadUrl } from "@/utils/certificateService";
 
 export default function MyDiplomasPage() {
   const [diplomas, setDiplomas] = useState<MyDiploma[]>([]);
@@ -79,10 +80,39 @@ export default function MyDiplomasPage() {
                     </h2>
                     <span className={`${styles.badge} ${badgeClass}`}>{statusLabel}</span>
                   </div>
+                  {/* Progress Bar */}
+                  {(() => {
+                    const p = Math.max(0, Math.min(100, Math.round(item.progress || 0)));
+                    return (
+                      <div className={styles.progress}>
+                        <div className={styles.progressTrack}>
+                          <div className={styles.progressFill} style={{ width: `${p}%` }} />
+                        </div>
+                        <div className={styles.progressInfo}>
+                          {p === 100 ? (
+                            <span className={styles.completedBadge}>مكتمل</span>
+                          ) : (
+                            <span className={styles.progressLabel}>{p}%</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
                   <div className={styles.cardActions}>
                     <Link href={`/diplomas/${slug}`} className={styles.btn}>
                       بدء التعلم
                     </Link>
+                    {item.can_download_certificate && item.certificate?.file_url && (
+                      <button
+                        className={styles.btn}
+                        onClick={() => {
+                          const url = getDownloadUrl(item.certificate!.file_url!);
+                          if (url) window.open(url, "_blank");
+                        }}
+                      >
+                        تحميل الشهادة
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

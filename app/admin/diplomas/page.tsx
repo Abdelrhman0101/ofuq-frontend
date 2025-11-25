@@ -336,7 +336,7 @@ export default function AdminDiplomasPage() {
                   <td className={styles.actionsCell}>
                     <button className={styles.btnAction} onClick={() => handleViewDetails(diploma.id)}>عرض</button>
                     <button className={styles.btnAction} onClick={() => handleEdit(diploma)}>تعديل</button>
-                    <button className={`${styles.btnAction} ${styles.btnInfo}`} onClick={() => window.location.href = `/admin/diplomas/${diploma.id}/certificates`}>الخريجين</button>
+                    <button className={`${styles.btnAction} ${styles.btnInfo}`} >الخريجين</button>
                     <button className={`${styles.btnAction} ${styles.btnDanger}`} onClick={() => handleDelete(diploma.id)}>حذف</button>
                     <button className={`${styles.btnAction} ${styles.btnSuccess}`} onClick={() => handleAddCourse(diploma.id)}>+ مقرر</button>
                   </td>

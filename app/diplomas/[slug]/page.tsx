@@ -298,8 +298,12 @@ export default function DiplomaDetailsPage() {
                     className={`${styles.enrollButtonSecondary} ${isEnrolled ? styles.viewCoursesButtonSecondary : ''}`}
                     onClick={handleEnroll}
                     disabled={enrollStatus.type === 'loading' || checkingEnrollment}
+                    aria-label={isEnrolled ? 'مشاهدة المقررات' : 'التسجيل بالدبلومة'}
                   >
-                    {getButtonText()}
+                    <span className={styles.buttonText}>{getButtonText()}</span>
+                    <span className={styles.buttonIconSmall} aria-hidden="true">
+                      {isEnrolled ? <FiEye /> : <FiBook />}
+                    </span>
                   </button>
                 </div>
               </div>

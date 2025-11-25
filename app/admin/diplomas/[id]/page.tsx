@@ -176,6 +176,9 @@ export default function AdminDiplomaPage() {
         </div>
         <div className={styles.actions}>
           <button className={styles.btnPrimary} onClick={handleAddCourse}>إضافة مقرر جديد</button>
+          <button className={styles.btnAction} onClick={() => router.push(`/admin/diplomas/${diplomaId}/students`)}>
+            خريجو الدبلومة
+          </button>
           <button className={styles.btnDanger} onClick={confirmDeleteDiploma} disabled={isDeleting}>
             {isDeleting ? "جاري الحذف..." : "حذف الدبلومة"}
           </button>

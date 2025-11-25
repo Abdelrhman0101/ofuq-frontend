@@ -14,6 +14,9 @@ interface CourseContentProps {
   studentsCount: number;
   hoursCount: number;
   courseDescription?: string;
+  hideOverview?: boolean;
+  hideStats?: boolean;
+  hideRating?: boolean;
   courseId?: string;
   isEnrolled?: boolean;
   defaultExpandedChapterId?: number;
@@ -47,6 +50,9 @@ const CourseContent: React.FC<CourseContentProps> = ({
   studentsCount,
   hoursCount,
   courseDescription = '',
+  hideOverview = false,
+  hideStats = false,
+  hideRating = false,
   courseId,
   isEnrolled = false,
   defaultExpandedChapterId,
@@ -247,8 +253,14 @@ const CourseContent: React.FC<CourseContentProps> = ({
       case 'overview':
         return (
           <div className="tab-content">
-            <h2>وصف الكورس :</h2>
-            <p className="course-overview">{courseDescription || 'وصف الكورس غير متوفر حالياً.'}</p>
+            {!hideOverview && (
+              <>
+                <h2>وصف الكورس :</h2>
+                {courseDescription ? (
+                  <p className="course-overview">{courseDescription}</p>
+                ) : null}
+              </>
+            )}
             {/* إزالة النص التجريبي واستبداله بالوصف الحقيقي فقط */}
             
             <h2>محتوى الكورس :</h2>
@@ -347,37 +359,41 @@ const CourseContent: React.FC<CourseContentProps> = ({
   return (
     <div className="left-content">
       {/* Rating Section */}
-      <div className="rating-section">
-        <span className="rating-number">({rating})</span>
-        <div className="stars">
-          {renderStars(rating)}
+      {!hideRating && (
+        <div className="rating-section">
+          <span className="rating-number">({rating})</span>
+          <div className="stars">
+            {renderStars(rating)}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Course Title */}
       <h1 className="course-title">{courseTitle}</h1>
 
       {/* Course Stats */}
-      <div className="course-stats">
-        <div className="stat-item">
-          <svg className="stat-icon" viewBox="0 0 24 24">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
-          </svg>
-          <span>{lecturesCount} محاضرة</span>
+      {!hideStats && (
+        <div className="course-stats">
+          <div className="stat-item">
+            <svg className="stat-icon" viewBox="0 0 24 24">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+            </svg>
+            <span>{lecturesCount} محاضرة</span>
+          </div>
+          <div className="stat-item">
+            <svg className="stat-icon" viewBox="0 0 24 24">
+              <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.5 7.5h-5A1.5 1.5 0 0 0 12.04 8.37L9.5 16H12v6h8zM12.5 11.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5S11 9.17 11 10s.67 1.5 1.5 1.5zM5.5 6c1.11 0 2-.89 2-2s-.89-2-2-2-2 .89-2 2 .89 2 2 2zm2 16 v-6H10l-2.54-7.63A1.5 1.5 0 0 0 6 7.5H1A1.5 1.5 0 0 0 -.46 8.37L-3 16h2.5v6h8z"/>
+            </svg>
+            <span>{studentsCount} طالب</span>
+          </div>
+          <div className="stat-item">
+            <svg className="stat-icon" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            <span>{hoursCount} ساعة</span>
+          </div>
         </div>
-        <div className="stat-item">
-          <svg className="stat-icon" viewBox="0 0 24 24">
-            <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.5 7.5h-5A1.5 1.5 0 0 0 12.04 8.37L9.5 16H12v6h8zM12.5 11.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5S11 9.17 11 10s.67 1.5 1.5 1.5zM5.5 6c1.11 0 2-.89 2-2s-.89-2-2-2-2 .89-2 2 .89 2 2 2zm2 16v-6H10l-2.54-7.63A1.5 1.5 0 0 0 6 7.5H1A1.5 1.5 0 0 0 -.46 8.37L-3 16h2.5v6h8z"/>
-          </svg>
-          <span>{studentsCount} طالب</span>
-        </div>
-        <div className="stat-item">
-          <svg className="stat-icon" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-          <span>{hoursCount} ساعة</span>
-        </div>
-      </div>
+      )}
 
       {/* Tabs */}
       <div className="tabs-container">
