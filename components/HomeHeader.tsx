@@ -76,7 +76,7 @@ const HomeHeader = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             {/* Logo */}
             <div className={styles['header-logo']}>
-              <Link href="/">
+              <Link href="/" prefetch={false}>
                 <Image 
                   src="/mahad_alofk2.png" 
                   alt="منصة أفق" 
@@ -89,11 +89,11 @@ const HomeHeader = () => {
 
             {/* Desktop Navigation Links */}
             <nav className={clsx(styles['header-nav'], styles['desktop-nav'])}>
-              <Link href="/" className={clsx(styles['nav-link'], pathname === '/' && styles['active'])}>الرئيسية</Link>
-              <Link href="/diploms" className={clsx(styles['nav-link'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && styles['active'])}>دبلومات منصة أفق</Link>
-              <Link href="/community" className={clsx(styles['nav-link'], pathname?.startsWith('/community') && styles['active'])}>مجتمع أفق</Link>
-              <Link href="/verify-certificate" className={clsx(styles['nav-link'], pathname?.startsWith('/verify-certificate') && styles['active'])}>التحقق من الشهادة</Link>
-              <Link href="/about" className={clsx(styles['nav-link'], pathname?.startsWith('/about') && styles['active'])}>من نحن</Link>
+              <Link href="/" prefetch={false} className={clsx(styles['nav-link'], pathname === '/' && styles['active'])}>الرئيسية</Link>
+              <Link href="/diploms" prefetch={false} className={clsx(styles['nav-link'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && styles['active'])}>دبلومات منصة أفق</Link>
+              <Link href="/community" prefetch={false} className={clsx(styles['nav-link'], pathname?.startsWith('/community') && styles['active'])}>مجتمع أفق</Link>
+              <Link href="/verify-certificate" prefetch={false} className={clsx(styles['nav-link'], pathname?.startsWith('/verify-certificate') && styles['active'])}>التحقق من الشهادة</Link>
+              <Link href="/about" prefetch={false} className={clsx(styles['nav-link'], pathname?.startsWith('/about') && styles['active'])}>من نحن</Link>
             </nav>
           </div>
 
@@ -153,8 +153,8 @@ const HomeHeader = () => {
               </div>
             ) : (
               <>
-                <Link href="/auth?tab=login" className={clsx(styles['auth-btn'], styles['login-btn1'])}>تسجيل دخول</Link>
-                <Link href="/auth?tab=signup" className={clsx(styles['auth-btn'], styles['signup-btn'])}>إنشاء حساب</Link>
+                <Link href="/auth?tab=login" prefetch={false} className={clsx(styles['auth-btn'], styles['login-btn1'])}>تسجيل دخول</Link>
+                <Link href="/auth?tab=signup" prefetch={false} className={clsx(styles['auth-btn'], styles['signup-btn'])}>إنشاء حساب</Link>
               </>
             )}
           </div>
@@ -171,17 +171,17 @@ const HomeHeader = () => {
             </button>
           </div>
           <nav className={styles['sidebar-nav']}>
-            <Link href="/" className={clsx(styles['sidebar-link'], pathname === '/' && styles['active'])} onClick={closeSidebar}>الرئيسية</Link>
-            <Link href="/diploms" className={clsx(styles['sidebar-link'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && styles['active'])} onClick={closeSidebar}>دبلومات منصة أفق</Link>
-            <Link href="/community" className={clsx(styles['sidebar-link'], pathname?.startsWith('/community') && styles['active'])} onClick={closeSidebar}>مجتمع أفق</Link>
-            <Link href="/verify-certificate" className={clsx(styles['sidebar-link'], pathname?.startsWith('/verify-certificate') && styles['active'])} onClick={closeSidebar}>التحقق من الشهادة</Link>
-            <Link href="/about" className={clsx(styles['sidebar-link'], pathname?.startsWith('/about') && styles['active'])} onClick={closeSidebar}>عنّا</Link>
+            <Link href="/" prefetch={false} className={clsx(styles['sidebar-link'], pathname === '/' && styles['active'])} onClick={closeSidebar}>الرئيسية</Link>
+            <Link href="/diploms" prefetch={false} className={clsx(styles['sidebar-link'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && styles['active'])} onClick={closeSidebar}>دبلومات منصة أفق</Link>
+            <Link href="/community" prefetch={false} className={clsx(styles['sidebar-link'], pathname?.startsWith('/community') && styles['active'])} onClick={closeSidebar}>مجتمع أفق</Link>
+            <Link href="/verify-certificate" prefetch={false} className={clsx(styles['sidebar-link'], pathname?.startsWith('/verify-certificate') && styles['active'])} onClick={closeSidebar}>التحقق من الشهادة</Link>
+            <Link href="/about" prefetch={false} className={clsx(styles['sidebar-link'], pathname?.startsWith('/about') && styles['active'])} onClick={closeSidebar}>عنّا</Link>
           </nav>
 
           {!isLoggedIn && (
             <div className={styles['sidebar-auth']}>
-              <Link href="/auth?tab=login" className={clsx(styles['auth-btn'], styles['login-btn1'])} onClick={closeSidebar}>تسجيل دخول</Link>
-              <Link href="/auth?tab=signup" className={clsx(styles['auth-btn'], styles['signup-btn'])} onClick={closeSidebar}>إنشاء حساب</Link>
+              <Link href="/auth?tab=login" prefetch={false} className={clsx(styles['auth-btn'], styles['login-btn1'])} onClick={closeSidebar}>تسجيل دخول</Link>
+              <Link href="/auth?tab=signup" prefetch={false} className={clsx(styles['auth-btn'], styles['signup-btn'])} onClick={closeSidebar}>إنشاء حساب</Link>
             </div>
           )}
 

@@ -121,6 +121,10 @@ function WatchPageContent() {
             }, 1500);
             return;
           }
+          // استخدام بيانات التقدم المضمنة لتفادي اتصال إضافي لنفس المسار
+          if (access?.data?.course_progress) {
+            setCourseProgress(access.data.course_progress);
+          }
         } catch (guardErr) {
           console.warn('تعذر تنفيذ حارس الوصول للكورس:', guardErr);
           showToast('تعذر التحقق من الوصول للمحتوى', 'error');
@@ -133,9 +137,11 @@ function WatchPageContent() {
         // الاعتماد فقط على التوكن بدون أي مزامنة كوكيز
         // لا يوجد أي تعامل مع الكوكيز هنا حسب طلبك
 
-        // تحميل بيانات الكورس
-        const courseData = await getCourseDetails(courseId);
-        setCourse(courseData);
+        // تحميل بيانات الكورس مرة واحدة فقط إذا لم تكن موجودة أو تغيّر المعرف
+        if (!course || Number(course.id) !== Number(courseId)) {
+          const courseData = await getCourseDetails(courseId);
+          setCourse(courseData);
+        }
 
         // تحميل بيانات الدرس بعد التأكد من الوصول
         const lessonData = await getUserLesson(lessonId);
@@ -145,12 +151,14 @@ function WatchPageContent() {
         const direct = getBackendAssetUrl(String(lessonData?.lesson?.video_url || ''));
         setResolvedVideoUrl(direct);
 
-        // تحميل تقدم الكورس
-        try {
-          const progress = await getCourseProgress(courseId);
-          setCourseProgress(progress);
-        } catch (progressError) {
-          console.warn('تعذر تحميل تقدم الكورس:', progressError);
+        // لا حاجة لإعادة جلب التقدم إذا كان متاحًا من حارس الوصول
+        if (!courseProgress) {
+          try {
+            const progress = await getCourseProgress(courseId);
+            setCourseProgress(progress);
+          } catch (progressError) {
+            console.warn('تعذر تحميل تقدم الكورس:', progressError);
+          }
         }
 
         // تحميل بيانات الكويز إذا كان متاحاً

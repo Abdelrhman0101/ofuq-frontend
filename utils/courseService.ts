@@ -281,12 +281,12 @@ export const getAllCourses = async (params?: {
  * [Public] جلب تفاصيل كورس واحد
  */
 export const getCourseDetails = async (courseId: string | number): Promise<Course | null> => {
-  try {
-    const response = await apiClient.get<{ data: Course }>(`/course/${courseId}`);
-    
-    if (response.data && response.data.data) {
-      return response.data.data;
-    }
+  try {
+    const response = await apiClient.get<{ data: Course }>(`/course/${courseId}`, { cacheTTL: 300 });
+    
+    if (response.data && response.data.data) {
+      return response.data.data;
+    }
     
     console.error('Unexpected API response structure for course details:', response.data);
     return null;

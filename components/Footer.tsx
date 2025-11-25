@@ -167,10 +167,10 @@ const Footer = () => {
         <div className={styles['footer-column']}>
           <motion.h3 className={styles['footer-title']} whileHover={{ scale: 1.02 }}>تصفح الموقع</motion.h3>
           <div className={styles['footer-links']}>
-            <Link href="/about" className={styles['footer-link']}>عنّا</Link>
-            <Link href="/verify-certificate" className={styles['footer-link']}>التحقق من الشهادة</Link>
-            <Link href="/privacy" className={styles['footer-link']}>سياسة الخصوصية</Link>
-            <Link href="/terms" className={styles['footer-link']}>الشروط والأحكام</Link>
+            <Link prefetch={false} href="/about" className={styles['footer-link']}>عنّا</Link>
+            <Link prefetch={false} href="/verify-certificate" className={styles['footer-link']}>التحقق من الشهادة</Link>
+            <Link prefetch={false} href="/privacy" className={styles['footer-link']}>سياسة الخصوصية</Link>
+            <Link prefetch={false} href="/terms" className={styles['footer-link']}>الشروط والأحكام</Link>
           </div>
         </div>
 
@@ -178,8 +178,8 @@ const Footer = () => {
         <div className={styles['footer-column']}>
           <motion.h3 className={styles['footer-title']} whileHover={{ scale: 1.02 }}>الدبلومات</motion.h3>
           <ul className={styles['footer-list']}>
-            <Link href="/diplomas/baree3"><li className={styles['footer-item']}>بارع</li></Link>
-            <Link href="/community"><li className={styles['footer-item']}>مجتمع أفق</li></Link>
+            <Link prefetch={false} href="/diplomas/baree3"><li className={styles['footer-item']}>بارع</li></Link>
+            <Link prefetch={false} href="/community"><li className={styles['footer-item']}>مجتمع أفق</li></Link>
           </ul>
         </div>
       </div>

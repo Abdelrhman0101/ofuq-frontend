@@ -63,6 +63,12 @@ const apiClient = {
       })
       .catch((err) => {
         inflight.delete(key);
+        // عند حدوث 429 أو خطأ شبكة، إن كان لدينا رد مخزّن (حتى لو انتهت صلاحيته) نُعيده كـ fallback
+        const status = err?.response?.status;
+        const cached = responseCache.get(key);
+        if ((status === 429 || status === 503 || status === 0) && cached) {
+          return cached.response as AxiosResponse<T>;
+        }
         throw err;
       });
     inflight.set(key, req as Promise<AxiosResponse>);

@@ -73,7 +73,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
   };
 
   return (
-    <Link href={`/course-details/${id}`} className={styles['course-card-link']}>
+    <Link href={`/course-details/${id}`} prefetch={false} className={styles['course-card-link']}>
       <div className={styles['course-card']}>
         <div className={styles['course-image']}>
           <img src={image} alt={title} />

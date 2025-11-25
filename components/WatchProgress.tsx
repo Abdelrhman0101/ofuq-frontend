@@ -83,7 +83,7 @@ export default function WatchProgress({ courses: injected }: WatchProgressProps)
     <div className="watch-progress">
       <div className="section-header">
         <h2 className="section-title">متابعة المشاهدة</h2>
-        <Link href="/user/my_courses" className="view-all-btn">
+        <Link href="/user/my_courses" prefetch={false} className="view-all-btn">
           عرض الكل
         </Link>
       </div>

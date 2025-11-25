@@ -41,7 +41,7 @@ export default function DiplomaCard({
   const displayPrice = isFree ? 'مجاني' : `${formatPrice(price)} ر.س`;
 
   return (
-    <Link href={href} className={styles['diploma-card']} data-id={id}>
+    <Link href={href} prefetch={false} className={styles['diploma-card']} data-id={id}>
       <div className={styles['diploma-card-image-wrapper']}>
         <img className={styles['diploma-card-image']} src={imgSrc} alt={name} />
       </div>

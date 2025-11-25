@@ -97,11 +97,11 @@ const ProfileHeader = () => {
 
           {/* Desktop Navigation Links - Centered */}
           <nav className={clsx(ph['header-nav'], ph['desktop-nav'])}>
-            <Link href="/" className={clsx(ph['nav-link1'], pathname === '/' && ph['active'])}>الرئيسية</Link>
-            <Link href="/diploms" className={clsx(ph['nav-link1'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && ph['active'])}>دبلومات منصة أفق</Link>
-            <Link href="/community" className={clsx(ph['nav-link1'], pathname?.startsWith('/community') && ph['active'])}>مجتمع أفق</Link>
-            <Link href="/user/fav" className={clsx(ph['nav-link1'], pathname?.startsWith('/user/fav') && ph['active'])}>المفضلة</Link>
-            <Link href="/about" className={clsx(ph['nav-link1'], pathname?.startsWith('/about') && ph['active'])}>من نحن</Link>
+            <Link href="/" prefetch={false} className={clsx(ph['nav-link1'], pathname === '/' && ph['active'])}>الرئيسية</Link>
+            <Link href="/diploms" prefetch={false} className={clsx(ph['nav-link1'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && ph['active'])}>دبلومات منصة أفق</Link>
+            <Link href="/community" prefetch={false} className={clsx(ph['nav-link1'], pathname?.startsWith('/community') && ph['active'])}>مجتمع أفق</Link>
+            <Link href="/user/fav" prefetch={false} className={clsx(ph['nav-link1'], pathname?.startsWith('/user/fav') && ph['active'])}>المفضلة</Link>
+            <Link href="/about" prefetch={false} className={clsx(ph['nav-link1'], pathname?.startsWith('/about') && ph['active'])}>من نحن</Link>
           </nav>
 
           {/* Mobile Hamburger Button */}
@@ -132,6 +132,7 @@ const ProfileHeader = () => {
                   <div className={styles['profile-dropdown']} onClick={(e) => e.stopPropagation()}>
                     <Link
                       href={user?.role === 'admin' ? '/admin' : '/user'}
+                      prefetch={false}
                       className={styles['dropdown-item']}
                       onClick={() => setIsProfileMenuOpen(false)}
                     >
@@ -139,6 +140,7 @@ const ProfileHeader = () => {
                     </Link>
                     <Link
                       href={user?.role === 'admin' ? '/admin/profile-management' : '/user/settings'}
+                      prefetch={false}
                       className={styles['dropdown-item']}
                       onClick={() => setIsProfileMenuOpen(false)}
                     >
@@ -146,6 +148,7 @@ const ProfileHeader = () => {
                     </Link>
                     <Link
                       href="/user/fav"
+                      prefetch={false}
                       className={styles['dropdown-item']}
                       onClick={() => setIsProfileMenuOpen(false)}
                     >
@@ -160,8 +163,8 @@ const ProfileHeader = () => {
               </div>
             ) : (
               <>
-                <Link href="/auth?tab=login" className={clsx(styles['auth-btn'], styles['login-btn1'])}>تسجيل دخول</Link>
-                <Link href="/auth?tab=signup" className={clsx(styles['auth-btn'], styles['signup-btn'])}>إنشاء حساب</Link>
+                <Link href="/auth?tab=login" prefetch={false} className={clsx(styles['auth-btn'], styles['login-btn1'])}>تسجيل دخول</Link>
+                <Link href="/auth?tab=signup" prefetch={false} className={clsx(styles['auth-btn'], styles['signup-btn'])}>إنشاء حساب</Link>
               </>
             )}
           </div>
@@ -178,11 +181,11 @@ const ProfileHeader = () => {
              </button>
            </div>
           <nav className={ph['sidebar-nav']}>
-            <Link href="/" className={clsx(ph['sidebar-link'], pathname === '/' && ph['sidebar-active'])} onClick={closeSidebar}>الرئيسية</Link>
-            <Link href="/diploms" className={clsx(ph['sidebar-link'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && ph['sidebar-active'])} onClick={closeSidebar}>دبلومات منصة أفق</Link>
-            <Link href="/community" className={clsx(ph['sidebar-link'], pathname?.startsWith('/community') && ph['sidebar-active'])} onClick={closeSidebar}>مجتمع أفق</Link>
-            <Link href="/favorites" className={clsx(ph['sidebar-link'], pathname?.startsWith('/favorites') && ph['sidebar-active'])} onClick={closeSidebar}>المفضلة</Link>
-            <Link href="/about" className={clsx(ph['sidebar-link'], pathname?.startsWith('/about') && ph['sidebar-active'])} onClick={closeSidebar}>من نحن</Link>
+            <Link href="/" prefetch={false} className={clsx(ph['sidebar-link'], pathname === '/' && ph['sidebar-active'])} onClick={closeSidebar}>الرئيسية</Link>
+            <Link href="/diploms" prefetch={false} className={clsx(ph['sidebar-link'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && ph['sidebar-active'])} onClick={closeSidebar}>دبلومات منصة أفق</Link>
+            <Link href="/community" prefetch={false} className={clsx(ph['sidebar-link'], pathname?.startsWith('/community') && ph['sidebar-active'])} onClick={closeSidebar}>مجتمع أفق</Link>
+            <Link href="/favorites" prefetch={false} className={clsx(ph['sidebar-link'], pathname?.startsWith('/favorites') && ph['sidebar-active'])} onClick={closeSidebar}>المفضلة</Link>
+            <Link href="/about" prefetch={false} className={clsx(ph['sidebar-link'], pathname?.startsWith('/about') && ph['sidebar-active'])} onClick={closeSidebar}>من نحن</Link>
           </nav>
         </div>
       </div>

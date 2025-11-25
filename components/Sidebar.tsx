@@ -59,6 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
           <li className={styles['nav-item']}>
             <Link
               href="/admin"
+              prefetch={false}
               className={`${styles['nav-link']} ${isActive('/admin') ? styles.active : ''}`}
               onClick={handleNavigate}
             >
@@ -70,6 +71,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
           <li className={styles['nav-item']}>
             <Link
               href="/admin/diplomas"
+              prefetch={false}
               className={`${styles['nav-link']} ${isActive('/admin/diplomas') ? styles.active : ''}`}
               onClick={handleNavigate}
             >
@@ -81,6 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
           <li className={styles['nav-item']}>
             <Link
               href="/admin/diplomas/question-bank"
+              prefetch={false}
               className={`${styles['nav-link']} ${isActive('/admin/diplomas/question-bank') ? styles.active : ''}`}
               onClick={handleNavigate}
             >
@@ -92,6 +95,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
           <li className={styles['nav-item']}>
             <Link
               href="/admin/students"
+              prefetch={false}
               className={`${styles['nav-link']} ${isActive('/admin/students') ? styles.active : ''}`}
               onClick={handleNavigate}
             >
@@ -103,6 +107,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
           <li className={styles['nav-item']}>
             <Link
               href="/admin/instructors"
+              prefetch={false}
               className={`${styles['nav-link']} ${isActive('/admin/instructors') ? styles.active : ''}`}
               onClick={handleNavigate}
             >
@@ -114,6 +119,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
           <li className={styles['nav-item']}>
             <Link
               href="/admin/database-backups"
+              prefetch={false}
               className={`${styles['nav-link']} ${isActive('/admin/database-backups') ? styles.active : ''}`}
               onClick={handleNavigate}
             >
@@ -125,6 +131,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
           <li className={styles['nav-item']}>
             <Link
               href="/admin/profile-management"
+              prefetch={false}
               className={`${styles['nav-link']} ${isActive('/admin/profile-management') ? styles.active : ''}`}
               onClick={handleNavigate}
             >
