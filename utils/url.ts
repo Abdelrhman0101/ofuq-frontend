@@ -1,3 +1,4 @@
+import { http } from '@/lib/http';
 /**
  * Helper function to construct proper backend asset URLs
  * @param relativePath - The relative path to the asset from Laravel's storage
@@ -7,10 +8,11 @@ export function getBackendAssetUrl(relativePath: string | null | undefined): str
   if (!relativePath || relativePath.trim() === '') {
     return '/banner.jpg';
   }
-  const assetsBase = (process.env.NEXT_PUBLIC_ASSETS_BASE_URL
+  const assetsBase = ((http?.defaults?.baseURL)
+    || process.env.NEXT_PUBLIC_ASSETS_BASE_URL
     || process.env.NEXT_PUBLIC_API_BASE_URL
     || process.env.NEXT_PUBLIC_API_URL
-    || '').replace(/\/api\/?$/, '');
+    || '').replace(/\/api\/?$/, '').replace(/\/+$/, '');
   let raw = relativePath.trim();
 
   // 1) لو يحتوي السلسلة على رابط http/https في أي مكان، نستخرج وننظّفه

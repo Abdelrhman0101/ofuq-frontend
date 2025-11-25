@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import '../styles/exam-details.css';
 import { FinalExamMetaData, getCourseFinalExamMeta, getQuizAttempts, QuizAttempt } from '../utils/quizService';
 import { requestCertificate, getCertificateStatus, getDownloadUrl } from '../utils/certificateService';
+import { http } from '@/lib/http';
 
 interface ExamDetailsProps {
   courseId: number;
@@ -81,7 +82,13 @@ const ExamDetails: React.FC<ExamDetailsProps> = ({ courseId, courseName, complet
         if (!cancelled && response?.status) {
           setCertificateStatus(response.status);
           if (response.status === 'completed') {
-            const url = getDownloadUrl(response.file_url ?? response.file_path ?? '');
+            const raw = response.file_url ?? response.file_path ?? '';
+            let url = getDownloadUrl(raw);
+            if (!url && raw) {
+              const base = (http?.defaults?.baseURL || '').replace(/\/api\/?$/, '').replace(/\/+$/, '');
+              const path = raw.startsWith('/') ? raw : `/${raw}`;
+              url = base ? `${base}${path}` : path;
+            }
             setDownloadUrl(url || null);
           } else {
             setDownloadUrl(null);
@@ -122,7 +129,13 @@ const ExamDetails: React.FC<ExamDetailsProps> = ({ courseId, courseName, complet
               }
               setCertificateStatus(data.status);
               if (data?.status === 'completed') {
-                const url = getDownloadUrl(data.file_url ?? data.file_path ?? '');
+                const raw = data.file_url ?? data.file_path ?? '';
+                let url = getDownloadUrl(raw);
+                if (!url && raw) {
+                  const base = (http?.defaults?.baseURL || '').replace(/\/api\/?$/, '').replace(/\/+$/, '');
+                  const path = raw.startsWith('/') ? raw : `/${raw}`;
+                  url = base ? `${base}${path}` : path;
+                }
                 setDownloadUrl(url || null);
               } else {
                 setDownloadUrl(null);
