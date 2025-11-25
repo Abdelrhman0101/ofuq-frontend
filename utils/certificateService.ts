@@ -398,6 +398,40 @@ export async function requestCertificate(courseId: number | string): Promise<{ c
 export async function getCertificateStatus(
   courseId: number | string
 ): Promise<{ status: string; file_path?: string | null; file_url?: string | null }> {
-  const res = await apiClient.get(`/courses/${courseId}/certificate-status`);
-  return res.data;
+  try {
+    // المحاولة الأساسية لمسار الحالة
+    const res = await apiClient.get(`/courses/${courseId}/certificate-status`, { cacheTTL: 15 });
+    return res.data;
+  } catch (err: any) {
+    const status = err?.response?.status;
+    // فولباك ذكي: إن كان 404، حاول اكتشاف الشهادة من مصادر بديلة
+    if (status === 404) {
+      // 1) تحقق من قائمة شهاداتي للعثور على شهادة هذا المقرر
+      try {
+        const certificates = await getMyCertificates();
+        const match = certificates.find((c) => String(c.course_id ?? '') === String(courseId));
+        if (match && match.file_path) {
+          return { status: 'completed', file_path: match.file_path, file_url: match.file_path };
+        }
+      } catch (_) {
+        // تجاهل أي خطأ في هذا الفولباك
+      }
+
+      // 2) تحقق من مسار بيانات الشهادة للمقرر مباشرةً
+      try {
+        const data = await fetchCourseCertificateData(courseId);
+        if (data?.file_path && !isLegacyBackendCertificateUrl(data.file_path)) {
+          const fp = String(data.file_path);
+          return { status: 'completed', file_path: fp, file_url: fp };
+        }
+      } catch (_) {
+        // تجاهل أي خطأ في هذا الفولباك
+      }
+
+      // أبقِ السلوك السابق: أعِد الخطأ ليُعامل 404 كعدم وجود شهادة بعد
+      throw err;
+    }
+    // أخطاء أخرى: أعدها كما هي
+    throw err;
+  }
 }
