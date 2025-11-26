@@ -91,7 +91,8 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
         setActualRatingDistribution(distribution);
 
         if (courseId !== undefined && courseId !== null) {
-          const enrollments = await getMyEnrollments();
+          const enrollmentsResponse = await getMyEnrollments();
+          const enrollments = enrollmentsResponse.data;
           setIsEnrolled(enrollments.some(course => course.id === Number(courseId)));
         } else {
           setIsEnrolled(false);
@@ -109,12 +110,12 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
   const renderStars = (rating: number, size: 'small' | 'large' = 'small') => {
     const stars = [];
     const starSize = size === 'large' ? '24px' : '16px';
-    
+
     for (let i = 0; i < 5; i++) {
       stars.push(
-        <svg 
-          key={i} 
-          className={`star ${i < rating ? 'filled' : 'empty'}`} 
+        <svg
+          key={i}
+          className={`star ${i < rating ? 'filled' : 'empty'}`}
           viewBox="0 0 24 24"
           style={{ width: starSize, height: starSize }}
         >
@@ -128,12 +129,12 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
   const renderInteractiveStars = (currentRating: number, onStarClick: (rating: number) => void, onStarHover: (rating: number) => void, onStarLeave: () => void) => {
     const stars = [];
     const displayRating = hoveredRating || currentRating;
-    
+
     for (let i = 1; i <= 5; i++) {
       stars.push(
-        <svg 
-          key={i} 
-          className={`star interactive ${i <= displayRating ? 'filled' : 'empty'}`} 
+        <svg
+          key={i}
+          className={`star interactive ${i <= displayRating ? 'filled' : 'empty'}`}
           viewBox="0 0 24 24"
           style={{ width: '24px', height: '24px', cursor: 'pointer' }}
           onClick={() => onStarClick(i)}
@@ -153,7 +154,7 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newReview.message.trim() || newReview.rating === 0) {
       alert('يرجى ملء جميع الحقول واختيار التقييم');
       return;
@@ -172,14 +173,14 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
 
     try {
       setSubmitting(true);
-      
+
       const reviewData = {
         rating: newReview.rating,
         comment: newReview.message
       };
 
       const submittedReview = await submitCourseReview(courseId, reviewData);
-      
+
       if (submittedReview) {
         // Add the new review to the list
         const newReviewData: ReviewData = {
@@ -197,7 +198,7 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
         // Update statistics
         const newTotalReviews = updatedReviews.length;
         const newAvgRating = updatedReviews.reduce((sum, review) => sum + review.rating, 0) / newTotalReviews;
-        
+
         const newDistribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
         updatedReviews.forEach(review => {
           newDistribution[review.rating as keyof typeof newDistribution]++;
@@ -211,7 +212,7 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
         setNewReview({ rating: 0, message: '', name: '' });
         setShowReviewForm(false);
         setHoveredRating(0);
-        
+
         alert('تم إرسال التقييم بنجاح!');
       }
     } catch (error: any) {
@@ -249,10 +250,10 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
                     <span className="star-count">{stars} نجوم</span>
                   </div>
                   <div className="rating-bar-container">
-                    <div 
+                    <div
                       className="rating-bar"
-                      style={{ 
-                        width: `${getPercentage(actualRatingDistribution[stars as keyof typeof actualRatingDistribution])}%` 
+                      style={{
+                        width: `${getPercentage(actualRatingDistribution[stars as keyof typeof actualRatingDistribution])}%`
                       }}
                     />
                   </div>
@@ -278,12 +279,12 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
           {isEnrolled && (
             <div className="add-review-section">
               {!showReviewForm ? (
-                <button 
+                <button
                   className="add-review-btn"
                   onClick={() => setShowReviewForm(true)}
                 >
                   <svg className="add-icon" viewBox="0 0 24 24">
-                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                   </svg>
                   اكتب رأيك
                 </button>
@@ -300,7 +301,7 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="form-group">
                       <label>رأيك:</label>
                       <textarea
@@ -311,13 +312,13 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
                         required
                       />
                     </div>
-                    
+
                     <div className="form-actions">
                       <button type="submit" className="submit-btn" disabled={submitting}>
                         {submitting ? 'جاري الإرسال...' : 'نشر الرأي'}
                       </button>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className="cancel-btn"
                         onClick={() => {
                           setShowReviewForm(false);
@@ -346,8 +347,8 @@ const StudentReviews: React.FC<StudentReviewsProps> = ({
               reviews.map((review) => (
                 <div key={review.id} className="review-item">
                   <div className="reviewer-header">
-                    <img 
-                      src={review.avatar} 
+                    <img
+                      src={review.avatar}
                       alt={review.name}
                       className="reviewer-avatar"
                     />

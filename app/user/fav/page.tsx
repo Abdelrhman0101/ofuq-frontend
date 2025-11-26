@@ -39,12 +39,13 @@ export default function FavPage() {
     const load = async () => {
       try {
         setLoading(true);
-        const [favorites, enrollments] = await Promise.all([
+        const [favorites, enrollmentsResponse] = await Promise.all([
           getMyFavoriteCourses(),
           getMyEnrollments(),
         ]);
+        const enrollments = enrollmentsResponse.data;
 
-        const isPurchasedId = new Set(enrollments.map((id) => Number(id)));
+        const isPurchasedId = new Set(enrollments.map((id) => Number(id.id)));
         const favPurchased = favorites.filter((c) => isPurchasedId.has(Number(c.id)));
         const favUnpurchased = favorites.filter((c) => !isPurchasedId.has(Number(c.id)));
 
@@ -103,20 +104,20 @@ export default function FavPage() {
   const removePurchased = async (id: number) => {
     try {
       await removeCourseFromFavorites(id);
-    } catch {}
+    } catch { }
     setPurchased((prev) => prev.filter((c) => c.id !== id));
   };
 
   const removeUnpurchased = async (id: string) => {
     try {
       await removeCourseFromFavorites(Number(id));
-    } catch {}
+    } catch { }
     setUnpurchased((prev) => prev.filter((c) => c.id !== id));
   };
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
-  
+
   const openUnpurchasedModal = () => setIsUnpurchasedModalOpen(true);
   const closeUnpurchasedModal = () => setIsUnpurchasedModalOpen(false);
 

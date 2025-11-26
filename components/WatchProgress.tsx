@@ -31,7 +31,8 @@ export default function WatchProgress({ courses: injected }: WatchProgressProps)
           return;
         }
 
-        const enrolled = await getMyEnrolledCourses();
+        const enrolledResponse = await getMyEnrolledCourses();
+        const enrolled = enrolledResponse.data;
 
         // Fetch progress details for all enrolled courses in parallel once
         const detailsArr = await Promise.all(

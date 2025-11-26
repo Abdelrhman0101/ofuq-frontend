@@ -24,7 +24,7 @@ const CourseDetailsPage = () => {
   const params = useParams();
   const router = useRouter();
   const courseId = params.id as string;
-  
+
   const [courseData, setCourseData] = useState<Course | null>(null);
   const [popularCourses, setPopularCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,13 +49,13 @@ const CourseDetailsPage = () => {
     const loadCourseData = async () => {
       try {
         setLoading(true);
-        
+
         // Load course details and featured courses in parallel
         const [course, featured] = await Promise.all([
           getCourseDetails(courseId),
           getFeaturedCourses()
         ]);
-        
+
         setCourseData(course);
         setPopularCourses(featured.slice(0, 3)); // Show only 3 featured courses
       } catch (err) {
@@ -76,7 +76,8 @@ const CourseDetailsPage = () => {
     const checkEnrollment = async () => {
       try {
         if (!courseId || !isAuthenticated()) return;
-        const myCourses = await getMyEnrollments();
+        const myCoursesResponse = await getMyEnrollments();
+        const myCourses = myCoursesResponse.data;
         const courseIdNum = Number(courseId);
         setIsEnrolled(myCourses.some(course => course.id === courseIdNum));
       } catch (err) {
@@ -183,7 +184,7 @@ const CourseDetailsPage = () => {
       console.warn('Course without valid ID found:', course);
       return null;
     }
-    
+
     // حاول التقاط صورة الكورس من عدة حقول محتملة لضمان عرض الصورة الصحيحة
     const coverRaw =
       (course as any).cover_image_url ||
@@ -205,9 +206,9 @@ const CourseDetailsPage = () => {
       rating: parseFloat(String(course.average_rating ?? course.rating ?? '0')), // Use real rating from API
       studentsCount: course.students_count || 0, // Use real students count from API
       duration: course.duration ? `${course.duration} ساعة` : '0 ساعة', // Use real duration from API
-      lessonsCount: course.chapters_count || 
-                   ((course.chapters || []).reduce((sum, ch) => sum + ((ch.lessons || []).length), 0)) || 
-                   0, // Use real lessons count from API
+      lessonsCount: course.chapters_count ||
+        ((course.chapters || []).reduce((sum, ch) => sum + ((ch.lessons || []).length), 0)) ||
+        0, // Use real lessons count from API
       instructorName: course?.instructor?.name || 'مدرب',
       instructorAvatar: getBackendAssetUrl(instructorRaw),
       price: Number(course?.price ?? '0'),
@@ -223,10 +224,10 @@ const CourseDetailsPage = () => {
       <div className="course-details-page">
         <HomeHeader />
         <main className="main-content">
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             minHeight: '400px',
             fontSize: '18px'
           }}>
@@ -243,10 +244,10 @@ const CourseDetailsPage = () => {
       <div className="course-details-page">
         <HomeHeader />
         <main className="main-content">
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             minHeight: '400px',
             fontSize: '18px',
             color: '#e74c3c'
@@ -262,7 +263,7 @@ const CourseDetailsPage = () => {
   return (
     <div className="course-details-page">
       <HomeHeader />
-      
+
       <main className="main-content">
         <div className="course-details-container">
           {/* Left Content */}
@@ -285,7 +286,7 @@ const CourseDetailsPage = () => {
                 courseData.cover_image
               );
               return (
-                <VideoSection 
+                <VideoSection
                   thumbnailUrl={thumbnail}
                   videoUrl={getBackendAssetUrl(previewVideoUrl)}
                   alt={`${courseData.title} Preview Video`}
@@ -307,7 +308,7 @@ const CourseDetailsPage = () => {
                 </div>
               );
             })()}
-            <CourseContent 
+            <CourseContent
               rating={parseFloat(String(courseData.average_rating ?? courseData.rating ?? 0))} // Use real rating
               courseTitle={courseData.title}
               lecturesCount={
@@ -327,9 +328,9 @@ const CourseDetailsPage = () => {
                 (courseData.instructor as any)?.profileImage
               )
                 ? getBackendAssetUrl(
-                    (courseData.instructor as any)?.image ||
-                    (courseData.instructor as any)?.profileImage
-                  )
+                  (courseData.instructor as any)?.image ||
+                  (courseData.instructor as any)?.profileImage
+                )
                 : '/profile.jpg'}
               instructorRating={
                 (courseData.instructor as any)?.avg_rate ??
@@ -344,7 +345,7 @@ const CourseDetailsPage = () => {
           </div>
 
           {/* Right Sidebar */}
-          <CourseSidebar 
+          <CourseSidebar
             courseId={courseId}
             courseImage={getBackendAssetUrl(
               (courseData as any).cover_image_url ||
@@ -361,13 +362,13 @@ const CourseDetailsPage = () => {
               (courseData.instructor as any)?.profileImage
             )}
             instructorTitle={(courseData.instructor as any)?.title}
-          instructorBio={(courseData.instructor as any)?.bio}
+            instructorBio={(courseData.instructor as any)?.bio}
             actionLabel={courseAccess.allowed ? 'مشاهدة الآن' : 'اذهب إلى الدبلومة'}
             onActionClick={handlePrimaryAction}
           />
         </div>
       </main>
-      
+
       {/* Popular Courses Section
       <section className="popular-courses-section">
         <div className="popular-courses-container">
@@ -407,9 +408,9 @@ const CourseDetailsPage = () => {
           </div>
         </div>
       </section> */}
-      
+
       <Footer />
-      
+
       {/* Floating Components */}
       <ScrollToTop />
       <SocialMediaFloat />
@@ -420,7 +421,7 @@ const CourseDetailsPage = () => {
         onClose={() => setToastVisible(false)}
         duration={3000}
       />
-      
+
       <style jsx>{`
         .course-details-page {
           min-height: 100vh;

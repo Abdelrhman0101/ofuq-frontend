@@ -29,21 +29,21 @@ const DynamicCheckoutPage: React.FC = () => {
           return;
         }
 
-        const [details, myEnrollments] = await Promise.all([
+        const [details, myEnrollmentsResponse] = await Promise.all([
           getCourseDetails(courseId),
-          getMyEnrollments(),
+          getMyEnrollments(1, 1000),
         ]);
 
         setCourse(details);
         const idNum = Number(courseId);
-        setIsEnrolled(myEnrollments.some(course => course.id === idNum));
+        setIsEnrolled(myEnrollmentsResponse.data.some(course => course.id === idNum));
       } catch (err: any) {
         console.error('Checkout init error:', err);
         setError(err?.message || 'فشل في تحميل بيانات صفحة الدفع');
       }
     };
     init();
-  }, [courseId]);
+  }, [courseId, router]);
 
   const handleEnroll = async () => {
     try {
@@ -118,8 +118,8 @@ const DynamicCheckoutPage: React.FC = () => {
           {/* Course Details Card */}
           <div className="course-card">
             <div className="course-image-section">
-              <img 
-                src={getBackendAssetUrl(coverRaw)} 
+              <img
+                src={getBackendAssetUrl(coverRaw)}
                 alt={course.title}
                 className="course-image"
               />
@@ -127,28 +127,28 @@ const DynamicCheckoutPage: React.FC = () => {
                 <div className="discount-badge">خصم {discountPercentage}%</div>
               )}
             </div>
-            
+
             <div className="course-details">
               <h2 className="course-title">{course.title}</h2>
               <p className="course-description">{course.description || 'وصف الكورس غير متوفر'}</p>
-              
+
               <div className="course-meta">
                 <div className="meta-item">
                   <svg className="meta-icon" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                   </svg>
                   <span>المدرب: {course.instructor?.name || 'مدرب'}</span>
                 </div>
                 <div className="meta-item">
                   <svg className="meta-icon" viewBox="0 0 24 24">
-                    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
-                    <path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" />
+                    <path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
                   </svg>
                   <span>{course.duration ? `${course.duration} ساعة` : '30 ساعة'}</span>
                 </div>
                 <div className="meta-item">
                   <svg className="meta-icon" viewBox="0 0 24 24">
-                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
                   </svg>
                   <span>{course.chapters_count ? `${course.chapters_count} درس` : 'دروس متعددة'}</span>
                 </div>
@@ -159,19 +159,19 @@ const DynamicCheckoutPage: React.FC = () => {
                 <ul className="features-list">
                   <li className="feature-item">
                     <svg className="feature-icon2" viewBox="0 0 24 24">
-                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                     </svg>
                     شهادة معتمدة
                   </li>
                   <li className="feature-item">
                     <svg className="feature-icon2" viewBox="0 0 24 24">
-                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                     </svg>
                     دعم فني مدى الحياة
                   </li>
                   <li className="feature-item">
                     <svg className="feature-icon2" viewBox="0 0 24 24">
-                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                     </svg>
                     مشاريع عملية
                   </li>
@@ -210,11 +210,11 @@ const DynamicCheckoutPage: React.FC = () => {
               <button className="purchase-button" onClick={() => router.push('/user/my_courses')}>
                 تابع الكورس
                 <svg className="button-icon" viewBox="0 0 24 24">
-                  <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1z"/>
+                  <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1z" />
                 </svg>
               </button>
             ) : (
-              <button 
+              <button
                 className={`purchase-button ${isProcessing ? 'processing' : ''}`}
                 onClick={handleEnroll}
                 disabled={isProcessing}
@@ -228,7 +228,7 @@ const DynamicCheckoutPage: React.FC = () => {
                   <>
                     تأكيد الاشتراك
                     <svg className="button-icon" viewBox="0 0 24 24">
-                      <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1z"/>
+                      <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1z" />
                     </svg>
                   </>
                 )}
@@ -238,13 +238,13 @@ const DynamicCheckoutPage: React.FC = () => {
             <div className="security-badges">
               <div className="security-item">
                 <svg className="security-icon" viewBox="0 0 24 24">
-                  <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z"/>
+                  <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z" />
                 </svg>
                 <span>دفع آمن</span>
               </div>
               <div className="security-item">
                 <svg className="security-icon" viewBox="0 0 24 24">
-                  <path d="M9,12L11,14L15,10L13.59,8.59L11,11.17L9.41,9.59L8,11L9,12M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z"/>
+                  <path d="M9,12L11,14L15,10L13.59,8.59L11,11.17L9.41,9.59L8,11L9,12M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z" />
                 </svg>
                 <span>ضمان 30 يوم</span>
               </div>
@@ -266,7 +266,7 @@ const DynamicCheckoutPage: React.FC = () => {
           <div className="toast success">
             <div className="toast-icon">
               <svg viewBox="0 0 24 24">
-                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
               </svg>
             </div>
             <div className="toast-content">
