@@ -52,17 +52,17 @@ export interface VerifiedCertificateData {
  * (نفترض أن الباك اند سيحدّث هذا الـ endpoint ليعيد شهادات الدبلومات)
  */
 export async function getMyCertificates(): Promise<DiplomaCertificate[]> {
-	 try {
+  try {
     const res = await apiClient.get('/my-certificates');
-	   const data = res.data;
-	   const list = Array.isArray(data?.certificates)
-	   	 ? data.certificates
-	   	 : Array.isArray(data?.data?.certificates)
-	   	 ? data.data.certificates
-	   	 : [];
+    const data = res.data;
+    const list = Array.isArray(data?.certificates)
+      ? data.certificates
+      : Array.isArray(data?.data?.certificates)
+        ? data.data.certificates
+        : [];
 
     // تحويل البيانات (إذا لزم الأمر) أو الاعتماد على الباك اند لإرسال الشكل الجديد
-    return list.map((cert: any) => ({
+    return list.map((cert: any) => ({
       id: Number(cert.id),
       uuid: String(cert.uuid || cert.verification_token || ''), // الحقل الجديد
       diploma_name: String(cert.diploma_name || cert.course_title || 'الشهادة'),
@@ -91,8 +91,8 @@ export async function getMyCourseCertificates(): Promise<CourseCertificate[]> {
     const list = Array.isArray(data?.certificates)
       ? data.certificates
       : Array.isArray(data?.data?.certificates)
-      ? data.data.certificates
-      : [];
+        ? data.data.certificates
+        : [];
 
     return list.map((c: any) => ({
       id: Number(c.id),
@@ -120,7 +120,7 @@ export async function verifyCertificate(uuid: string): Promise<VerifiedCertifica
     // هذا endpoint عام ولا يتطلب مصادقة
     const res = await apiClient.get(`/diploma-certificate/verify/${uuid}`);
     const data = res.data?.data ?? res.data;
-    
+
     if (!data || !data.user_name) {
       throw new Error('بيانات التحقق غير صالحة');
     }
@@ -161,8 +161,14 @@ export function getDownloadUrl(filePath: string): string {
   // نُهمل الروابط القديمة التي تُشير لمسارات توليد الشهادة في الباك إند
   if (!filePath) return '';
   const url = String(filePath);
-  const isLegacyCourse = url.includes('/courses/') && url.includes('/certificate');
-  const isLegacyDiploma = url.includes('/categories/') && url.includes('/certificate');
+  // Legacy URLs were like /api/courses/123/certificate or /api/categories/123/certificate
+  // New storage paths are like /storage/certificates/courses/123.pdf
+
+  // Strict check for legacy endpoints (must not be a storage path)
+  const isStoragePath = url.includes('/storage/') || url.includes('/certificates/');
+  const isLegacyCourse = !isStoragePath && url.includes('/courses/') && url.includes('/certificate');
+  const isLegacyDiploma = !isStoragePath && url.includes('/categories/') && url.includes('/certificate');
+
   if (isLegacyCourse || isLegacyDiploma) return '';
 
   // إن كان الرابط كاملاً http(s) نعيده كما هو
@@ -203,7 +209,7 @@ export function getCourseCertificateDownloadUrl(courseId: number | string): stri
   return `${base}/courses/${courseId}/certificate`;
 }
 
- 
+
 
 /**
  * [Helper] بناء روابط تحقق (عامة) لكل من الدبلومة والمقرر
