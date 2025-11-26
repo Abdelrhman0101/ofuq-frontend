@@ -355,6 +355,10 @@ export default function ExamCard({
           </button>
         </div>
       )}
+      {/* Debug Info - Remove after fixing */}
+      <div style={{ padding: '10px', background: '#eee', marginTop: '20px', fontSize: '12px' }}>
+        Debug: Pages: {totalPages}, Current: {currentPage}, Items: {items.length}
+      </div>
     </div>
   );
 }
