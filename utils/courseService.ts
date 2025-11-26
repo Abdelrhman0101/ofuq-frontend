@@ -670,7 +670,6 @@ export const getMyEnrollments = async (page: number = 1, perPage: number = 12): 
 
     // Fallback for legacy structure
     const payload = response?.data;
-    console.warn('Pagination missing. Keys:', Object.keys(payload || {}));
     const items = Array.isArray(payload?.data)
       ? payload.data
       : Array.isArray(payload)
