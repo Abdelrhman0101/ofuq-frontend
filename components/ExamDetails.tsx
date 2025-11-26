@@ -27,7 +27,7 @@ const ExamDetails: React.FC<ExamDetailsProps> = ({ courseId, courseName, complet
   const handleRequestCertificate = async () => {
     setRequestingCertificate(true);
     setRequestError(null);
-    
+
     try {
       const response = await requestCertificate(courseId);
       if (response.certificate_status) {
@@ -70,13 +70,13 @@ const ExamDetails: React.FC<ExamDetailsProps> = ({ courseId, courseName, complet
   // Fetch certificate status from "الدود" when component loads or attempts change
   useEffect(() => {
     let cancelled = false;
-    
+
     async function fetchCertificateStatus() {
       if (!courseId) return;
-      
+
       setLoadingCertificate(true);
       setCertificateStatus(null);
-      
+
       try {
         const response = await getCertificateStatus(courseId);
         if (!cancelled && response?.status) {
@@ -108,7 +108,7 @@ const ExamDetails: React.FC<ExamDetailsProps> = ({ courseId, courseName, complet
         if (!cancelled) setLoadingCertificate(false);
       }
     }
-    
+
     fetchCertificateStatus();
     return () => { cancelled = true; };
   }, [courseId]);
@@ -116,7 +116,7 @@ const ExamDetails: React.FC<ExamDetailsProps> = ({ courseId, courseName, complet
   // Polling effect - keep asking about certificate status when it's pending
   useEffect(() => {
     let intervalId: NodeJS.Timeout | null = null;
-    
+
     if (certificateStatus === 'pending') {
       // Start polling every 5 seconds
       intervalId = setInterval(() => {
@@ -152,7 +152,7 @@ const ExamDetails: React.FC<ExamDetailsProps> = ({ courseId, courseName, complet
           });
       }, 5000); // 5 seconds
     }
-    
+
     // Cleanup function: stop polling when user leaves the page or status changes
     return () => {
       if (intervalId) {
@@ -166,13 +166,13 @@ const ExamDetails: React.FC<ExamDetailsProps> = ({ courseId, courseName, complet
       <button className="back-button" onClick={onBack}>
         ← العودة إلى الاختبارات
       </button>
-      
+
       <div className="course-header">
         <h1 className="course-name">{courseName}</h1>
         <div className="completion-section">
           <div className="completion-bar">
-            <div 
-              className="completion-fill" 
+            <div
+              className="completion-fill"
               style={{ width: `${completionPercentage}%` }}
             ></div>
           </div>
@@ -251,95 +251,121 @@ const ExamDetails: React.FC<ExamDetailsProps> = ({ courseId, courseName, complet
           </div>
 
           {/* Certificate Section */}
-                  {!loading && !error && attempts.length > 0 && (
-                    <div className="lessons-table-container">
-                      <h2 className="table-title">الشهادة</h2>
-                      <div className="table-wrapper">
-                        <div className="certificate-section">
-                          {(() => {
-                            const latestAttempt = attempts[0]; // Get the most recent attempt
-                            const grade = latestAttempt?.score ?? 0;
-                            const passed = latestAttempt?.passed ?? false;
-                            
-                            if (grade < 50 || !passed) {
-                              return (
-                                <div className="certificate-not-eligible">
-                                  <p>يجب عليك اجتياز الاختبار النهائي للحصول على الشهادة.</p>
-                                </div>
-                              );
-                            }
-                            
-                            if (loadingCertificate) {
-                              return (
-                                <div className="certificate-loading">
-                                  <span className="spinner"></span>
-                                  <p>جاري التحقق من حالة الشهادة...</p>
-                                </div>
-                              );
-                            }
-                            
-                            if (certificateStatus === 'completed') {
-                              return (
-                                <div className="certificate-completed">
-                                  <p className="certificate-message">🎉 تهانينا! تم إصدار شهادتك بنجاح.</p>
-                                  {downloadUrl ? (
-                                    <a
-                                      href={downloadUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      download
-                                      className="certificate-download-btn"
-                                    >
-                                      تحميل الشهادة
-                                    </a>
-                                  ) : (
-                                    <p className="certificate-instructions">جارٍ تجهيز رابط التحميل...</p>
-                                  )}
-                                </div>
-                              );
-                            }
-                            
-                            if (certificateStatus === 'pending') {
-                               return (
-                                 <div className="certificate-pending">
-                                   <p className="certificate-message">⏳ جاري إنشاء شهادتك... سيتم إشعارك عند اكتمالها.</p>
-                                   <p className="certificate-instructions">يتم التحقق من الحالة كل بضع ثوانٍ...</p>
-                                 </div>
-                               );
-                             }
-                            
-                            if (certificateStatus === null) {
-                              return (
-                                <div className="certificate-request">
-                                  <p className="certificate-message">✅ مبروك! لقد اجتزت الاختبار بنجاح.</p>
-                                  <p className="certificate-instructions">يمكنك الآن طلب شهادتك الرسمية.</p>
-                                  <button 
-                                    className="request-certificate-btn"
-                                    onClick={handleRequestCertificate}
-                                    disabled={requestingCertificate}
-                                  >
-                                    {requestingCertificate ? (
-                                      <>
-                                        <span className="spinner"></span>
-                                        جاري الطلب...
-                                      </>
-                                    ) : (
-                                      'طلب الشهادة'
-                                    )}
-                                  </button>
-                                  {requestError && (
-                                    <p className="certificate-error">{requestError}</p>
-                                  )}
-                                </div>
-                              );
-                            }
-                            
-                            return null;
-                          })()}
+          {!loading && !error && attempts.length > 0 && (
+            <div className="lessons-table-container">
+              <h2 className="table-title">الشهادة</h2>
+              <div className="table-wrapper">
+                <div className="certificate-section">
+                  {(() => {
+                    const latestAttempt = attempts[0]; // Get the most recent attempt
+                    const grade = latestAttempt?.score ?? 0;
+                    const passed = latestAttempt?.passed ?? false;
+
+                    if (grade < 50 || !passed) {
+                      return (
+                        <div className="certificate-not-eligible">
+                          <p>يجب عليك اجتياز الاختبار النهائي للحصول على الشهادة.</p>
                         </div>
-                      </div>
-                    </div>
-                  )}
+                      );
+                    }
+
+                    if (loadingCertificate) {
+                      return (
+                        <div className="certificate-loading">
+                          <span className="spinner"></span>
+                          <p>جاري التحقق من حالة الشهادة...</p>
+                        </div>
+                      );
+                    }
+
+                    if (certificateStatus === 'completed') {
+                      return (
+                        <div className="certificate-completed">
+                          <p className="certificate-message">🎉 تهانينا! تم إصدار شهادتك بنجاح.</p>
+                          {downloadUrl ? (
+                            <a
+                              href={downloadUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              download
+                              className="certificate-download-btn"
+                            >
+                              تحميل الشهادة
+                            </a>
+                          ) : (
+                            <p className="certificate-instructions">جارٍ تجهيز رابط التحميل...</p>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    if (certificateStatus === 'pending') {
+                      return (
+                        <div className="certificate-pending">
+                          <p className="certificate-message">⏳ جاري إنشاء شهادتك... سيتم إشعارك عند اكتمالها.</p>
+                          <p className="certificate-instructions">يتم التحقق من الحالة كل بضع ثوانٍ...</p>
+                        </div>
+                      );
+                    }
+
+                    if (certificateStatus === 'failed') {
+                      return (
+                        <div className="certificate-failed">
+                          <p className="certificate-message error-message">❌ حدث خطأ أثناء إنشاء الشهادة.</p>
+                          <p className="certificate-instructions">يرجى المحاولة مرة أخرى، أو التواصل مع الدعم الفني إذا استمرت المشكلة.</p>
+                          <button
+                            className="request-certificate-btn retry-btn"
+                            onClick={handleRequestCertificate}
+                            disabled={requestingCertificate}
+                          >
+                            {requestingCertificate ? (
+                              <>
+                                <span className="spinner"></span>
+                                جاري إعادة المحاولة...
+                              </>
+                            ) : (
+                              'إعادة المحاولة'
+                            )}
+                          </button>
+                          {requestError && (
+                            <p className="certificate-error">{requestError}</p>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    if (certificateStatus === null) {
+                      return (
+                        <div className="certificate-request">
+                          <p className="certificate-message">✅ مبروك! لقد اجتزت الاختبار بنجاح.</p>
+                          <p className="certificate-instructions">يمكنك الآن طلب شهادتك الرسمية.</p>
+                          <button
+                            className="request-certificate-btn"
+                            onClick={handleRequestCertificate}
+                            disabled={requestingCertificate}
+                          >
+                            {requestingCertificate ? (
+                              <>
+                                <span className="spinner"></span>
+                                جاري الطلب...
+                              </>
+                            ) : (
+                              'طلب الشهادة'
+                            )}
+                          </button>
+                          {requestError && (
+                            <p className="certificate-error">{requestError}</p>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    return null;
+                  })()}
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
