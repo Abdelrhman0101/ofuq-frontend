@@ -315,29 +315,6 @@ export default function ExamCard({
     );
   };
 
-  const PaginationControls = () => {
-    if (totalPages <= 1) return null;
-    return (
-      <div className={styles.paginationControls}>
-        <button
-          className={styles.paginationBtn}
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-        >
-          السابق
-        </button>
-        <span className={styles.paginationInfo}>صفحة {currentPage} من {totalPages}</span>
-        <button
-          className={styles.paginationBtn}
-          disabled={currentPage === totalPages}
-          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-        >
-          التالي
-        </button>
-      </div>
-    );
-  };
-
   if (loading) {
     return <div className={styles.coursesGrid}><p>جاري تحميل اختباراتك...</p></div>;
   }
@@ -358,7 +335,26 @@ export default function ExamCard({
           <SingleExamCard key={exam.id} exam={exam} />
         ))}
       </div>
-      {!showAll && !exams && <PaginationControls />}
+
+      {!showAll && !exams && totalPages > 1 && (
+        <div className={styles.paginationControls}>
+          <button
+            className={styles.paginationBtn}
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+          >
+            السابق
+          </button>
+          <span className={styles.paginationInfo}>صفحة {currentPage} من {totalPages}</span>
+          <button
+            className={styles.paginationBtn}
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+          >
+            التالي
+          </button>
+        </div>
+      )}
     </div>
   );
 }
