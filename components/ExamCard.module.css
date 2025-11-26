@@ -1,0 +1,239 @@
+/* Course Card */
+.courseCard {
+    background: #f8f9fa;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    min-width: 350px;
+    max-width: 350px;
+    flex: 0 0 350px;
+    border: 1px solid #e9ecef;
+    display: flex;
+    flex-direction: column;
+}
+
+.courseCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    background: white;
+}
+
+/* Course Image */
+.courseImage {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+}
+
+.courseImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Course Content */
+.courseContent {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.courseTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 14px 0;
+    line-height: 1.4;
+}
+
+/* Progress Section */
+.examProgress {
+    margin: 15px 0;
+}
+
+.progressBar {
+    width: 100%;
+    height: 8px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progressFill {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50 0%, #45a049 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.progressText {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Buttons */
+.examCardBtn {
+    width: 100%;
+    background: #019EBB;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 15px;
+}
+
+.examCardBtn:hover {
+    background: #0288A3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(1, 158, 187, 0.3);
+}
+
+.examCardBtn:active {
+    transform: translateY(0);
+}
+
+.examCardBtn.primary {
+    background: #019EBB;
+    color: white;
+}
+
+.examCardBtn.primary:hover {
+    background: #0288A3;
+}
+
+.examCardBtn.secondary {
+    background: white;
+    border: 1px solid #019EBB;
+    color: #019EBB;
+}
+
+.examCardBtn.secondary:hover {
+    background: #f0f9fb;
+}
+
+/* Grids */
+.coursesContainer {
+    width: 100%;
+}
+
+.coursesGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.coursesGrid .courseCard {
+    width: 100%;
+    min-width: auto;
+    max-width: none;
+    flex: 1 1 auto;
+}
+
+.modalCoursesGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Pagination */
+.paginationControls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 30px;
+    padding: 20px 0;
+}
+
+.paginationBtn {
+    background: white;
+    border: 1px solid #e9ecef;
+    color: #2c3e50;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.paginationBtn:hover:not(:disabled) {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+    color: #019EBB;
+}
+
+.paginationBtn:disabled {
+    background: #f8f9fa;
+    color: #adb5bd;
+    cursor: not-allowed;
+}
+
+.paginationInfo {
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .coursesGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .courseCard {
+        min-width: 220px;
+        max-width: 220px;
+        flex: 0 0 220px;
+    }
+}
+
+@media (max-width: 768px) {
+    .coursesGrid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .courseImage {
+        height: 140px;
+    }
+
+    .courseContent {
+        padding: 16px;
+    }
+
+    .modalCoursesGrid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .courseImage {
+        height: 120px;
+    }
+
+    .courseContent {
+        padding: 14px;
+    }
+
+    .modalCoursesGrid {
+        padding: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+    }
+}

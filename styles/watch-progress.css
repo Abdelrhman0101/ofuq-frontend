@@ -4,7 +4,7 @@
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  
+
 }
 
 /* Section Header */
@@ -50,6 +50,7 @@
   width: 100%;
   overflow: hidden;
 }
+
 .carousel-wrapper {
   flex: 1;
   overflow: hidden;
@@ -113,7 +114,7 @@
 /* Course Image */
 .course-image {
   position: relative;
-  height: 150px;
+  height: 220px;
   overflow: hidden;
 }
 
@@ -332,20 +333,20 @@
     grid-template-columns: 1fr;
     gap: 15px;
   }
-  
+
   .progress-bar {
     height: 6px;
   }
-  
+
   .progress-text {
     font-size: 11px;
   }
-  
+
   .course-instructor img {
     width: 28px;
     height: 28px;
   }
-  
+
   .course-instructor span {
     font-size: 12px;
   }
@@ -424,7 +425,7 @@
   .carousel-container {
     width: 100%;
   }
-  
+
   .course-card {
     min-width: 300px;
     max-width: 300px;
@@ -436,20 +437,20 @@
   .watch-progress {
     padding: 20px;
   }
-  
+
   .course-card {
     /* Keep carousel-specific sizing, but grid overrides above ensure 100% width in grid */
     min-width: 220px;
     max-width: 220px;
     flex: 0 0 220px;
   }
-  
+
   .carousel-btn {
     width: 36px;
     height: 36px;
     font-size: 1rem;
   }
-  
+
   /* Do NOT override .courses-grid to single column here; keep two columns for tablets */
 }
 
@@ -566,4 +567,67 @@
     gap: 12px;
     box-sizing: border-box;
   }
+}
+
+/* Pagination Styles */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 30px;
+  padding: 20px 0;
+}
+
+.pagination-btn {
+  background: white;
+  border: 1px solid #e9ecef;
+  color: #2c3e50;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #f8f9fa;
+  border-color: #dee2e6;
+  color: #019EBB;
+}
+
+.pagination-btn:disabled {
+  background: #f8f9fa;
+  color: #adb5bd;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Button Variants */
+.exam-card-btn.primary {
+  background: #019EBB;
+  color: white;
+}
+
+.exam-card-btn.primary:hover {
+  background: #0288A3;
+}
+
+.exam-card-btn.secondary {
+  background: white;
+  border: 1px solid #019EBB;
+  color: #019EBB;
+}
+
+.exam-card-btn.secondary:hover {
+  background: #f0f9fb;
+}
+
+.courses-container {
+  width: 100%;
 }
