@@ -61,6 +61,7 @@ export default function ExamCard({
           const response = await getMyEnrolledCourses(currentPage, 9);
 
           if (response.data) {
+            console.log('ExamCard response:', response);
             const courses: Course[] = response.data;
             const results: Exam[] = [];
             for (const c of courses) {
@@ -87,7 +88,10 @@ export default function ExamCard({
             if (!cancelled) {
               setItems(results);
               if (response.pagination) {
+                console.log('Setting totalPages to:', response.pagination.last_page);
                 setTotalPages(response.pagination.last_page);
+              } else {
+                console.warn('No pagination data in response');
               }
             }
           }
