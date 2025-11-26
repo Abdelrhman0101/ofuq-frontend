@@ -1,151 +1,198 @@
-/* Course Card */
-.courseCard {
-    background: #f8f9fa;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.container {
+    width: 100%;
+    padding: 20px 0;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    width: 100%;
+}
+
+.card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
     overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    min-width: 350px;
-    max-width: 350px;
-    flex: 0 0 350px;
-    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
-}
-
-.courseCard:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    background: white;
-}
-
-/* Course Image */
-.courseImage {
+    cursor: pointer;
     position: relative;
-    height: 220px;
-    overflow: hidden;
 }
 
-.courseImage img {
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+    border-color: rgba(1, 158, 187, 0.2);
+}
+
+.imageWrapper {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    background-color: #f5f5f5;
+}
+
+.image {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.5s ease;
 }
 
-/* Course Content */
-.courseContent {
-    padding: 18px;
+.card:hover .image {
+    transform: scale(1.05);
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
     display: flex;
-    flex-direction: column;
-    flex: 1;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-.courseTitle {
-    font-size: 1rem;
+.card:hover .overlay {
+    opacity: 1;
+}
+
+.viewButton {
+    background: rgba(255, 255, 255, 0.95);
+    color: #1a1a1a;
+    padding: 10px 20px;
+    border-radius: 30px;
     font-weight: 600;
-    color: #2c3e50;
-    margin: 0 0 14px 0;
-    line-height: 1.4;
+    font-size: 0.9rem;
+    transform: translateY(10px);
+    transition: transform 0.3s ease;
 }
 
-/* Progress Section */
-.examProgress {
-    margin: 15px 0;
-}
-
-.progressBar {
-    width: 100%;
-    height: 8px;
-    background-color: #e0e0e0;
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 8px;
-}
-
-.progressFill {
-    height: 100%;
-    background: linear-gradient(90deg, #4CAF50 0%, #45a049 100%);
-    border-radius: 4px;
-    transition: width 0.3s ease;
-}
-
-.progressText {
-    font-size: 12px;
-    color: #666;
-    text-align: center;
-    margin: 0;
-    font-weight: 500;
-}
-
-/* Buttons */
-.examCardBtn {
-    width: 100%;
-    background: #019EBB;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 15px;
-}
-
-.examCardBtn:hover {
-    background: #0288A3;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(1, 158, 187, 0.3);
-}
-
-.examCardBtn:active {
+.card:hover .viewButton {
     transform: translateY(0);
 }
 
-.examCardBtn.primary {
+.diplomaBadge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #019EBB;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 16px;
+}
+
+.title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 3.3rem;
+    /* Ensure consistent height for 2 lines */
+}
+
+.progressContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.progressInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.progressLabel {
+    color: #666;
+}
+
+.progressPercentage {
+    color: #019EBB;
+    font-weight: 700;
+}
+
+.progressBarBg {
+    width: 100%;
+    height: 6px;
+    background: #f0f0f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progressBarFill {
+    height: 100%;
+    background: #019EBB;
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+.actionButton {
+    width: 100%;
+    padding: 12px;
+    background: #f8f9fa;
+    color: #1a1a1a;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: auto;
+}
+
+.actionButton:hover {
     background: #019EBB;
     color: white;
+    border-color: #019EBB;
 }
 
-.examCardBtn.primary:hover {
-    background: #0288A3;
-}
-
-.examCardBtn.secondary {
-    background: white;
-    border: 1px solid #019EBB;
-    color: #019EBB;
-}
-
-.examCardBtn.secondary:hover {
-    background: #f0f9fb;
-}
-
-/* Grids */
-.coursesContainer {
+.loading,
+.error,
+.emptyState {
     width: 100%;
+    padding: 40px;
+    text-align: center;
+    color: #666;
+    background: #f9f9f9;
+    border-radius: 12px;
+    font-size: 1rem;
 }
 
-.coursesGrid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.coursesGrid .courseCard {
-    width: 100%;
-    min-width: auto;
-    max-width: none;
-    flex: 1 1 auto;
-}
-
-.modalCoursesGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-    padding: 20px;
-    box-sizing: border-box;
+.error {
+    color: #dc3545;
+    background: #fff5f5;
 }
 
 /* Pagination */
@@ -154,86 +201,49 @@
     justify-content: center;
     align-items: center;
     gap: 16px;
-    margin-top: 30px;
-    padding: 20px 0;
+    margin-top: 40px;
+    padding-bottom: 20px;
 }
 
-.paginationBtn {
-    background: white;
-    border: 1px solid #e9ecef;
-    color: #2c3e50;
+.pageButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 8px 16px;
+    background: white;
+    border: 1px solid #e0e0e0;
     border-radius: 8px;
-    font-weight: 500;
+    color: #555;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
-.paginationBtn:hover:not(:disabled) {
-    background: #f8f9fa;
-    border-color: #dee2e6;
-    color: #019EBB;
+.pageButton:hover:not(:disabled) {
+    background: #019EBB;
+    color: white;
+    border-color: #019EBB;
 }
 
-.paginationBtn:disabled {
-    background: #f8f9fa;
-    color: #adb5bd;
+.pageButton:disabled {
+    background: #f5f5f5;
+    color: #ccc;
     cursor: not-allowed;
 }
 
-.paginationInfo {
-    color: #6c757d;
-    font-size: 0.9rem;
+.pageInfo {
+    color: #666;
     font-weight: 500;
+    font-size: 0.95rem;
 }
 
 /* Responsive */
-@media (max-width: 1024px) {
-    .coursesGrid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-    }
-
-    .courseCard {
-        min-width: 220px;
-        max-width: 220px;
-        flex: 0 0 220px;
-    }
-}
-
 @media (max-width: 768px) {
-    .coursesGrid {
+    .grid {
         grid-template-columns: 1fr;
-        gap: 15px;
     }
 
-    .courseImage {
-        height: 140px;
-    }
-
-    .courseContent {
-        padding: 16px;
-    }
-
-    .modalCoursesGrid {
-        grid-template-columns: 1fr;
-        gap: 14px;
-        padding: 14px;
-    }
-}
-
-@media (max-width: 480px) {
-    .courseImage {
-        height: 120px;
-    }
-
-    .courseContent {
-        padding: 14px;
-    }
-
-    .modalCoursesGrid {
-        padding: 12px;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 12px;
+    .imageWrapper {
+        height: 200px;
     }
 }

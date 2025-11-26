@@ -13,7 +13,8 @@ import SocialMediaFloat from '../../../components/SocialMediaFloat';
 import { getCourseDetails, getFeaturedCourses, getMyEnrollments, Course, checkCourseAccess, enrollCourse } from '../../../utils/courseService';
 import { isAuthenticated } from '../../../utils/authService';
 import { getBackendAssetUrl } from '../../../utils/url';
-import { getMyDiplomas, type MyDiploma } from "@/utils/categoryService";
+import { getMyDiplomas, enrollInDiploma, type MyDiploma } from "@/utils/categoryService";
+import EnrollmentInfoModal from '../../../components/EnrollmentInfoModal';
 import Link from 'next/link';
 import '../../../styles/course-details.css';
 import '../../../styles/course-cards.css';
@@ -32,6 +33,11 @@ const CourseDetailsPage = () => {
   const [isEnrolled, setIsEnrolled] = useState<boolean>(false);
   const [myDiplomas, setMyDiplomas] = useState<MyDiploma[]>([]);
   const [courseAccess, setCourseAccess] = useState<{ allowed: boolean; statusCode?: number; reason?: string }>({ allowed: false });
+
+  // Diploma Enrollment State
+  const [isEnrollmentModalOpen, setIsEnrollmentModalOpen] = useState(false);
+  const [enrollStatus, setEnrollStatus] = useState<{ type: 'idle' | 'loading' | 'success' | 'error'; message?: string }>({ type: 'idle' });
+
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info' | 'confirm'>('info');
@@ -120,9 +126,33 @@ const CourseDetailsPage = () => {
     fetchMyDiplomas();
   }, []);
 
+  const handleEnrollmentSubmit = async () => {
+    const categoryId = (courseData as any)?.category?.id || (courseData as any)?.category_id;
+    if (!categoryId) return;
+
+    try {
+      setEnrollStatus({ type: 'loading' });
+      const res = await enrollInDiploma(categoryId);
+      setEnrollStatus({ type: 'success', message: res?.message || 'تم التسجيل بنجاح' });
+      setIsEnrollmentModalOpen(false);
+      showToast('تم الاشتراك في الدبلومة بنجاح', 'success');
+
+      // Refresh access check
+      const access = await checkCourseAccess(courseId);
+      setCourseAccess(access);
+
+      // Refresh my diplomas list
+      const list = await getMyDiplomas();
+      setMyDiplomas(list);
+
+    } catch (e: any) {
+      setEnrollStatus({ type: 'error', message: e?.message || 'فشلت عملية التسجيل بالدبلومة' });
+      showToast(e?.message || 'فشلت عملية التسجيل', 'error');
+    }
+  };
+
   const handlePrimaryAction = () => {
     const categoryIdNum = Number(((courseData as any)?.category_id) ?? ((courseData?.category as any)?.id) ?? 0);
-    const catSlug = String(((courseData as any)?.category?.slug) || ((courseData as any)?.category?.id) || ((courseData as any)?.category_id) || '');
 
     if (courseAccess.allowed) {
       const chapters = (courseData?.chapters || []).slice().sort((a: any, b: any) => Number(a?.order ?? 0) - Number(b?.order ?? 0));
@@ -142,14 +172,18 @@ const CourseDetailsPage = () => {
     }
 
     if (categoryIdNum) {
-      const noticeMsg = 'يرجى الاشتراك في الدبلومة لعرض محتويات هذا المقرر';
-      // إعادة التوجيه إلى صفحة الدبلومة مع ملاحظة للتوست
-      if (catSlug) {
-        router.push(`/diplomas/${catSlug}?notice=enroll_required`);
-      } else {
-        router.push(`/diplomas?notice=enroll_required`);
+      // Check if already enrolled in diploma (client-side check optimization)
+      const isDiplomaEnrolled = myDiplomas.some(d => d.category?.id === categoryIdNum);
+
+      if (isDiplomaEnrolled) {
+        // Should have been caught by courseAccess.allowed, but just in case
+        // Maybe refresh access?
+        window.location.reload();
+        return;
       }
-      showToast(noticeMsg, 'warning');
+
+      // Open Enrollment Modal instead of redirecting
+      setIsEnrollmentModalOpen(true);
       return;
     }
 
@@ -363,7 +397,7 @@ const CourseDetailsPage = () => {
             )}
             instructorTitle={(courseData.instructor as any)?.title}
             instructorBio={(courseData.instructor as any)?.bio}
-            actionLabel={courseAccess.allowed ? 'مشاهدة الآن' : 'اذهب إلى الدبلومة'}
+            actionLabel={courseAccess.allowed ? 'مشاهدة الآن' : ((courseData as any)?.category_id ? 'اشترك في الدبلومة' : 'سجل الآن')}
             onActionClick={handlePrimaryAction}
           />
         </div>
@@ -420,6 +454,12 @@ const CourseDetailsPage = () => {
         isVisible={toastVisible}
         onClose={() => setToastVisible(false)}
         duration={3000}
+      />
+
+      <EnrollmentInfoModal
+        isOpen={isEnrollmentModalOpen}
+        onClose={() => setIsEnrollmentModalOpen(false)}
+        onSubmit={handleEnrollmentSubmit}
       />
 
       <style jsx>{`

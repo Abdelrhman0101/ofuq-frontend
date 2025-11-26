@@ -1,6 +1,33 @@
 import apiClient from './apiClient';
 
-// ... (الواجهات Interfaces تبقى كما هي)
+// Helper to handle localized strings (e.g. { ar: "...", en: "..." })
+const getLocalized = (val: any): string => {
+  if (val === null || val === undefined) return '';
+  if (typeof val === 'string') return val;
+  if (typeof val === 'object') {
+    return val.ar || val.en || val.name || val.title || val.label || '';
+  }
+  return String(val);
+};
+
+// Helper to construct full storage URL
+const getStorageUrl = (path: string | null | undefined): string | undefined => {
+  if (!path) return undefined;
+  if (path.startsWith('http')) return path;
+  
+  let baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+  // Remove /api suffix if present to get the root URL
+  if (baseUrl.endsWith('/api')) {
+    baseUrl = baseUrl.slice(0, -4);
+  }
+  // Remove trailing slash
+  baseUrl = baseUrl.replace(/\/$/, '');
+  // Remove leading slash from path
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  
+  return `${baseUrl}/${cleanPath}`;
+};
+
 export interface Course {
   id: number;
   title: string;
@@ -25,6 +52,10 @@ export interface Course {
   rank?: number | null;
   // تمت الإضافة: حالة النشر كقيمة منطقية لاستخدامها في لوحات الإدارة
   is_published?: boolean;
+  // تمت الإضافة: نسبة التقدم للمستخدم
+  progress_percentage?: number;
+  enrollment_status?: string;
+
   instructor?: {
     id: number;
     name: string;
@@ -187,12 +218,12 @@ export const getFeaturedCourses = async (): Promise<Course[]> => {
     if (response.data && Array.isArray(response.data.data)) {
       return response.data.data.map((item: any) => ({
         id: item.course.id,
-        title: item.course.title,
-        description: item.course.description,
+        title: getLocalized(item.course.title),
+        description: getLocalized(item.course.description),
         price: parseFloat(item.course.price),
         instructor_id: item.course.instructor_id,
         category_id: item.course.category_id,
-        cover_image: item.course.cover_image,
+        cover_image: getStorageUrl(item.course.cover_image),
         is_free: item.course.is_free,
         status: item.course.status,
         created_at: item.course.created_at,
@@ -237,12 +268,12 @@ export const getAllCourses = async (params?: {
 
     return items.map((c: any) => ({
       id: Number(c.id),
-      title: String(c.title ?? ''),
-      description: String(c.description ?? ''),
+      title: getLocalized(c.title),
+      description: getLocalized(c.description),
       price: Number(c.price ?? 0),
       instructor_id: Number(c.instructor_id ?? c.instructor?.id ?? 0),
       category_id: Number(c.category_id ?? c.category?.id ?? 0),
-      cover_image: c.cover_image_url ?? c.cover_image ?? undefined,
+      cover_image: getStorageUrl(c.cover_image_url ?? c.cover_image),
       is_free: Boolean(c.is_free),
       status: (c.status ?? 'published') as 'draft' | 'published' | 'archived',
       // تمت الإضافة: اشتقاق is_published من حقول متعددة لضمان الاتساق
@@ -260,17 +291,17 @@ export const getAllCourses = async (params?: {
       instructor: c.instructor
         ? {
           id: Number(c.instructor.id ?? 0),
-          name: String(c.instructor.name ?? ''),
-          title: String(c.instructor.title ?? ''),
-          bio: c.instructor.bio ?? undefined,
-          image: c.instructor.image ?? undefined,
+          name: getLocalized(c.instructor.name),
+          title: getLocalized(c.instructor.title),
+          bio: getLocalized(c.instructor.bio),
+          image: getStorageUrl(c.instructor.image),
           rating: c.instructor.rating ?? c.instructor.avg_rate ?? undefined,
         }
         : undefined,
       category: c.category
-        ? { id: Number(c.category.id ?? 0), name: String(c.category.name ?? '') }
+        ? { id: Number(c.category.id ?? 0), name: getLocalized(c.category.name) }
         : (c.category || c.category_id)
-          ? { id: Number(c.category_id ?? 0), name: String(c.category ?? '') }
+          ? { id: Number(c.category_id ?? 0), name: getLocalized(c.category) }
           : undefined,
     }));
   } catch (error) {
@@ -287,7 +318,11 @@ export const getCourseDetails = async (courseId: string | number): Promise<Cours
     const response = await apiClient.get<{ data: Course }>(`/course/${courseId}`, { cacheTTL: 300 });
 
     if (response.data && response.data.data) {
-      return response.data.data;
+      const course = response.data.data;
+      // Apply getStorageUrl to cover_image and instructor image
+      if (course.cover_image) course.cover_image = getStorageUrl(course.cover_image);
+      if (course.instructor?.image) course.instructor.image = getStorageUrl(course.instructor.image);
+      return course;
     }
 
     console.error('Unexpected API response structure for course details:', response.data);
@@ -374,7 +409,7 @@ export const getCourseProgressDetails = async (
       completed_at: cp?.completed_at ?? null,
       lessons: Array.isArray(cp?.lessons) ? cp.lessons.map((l: any) => ({
         lesson_id: Number(l.lesson_id),
-        lesson_title: String(l.lesson_title ?? ''),
+        lesson_title: getLocalized(l.lesson_title),
         status: String(l.status ?? 'not_started') as any,
         started_at: l.started_at ?? null,
         completed_at: l.completed_at ?? null,
@@ -404,12 +439,12 @@ export const getMyFavoriteCourses = async (): Promise<Course[]> => {
 
     return items.map((c: any) => ({
       id: Number(c.id),
-      title: String(c.title ?? ''),
-      description: String(c.description ?? ''),
+      title: getLocalized(c.title),
+      description: getLocalized(c.description),
       price: Number(c.price ?? 0),
       instructor_id: Number(c.instructor_id ?? 0),
       category_id: Number(c.category_id ?? 0),
-      cover_image: c.cover_image_url ?? c.cover_image ?? undefined,
+      cover_image: getStorageUrl(c.cover_image_url ?? c.cover_image),
       is_free: Boolean(c.is_free),
       status: (c.status ?? 'published') as 'draft' | 'published' | 'archived',
       created_at: c.created_at,
@@ -417,26 +452,26 @@ export const getMyFavoriteCourses = async (): Promise<Course[]> => {
       instructor: c.instructor
         ? {
           id: Number(c.instructor.id ?? 0),
-          name: String(c.instructor.name ?? ''),
-          title: String(c.instructor.title ?? ''),
-          bio: c.instructor.bio ?? undefined,
-          image: c.instructor.image ?? undefined,
+          name: getLocalized(c.instructor.name),
+          title: getLocalized(c.instructor.title),
+          bio: getLocalized(c.instructor.bio),
+          image: getStorageUrl(c.instructor.image),
           rating: c.instructor.rating ?? c.instructor.avg_rate ?? undefined,
         }
         : (c.name_instructor || c.image_instructor)
           ? {
             id: Number(c.instructor_id ?? 0),
-            name: String(c.name_instructor ?? ''),
-            title: String(c.title_instructor ?? ''),
-            bio: c.bio_instructor ?? undefined,
-            image: c.image_instructor ?? undefined,
+            name: getLocalized(c.name_instructor),
+            title: getLocalized(c.title_instructor),
+            bio: getLocalized(c.bio_instructor),
+            image: getStorageUrl(c.image_instructor),
             rating: c.avg_rate ?? undefined,
           }
           : undefined,
       category: c.category
-        ? { id: Number(c.category.id ?? 0), name: String(c.category.name ?? '') }
+        ? { id: Number(c.category.id ?? 0), name: getLocalized(c.category.name) }
         : c.category || c.category_id
-          ? { id: Number(c.category_id ?? 0), name: String(c.category ?? '') }
+          ? { id: Number(c.category_id ?? 0), name: getLocalized(c.category) }
           : undefined,
     }));
   } catch (error: any) {
@@ -626,39 +661,73 @@ export interface PaginatedCourses {
   };
 }
 
-export const getMyEnrollments = async (page: number = 1, perPage: number = 12): Promise<PaginatedCourses> => {
+export interface EnrollmentFilters {
+  counts: {
+    all: number;
+    completed: number;
+    in_progress: number;
+  };
+  categories: Array<{
+    id: number;
+    name: string; // localized object or string
+    title?: string;
+  }>;
+}
+
+export const getEnrollmentFilters = async (): Promise<EnrollmentFilters> => {
   try {
-    const response = await apiClient.get<any>('/my-enrollments', {
-      params: { page, per_page: perPage }
-    });
+    const response = await apiClient.get<EnrollmentFilters>('/my-enrollments/filters');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching enrollment filters:', error);
+    return {
+      counts: { all: 0, completed: 0, in_progress: 0 },
+      categories: []
+    };
+  }
+};
+
+export const getMyEnrollments = async (
+  page: number = 1,
+  perPage: number = 12,
+  filters?: { status?: 'completed' | 'in_progress'; category_id?: number }
+): Promise<PaginatedCourses> => {
+  try {
+    const params: any = { page, per_page: perPage };
+    if (filters?.status) params.status = filters.status;
+    if (filters?.category_id) params.category_id = filters.category_id;
+
+    const response = await apiClient.get<any>('/my-enrollments', { params });
 
     // Handle new paginated structure
     if (response.data?.pagination) {
       const items = response.data.data || [];
       const mappedItems = items.map((course: any) => ({
         id: Number(course.id),
-        title: String(course.title ?? ''),
-        description: String(course.description ?? ''),
+        title: getLocalized(course.title),
+        description: getLocalized(course.description),
         price: Number(course.price ?? 0),
         instructor_id: Number(course.instructor_id ?? 0),
         category_id: Number(course.category_id ?? 0),
-        cover_image: course.cover_image_url ?? course.cover_image ?? undefined,
+        cover_image: getStorageUrl(course.cover_image_url ?? course.cover_image),
         is_free: Boolean(course.is_free),
         status: (course.status ?? 'published') as 'draft' | 'published' | 'archived',
+        progress_percentage: Number(course.progress_percentage ?? 0),
+        enrollment_status: course.enrollment_status,
         created_at: course.created_at,
         updated_at: course.updated_at,
         instructor: course.instructor
           ? {
             id: Number(course.instructor.id ?? 0),
-            name: String(course.instructor.name ?? ''),
-            title: String(course.instructor.title ?? ''),
-            bio: course.instructor.bio ?? undefined,
-            image: course.instructor.image ?? undefined,
+            name: getLocalized(course.instructor.name),
+            title: getLocalized(course.instructor.title),
+            bio: getLocalized(course.instructor.bio),
+            image: getStorageUrl(course.instructor.image),
             rating: course.instructor.rating ?? course.instructor.avg_rate ?? undefined,
           }
           : undefined,
         category: course.category
-          ? { id: Number(course.category.id ?? 0), name: String(course.category.name ?? '') }
+          ? { id: Number(course.category.id ?? 0), name: getLocalized(course.category.name) }
           : undefined,
       }));
 
@@ -680,28 +749,30 @@ export const getMyEnrollments = async (page: number = 1, perPage: number = 12): 
       const course = enrollment.course || enrollment;
       return {
         id: Number(course.id),
-        title: String(course.title ?? ''),
-        description: String(course.description ?? ''),
+        title: getLocalized(course.title),
+        description: getLocalized(course.description),
         price: Number(course.price ?? 0),
         instructor_id: Number(course.instructor_id ?? 0),
         category_id: Number(course.category_id ?? 0),
-        cover_image: course.cover_image_url ?? course.cover_image ?? undefined,
+        cover_image: getStorageUrl(course.cover_image_url ?? course.cover_image),
         is_free: Boolean(course.is_free),
         status: (course.status ?? 'published') as 'draft' | 'published' | 'archived',
+        progress_percentage: Number(enrollment.progress_percentage ?? course.progress_percentage ?? 0),
+        enrollment_status: enrollment.status ?? course.enrollment_status,
         created_at: course.created_at,
         updated_at: course.updated_at,
         instructor: course.instructor
           ? {
             id: Number(course.instructor.id ?? 0),
-            name: String(course.instructor.name ?? ''),
-            title: String(course.instructor.title ?? ''),
-            bio: course.instructor.bio ?? undefined,
-            image: course.instructor.image ?? undefined,
+            name: getLocalized(course.instructor.name),
+            title: getLocalized(course.instructor.title),
+            bio: getLocalized(course.instructor.bio),
+            image: getStorageUrl(course.instructor.image),
             rating: course.instructor.rating ?? course.instructor.avg_rate ?? undefined,
           }
           : undefined,
         category: course.category
-          ? { id: Number(course.category.id ?? 0), name: String(course.category.name ?? '') }
+          ? { id: Number(course.category.id ?? 0), name: getLocalized(course.category.name) }
           : undefined,
       };
     });
@@ -724,8 +795,12 @@ export const getMyEnrollments = async (page: number = 1, perPage: number = 12): 
   }
 };
 
-export const getMyEnrolledCourses = async (page: number = 1, perPage: number = 12): Promise<PaginatedCourses> => {
-  return getMyEnrollments(page, perPage);
+export const getMyEnrolledCourses = async (
+  page: number = 1, 
+  perPage: number = 12,
+  filters?: { status?: 'completed' | 'in_progress'; category_id?: number }
+): Promise<PaginatedCourses> => {
+  return getMyEnrollments(page, perPage, filters);
 };
 
 export const enrollCourse = async (courseId: number | string): Promise<boolean> => {

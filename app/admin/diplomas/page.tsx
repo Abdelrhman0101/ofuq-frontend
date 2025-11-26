@@ -11,12 +11,12 @@ import {
   updateCategory,
   deleteCategory,
   type Diploma,
-} from '@/utils/categoryService'; // تأكد من المسار
+} from '@/utils/categoryService';
 
 import {
   getCourses,
   type Course,
-} from '@/utils/courseService'; // تأكد من المسار
+} from '@/utils/courseService';
 import { getBackendAssetUrl } from '@/utils/url';
 import '@/styles/toast.css';
 
@@ -29,6 +29,7 @@ interface DiplomaFormData {
   is_published: boolean;
   slug: string;
   cover_image: File | null;
+  display_order: string;
 }
 
 export default function AdminDiplomasPage() {
@@ -38,9 +39,6 @@ export default function AdminDiplomasPage() {
   const [error, setError] = useState<string | null>(null);
   const [showDiplomaForm, setShowDiplomaForm] = useState(false);
   const [editingDiploma, setEditingDiploma] = useState<Diploma | null>(null);
-  // --- تم إزالة حالة تفاصيل الدبلومة والمقررات لأنها ستعرض في صفحة منفصلة ---
-  // const [diplomaDetails, setDiplomaDetails] = useState<Diploma | null>(null);
-  // const [diplomaCourses, setDiplomaCourses] = useState<Course[]>([]);
 
   // Toast state
   const [toastVisible, setToastVisible] = useState(false);
@@ -56,6 +54,7 @@ export default function AdminDiplomasPage() {
     is_published: true,
     slug: '',
     cover_image: null,
+    display_order: '0',
   });
   // حالات وادوات واجهة المستخدم الذكية
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
@@ -113,6 +112,7 @@ export default function AdminDiplomasPage() {
         is_published: Boolean(diplomaFormData.is_published),
         slug: diplomaFormData.slug,
         cover_image: diplomaFormData.cover_image || undefined,
+        display_order: Number(diplomaFormData.display_order || '0'),
       };
 
       if (editingDiploma) {
@@ -126,7 +126,7 @@ export default function AdminDiplomasPage() {
       // Reset form and state
       setDiplomaFormData({
         name: '', description: '', price: '0', is_free: false,
-        is_published: true, slug: '', cover_image: null,
+        is_published: true, slug: '', cover_image: null, display_order: '0',
       });
       setShowDiplomaForm(false);
       setEditingDiploma(null);
@@ -158,9 +158,10 @@ export default function AdminDiplomasPage() {
       is_published: Boolean(diploma.is_published),
       slug: diploma.slug ?? '',
       cover_image: null,
+      display_order: String(diploma.display_order ?? 0),
     });
     setCoverPreview(diploma.cover_image_url ? getBackendAssetUrl(diploma.cover_image_url) : null);
-  setLastPaidPrice(String(diploma.price ?? 0));
+    setLastPaidPrice(String(diploma.price ?? 0));
     setShowDiplomaForm(true);
   };
 
@@ -168,6 +169,10 @@ export default function AdminDiplomasPage() {
   const handleViewDetails = (diplomaId: number) => {
     // توجيه المستخدم إلى صفحة تفاصيل الدبلومة المخصصة
     window.location.href = `/admin/diplomas/${diplomaId}`;
+  };
+
+  const handleViewStudents = (diplomaId: number) => {
+    window.location.href = `/admin/diplomas/${diplomaId}/students`;
   };
 
   const handleAddCourse = (diplomaId: number) => {
@@ -190,20 +195,20 @@ export default function AdminDiplomasPage() {
         <h1 className={styles.title}>إدارة الدبلومات</h1>
         <p className={styles.subtitle}>إدارة وتنظيم الدبلومات التعليمية</p>
       </div>
-      <div className={styles.actions}>        <button          className={styles.btnPrimary}          onClick={() => {
-            setShowDiplomaForm(true);
-            setEditingDiploma(null);
-            setCoverPreview(null);
-            setSlugEdited(false);
-            setLastPaidPrice('0');
-            setDiplomaFormData({ // Reset form
-              name: '', description: '', price: '0', is_free: false,
-              is_published: true, slug: '', cover_image: null,
-            });
-          }}
-        >
-          + إضافة دبلوم جديد
-        </button>
+      <div className={styles.actions}>        <button className={styles.btnPrimary} onClick={() => {
+        setShowDiplomaForm(true);
+        setEditingDiploma(null);
+        setCoverPreview(null);
+        setSlugEdited(false);
+        setLastPaidPrice('0');
+        setDiplomaFormData({ // Reset form
+          name: '', description: '', price: '0', is_free: false,
+          is_published: true, slug: '', cover_image: null, display_order: '0',
+        });
+      }}
+      >
+        + إضافة دبلوم جديد
+      </button>
       </div>
 
       {/* --- Add/Edit Diploma Modal --- */}
@@ -216,76 +221,81 @@ export default function AdminDiplomasPage() {
             </div>
             {/* الفورم هنا صحيحة وتستخدم diplomaFormData */}
             <form onSubmit={handleDiplomaSubmit} className={styles.form}>
-               <div className={styles.formSection}>
-                 <h3 className={styles.formSectionTitle}>معلومات الدبلوم الأساسية</h3>
-                 <div className={styles.formGrid}>
-                   {/* name */}
-                   <div className={styles.formGroup}>
-                     <label htmlFor="name" className={styles.formLabel}>اسم الدبلوم</label>
-                     <input type="text" id="name" className={styles.formInput} value={diplomaFormData.name} onChange={(e) => {
-                       const newName = e.target.value;
-                       setDiplomaFormData({
-                         ...diplomaFormData,
-                         name: newName,
-                         slug: slugEdited ? diplomaFormData.slug : slugify(newName)
-                       });
-                     }} required />
-                   </div>
-                   {/* slug */}
-                   <div className={styles.formGroup}>
-                     <label htmlFor="slug" className={styles.formLabel}>الرابط (Slug)</label>
-                     <input type="text" id="slug" className={styles.formInput} value={diplomaFormData.slug} onChange={(e) => { setSlugEdited(true); setDiplomaFormData({ ...diplomaFormData, slug: e.target.value }); }} required />
-                   </div>
-                   {/* description */}
-                   <div className={`${styles.formGroup} ${styles.formGridFull}`}>
-                     <label htmlFor="description" className={styles.formLabel}>الوصف</label>
-                     <textarea id="description" className={styles.formTextarea} value={diplomaFormData.description} onChange={(e) => setDiplomaFormData({ ...diplomaFormData, description: e.target.value })} rows={3} />
-                   </div>
-                   {/* price */}
-                   {!diplomaFormData.is_free && (
-                     <div className={styles.formGroup}>
-                       <label htmlFor="price" className={styles.formLabel}>السعر</label>
-                       <input type="number" id="price" className={styles.formInput} value={diplomaFormData.price} onChange={(e) => setDiplomaFormData({ ...diplomaFormData, price: e.target.value })} min={0} />
-                     </div>
-                   )}
-                   {/* cover_image */}
-                   <div className={styles.formGroup}>
-                     <label htmlFor="cover_image" className={styles.formLabel}>صورة الغلاف</label>
-                     <input type="file" id="cover_image" className={styles.formInput} accept="image/*" onChange={(e) => { const file = e.currentTarget.files?.[0] ?? null; setDiplomaFormData({ ...diplomaFormData, cover_image: file }); setCoverPreview(file ? URL.createObjectURL(file) : null); }} />
-                   </div>
-                   {coverPreview && (
-                     <div className={`${styles.previewWrap} ${styles.formGridFull}`}>
-                       <img src={coverPreview} alt="معاينة صورة الغلاف" className={styles.previewImg} />
-                       <button type="button" className={styles.btnSecondary} onClick={() => { setCoverPreview(null); setDiplomaFormData({ ...diplomaFormData, cover_image: null }); }}>إزالة المعاينة</button>
-                     </div>
-                   )}
-                   {/* is_free */}
-                   <div className={styles.formGroup}>
-                     <label className={styles.formCheckbox}>
-                       <input type="checkbox" checked={diplomaFormData.is_free} onChange={(e) => {
-                         const checked = e.target.checked;
-                         if (checked) {
-                           setLastPaidPrice(diplomaFormData.price || '0');
-                           setDiplomaFormData({ ...diplomaFormData, is_free: true, price: '0' });
-                         } else {
-                           setDiplomaFormData({ ...diplomaFormData, is_free: false, price: lastPaidPrice || '0' });
-                         }
-                       }} /> مجاني
-                     </label>
-                   </div>
-                   <div className={`${styles.formHint} ${styles.formGridFull}`}>عند اختيار مجاني، يتم إخفاء السعر وتصفيـره لتجنب إرسال قيمة خاطئة.</div>
-                   {/* is_published */}
-                   <div className={styles.formGroup}>
-                     <label className={styles.formCheckbox}>
-                       <input type="checkbox" checked={diplomaFormData.is_published} onChange={(e) => setDiplomaFormData({ ...diplomaFormData, is_published: e.target.checked, })} /> منشور
-                     </label>
-                   </div>
-                 </div>
-               </div>
-               <div className={styles.formActions}>
-                 <button type="submit" className={styles.btnPrimary}>{editingDiploma ? 'تحديث' : 'إضافة'}</button>
-                 <button type="button" className={styles.btnSecondary} onClick={() => setShowDiplomaForm(false)}>إلغاء</button>
-               </div>
+              <div className={styles.formSection}>
+                <h3 className={styles.formSectionTitle}>معلومات الدبلوم الأساسية</h3>
+                <div className={styles.formGrid}>
+                  {/* name */}
+                  <div className={styles.formGroup}>
+                    <label htmlFor="name" className={styles.formLabel}>اسم الدبلوم</label>
+                    <input type="text" id="name" className={styles.formInput} value={diplomaFormData.name} onChange={(e) => {
+                      const newName = e.target.value;
+                      setDiplomaFormData({
+                        ...diplomaFormData,
+                        name: newName,
+                        slug: slugEdited ? diplomaFormData.slug : slugify(newName)
+                      });
+                    }} required />
+                  </div>
+                  {/* slug */}
+                  <div className={styles.formGroup}>
+                    <label htmlFor="slug" className={styles.formLabel}>الرابط (Slug)</label>
+                    <input type="text" id="slug" className={styles.formInput} value={diplomaFormData.slug} onChange={(e) => { setSlugEdited(true); setDiplomaFormData({ ...diplomaFormData, slug: e.target.value }); }} required />
+                  </div>
+                  {/* description */}
+                  <div className={`${styles.formGroup} ${styles.formGridFull}`}>
+                    <label htmlFor="description" className={styles.formLabel}>الوصف</label>
+                    <textarea id="description" className={styles.formTextarea} value={diplomaFormData.description} onChange={(e) => setDiplomaFormData({ ...diplomaFormData, description: e.target.value })} rows={3} />
+                  </div>
+                  {/* price */}
+                  {!diplomaFormData.is_free && (
+                    <div className={styles.formGroup}>
+                      <label htmlFor="price" className={styles.formLabel}>السعر</label>
+                      <input type="number" id="price" className={styles.formInput} value={diplomaFormData.price} onChange={(e) => setDiplomaFormData({ ...diplomaFormData, price: e.target.value })} min={0} />
+                    </div>
+                  )}
+                  {/* display_order */}
+                  <div className={styles.formGroup}>
+                    <label htmlFor="display_order" className={styles.formLabel}>الترتيب</label>
+                    <input type="number" id="display_order" className={styles.formInput} value={diplomaFormData.display_order} onChange={(e) => setDiplomaFormData({ ...diplomaFormData, display_order: e.target.value })} min={0} />
+                  </div>
+                  {/* cover_image */}
+                  <div className={styles.formGroup}>
+                    <label htmlFor="cover_image" className={styles.formLabel}>صورة الغلاف</label>
+                    <input type="file" id="cover_image" className={styles.formInput} accept="image/*" onChange={(e) => { const file = e.currentTarget.files?.[0] ?? null; setDiplomaFormData({ ...diplomaFormData, cover_image: file }); setCoverPreview(file ? URL.createObjectURL(file) : null); }} />
+                  </div>
+                  {coverPreview && (
+                    <div className={`${styles.previewWrap} ${styles.formGridFull}`}>
+                      <img src={coverPreview} alt="معاينة صورة الغلاف" className={styles.previewImg} />
+                      <button type="button" className={styles.btnSecondary} onClick={() => { setCoverPreview(null); setDiplomaFormData({ ...diplomaFormData, cover_image: null }); }}>إزالة المعاينة</button>
+                    </div>
+                  )}
+                  {/* is_free */}
+                  <div className={styles.formGroup}>
+                    <label className={styles.formCheckbox}>
+                      <input type="checkbox" checked={diplomaFormData.is_free} onChange={(e) => {
+                        const checked = e.target.checked;
+                        if (checked) {
+                          setLastPaidPrice(diplomaFormData.price || '0');
+                          setDiplomaFormData({ ...diplomaFormData, is_free: true, price: '0' });
+                        } else {
+                          setDiplomaFormData({ ...diplomaFormData, is_free: false, price: lastPaidPrice || '0' });
+                        }
+                      }} /> مجاني
+                    </label>
+                  </div>
+                  <div className={`${styles.formHint} ${styles.formGridFull}`}>عند اختيار مجاني، يتم إخفاء السعر وتصفيـره لتجنب إرسال قيمة خاطئة.</div>
+                  {/* is_published */}
+                  <div className={styles.formGroup}>
+                    <label className={styles.formCheckbox}>
+                      <input type="checkbox" checked={diplomaFormData.is_published} onChange={(e) => setDiplomaFormData({ ...diplomaFormData, is_published: e.target.checked, })} /> منشور
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div className={styles.formActions}>
+                <button type="submit" className={styles.btnPrimary}>{editingDiploma ? 'تحديث' : 'إضافة'}</button>
+                <button type="button" className={styles.btnSecondary} onClick={() => setShowDiplomaForm(false)}>إلغاء</button>
+              </div>
             </form>
           </div>
         </div>
@@ -298,6 +308,7 @@ export default function AdminDiplomasPage() {
           <table className={styles.table}> {/* يمكن تغيير اسم الكلاس لاحقًا */}
             <thead>
               <tr>
+                <th>الترتيب</th>
                 <th>الاسم</th>
                 <th>الصورة</th>
                 <th>الوصف</th>
@@ -309,6 +320,7 @@ export default function AdminDiplomasPage() {
             <tbody>
               {diplomas.map((diploma) => (
                 <tr key={diploma.id}>
+                  <td>{diploma.display_order ?? 0}</td>
                   <td>
                     <div className={styles.nameCell}>
                       <div>{diploma.name}</div>
@@ -336,7 +348,7 @@ export default function AdminDiplomasPage() {
                   <td className={styles.actionsCell}>
                     <button className={styles.btnAction} onClick={() => handleViewDetails(diploma.id)}>عرض</button>
                     <button className={styles.btnAction} onClick={() => handleEdit(diploma)}>تعديل</button>
-                    <button className={`${styles.btnAction} ${styles.btnInfo}`} >الخريجين</button>
+                    <button className={`${styles.btnAction} ${styles.btnInfo}`} onClick={() => handleViewStudents(diploma.id)}>الخريجين</button>
                     <button className={`${styles.btnAction} ${styles.btnDanger}`} onClick={() => handleDelete(diploma.id)}>حذف</button>
                     <button className={`${styles.btnAction} ${styles.btnSuccess}`} onClick={() => handleAddCourse(diploma.id)}>+ مقرر</button>
                   </td>
@@ -344,7 +356,7 @@ export default function AdminDiplomasPage() {
               ))}
               {diplomas.length === 0 && (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center' }}>لا توجد دبلومات متاحة</td>
+                  <td colSpan={7} style={{ textAlign: 'center' }}>لا توجد دبلومات متاحة</td>
                 </tr>
               )}
             </tbody>
@@ -352,15 +364,13 @@ export default function AdminDiplomasPage() {
         </div>
       </div>
 
-      {/* --- تم إزالة قسم تفاصيل الدبلومة من هنا --- */}
-
       {/* --- Toast --- */}
       <Toast
-         message={toastMessage}
-         type={toastType}
-         isVisible={toastVisible}
-         onClose={() => setToastVisible(false)}
-       />
+        message={toastMessage}
+        type={toastType}
+        isVisible={toastVisible}
+        onClose={() => setToastVisible(false)}
+      />
     </div>
   );
 }

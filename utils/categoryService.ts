@@ -37,6 +37,7 @@ export interface CreateDiplomaData {
   is_published: boolean;
   cover_image?: File; // ملف الصورة
   slug: string;
+  display_order?: number;
 }
 
 /**
@@ -50,6 +51,7 @@ export interface UpdateDiplomaData {
   is_published: boolean;
   cover_image?: File | null; // قد يتم إرسال صورة جديدة أو لا
   slug: string;
+  display_order?: number;
 }
 
 /**
@@ -92,7 +94,7 @@ export const getAdminCategories = async (): Promise<Diploma[]> => {
     console.log('[GetAdminCategories] Sending request to /admin/categories');
     const response = await apiClient.get('/admin/categories');
     const result = response.data;
-    
+
     if (result.data && Array.isArray(result.data)) {
       return result.data;
     } else if (Array.isArray(result)) {
@@ -114,10 +116,10 @@ export const getAdminCategories = async (): Promise<Diploma[]> => {
 export const createCategory = async (data: CreateDiplomaData | { name: string }): Promise<Diploma> => {
   try {
     console.log('[CreateCategory] Sending request to /admin/categories', data);
-    
+
     const formData = new FormData();
     formData.append('name', data.name);
-    
+
     // إذا كانت البيانات كاملة، استخدمها، وإلا استخدم القيم الافتراضية
     if ('description' in data) {
       formData.append('description', data.description);
@@ -125,6 +127,9 @@ export const createCategory = async (data: CreateDiplomaData | { name: string })
       formData.append('is_free', data.is_free ? '1' : '0');
       formData.append('is_published', data.is_published ? '1' : '0');
       formData.append('slug', data.slug);
+      if (data.display_order !== undefined) {
+        formData.append('display_order', data.display_order.toString());
+      }
       if (data.cover_image) {
         formData.append('cover_image', data.cover_image);
       }
@@ -141,7 +146,7 @@ export const createCategory = async (data: CreateDiplomaData | { name: string })
         'Content-Type': 'multipart/form-data',
       },
     });
-    
+
     const result = response.data;
     console.log('[CreateCategory] Response received:', result);
     return result.data || result; // بناءً على الهيكل المعتاد
@@ -162,7 +167,7 @@ export const updateCategory = async (id: number, data: UpdateDiplomaData | { nam
 
     const formData = new FormData();
     formData.append('name', data.name);
-    
+
     // إذا كانت البيانات كاملة، استخدمها، وإلا استخدم القيم الافتراضية
     if ('description' in data) {
       formData.append('description', data.description);
@@ -170,6 +175,9 @@ export const updateCategory = async (id: number, data: UpdateDiplomaData | { nam
       formData.append('is_free', data.is_free ? '1' : '0');
       formData.append('is_published', data.is_published ? '1' : '0');
       formData.append('slug', data.slug);
+      if (data.display_order !== undefined) {
+        formData.append('display_order', data.display_order.toString());
+      }
       if (data.cover_image) {
         formData.append('cover_image', data.cover_image);
       }
@@ -181,7 +189,7 @@ export const updateCategory = async (id: number, data: UpdateDiplomaData | { nam
         'Content-Type': 'multipart/form-data',
       },
     });
-    
+
     const result = response.data;
     console.log('[UpdateCategory] Response received:', result);
     return result.data || result;
@@ -245,7 +253,7 @@ export const getPublicDiplomas = async (): Promise<Diploma[]> => {
     // نفترض أن هذا الـ endpoint لا يتطلب مصادقة، لذا قد نستخدم apiClient أو http مباشر
     const response = await apiClient.get('/categories');
     const result = response.data;
-    
+
     if (result.data && Array.isArray(result.data)) {
       return result.data;
     }
@@ -346,7 +354,7 @@ export const getMyDiplomas = async (): Promise<MyDiploma[]> => {
     console.log('[GetMyDiplomas] Sending request to /api/my-diplomas');
     const response = await apiClient.get('/my-diplomas');
     const result = response.data;
-    
+
     if (result.data && Array.isArray(result.data)) {
       return result.data;
     }

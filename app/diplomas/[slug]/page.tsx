@@ -58,7 +58,7 @@ export default function DiplomaDetailsPage() {
     try {
       setCheckingEnrollment(true);
       const myDiplomas = await getMyDiplomas();
-      const enrolled = myDiplomas.some((myDiploma: MyDiploma) => 
+      const enrolled = myDiplomas.some((myDiploma: MyDiploma) =>
         myDiploma.category?.id === diploma.id || myDiploma.category?.slug === diploma.slug
       );
       setIsEnrolled(enrolled);
@@ -94,7 +94,7 @@ export default function DiplomaDetailsPage() {
       if (notice === 'enroll_required') {
         showToast('يرجى الاشتراك في الدبلومة لعرض محتويات هذا المقرر', 'warning', 4000);
       }
-    } catch {}
+    } catch { }
   }, [searchParams]);
 
   // Check enrollment status when diploma is loaded
@@ -106,7 +106,7 @@ export default function DiplomaDetailsPage() {
 
   const scrollToCourses = () => {
     if (coursesRef.current) {
-      coursesRef.current.scrollIntoView({ 
+      coursesRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'start'
       });
@@ -115,7 +115,7 @@ export default function DiplomaDetailsPage() {
 
   const handleEnroll = async () => {
     if (!diploma) return;
-    
+
     // If already enrolled, scroll to courses section
     if (isEnrolled) {
       scrollToCourses();
@@ -140,7 +140,7 @@ export default function DiplomaDetailsPage() {
       setIsEnrollmentModalOpen(false);
       // Update enrollment status
       setIsEnrolled(true);
-      try { router.push('/dashboard/my-diplomas'); } catch {}
+      try { router.push('/dashboard/my-diplomas'); } catch { }
     } catch (e: any) {
       setEnrollStatus({ type: 'error', message: e?.message || 'فشلت عملية التسجيل بالدبلومة' });
     }
@@ -212,29 +212,6 @@ export default function DiplomaDetailsPage() {
                     'اكتشف عالماً جديداً من المعرفة والمهارات المتقدمة'
                   }
                 </p>
-                <div className={styles.heroMeta}>
-                  {typeof diploma?.courses_count !== 'undefined' && (
-                    <div className={styles.metaBadge}>
-                      <span className={styles.metaIcon}><FiBook /></span>
-                      {diploma?.courses_count} مقرر تعليمي
-                    </div>
-                  )}
-                  <div className={styles.metaBadge}>
-                    <span className={styles.metaIcon}><FiStar /></span>
-                    {diploma?.is_free ? 'دبلومة مجانية' : 'دبلومة مدفوعة'}
-                  </div>
-                  {!diploma?.is_free && diploma?.price && (
-                    <div className={styles.metaBadge}>
-                      <span className={styles.metaIcon}><FiDollarSign /></span>
-                      {diploma.price} جنيه
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className={styles.heroActions}>
-                <button
-                  className={isEnrolled ? styles.viewCoursesButton : styles.enrollButton}
-                  onClick={handleEnroll}
                   disabled={enrollStatus.type === 'loading' || checkingEnrollment}
                 >
                   <span className={styles.buttonText}>{getButtonText()}</span>
@@ -261,121 +238,69 @@ export default function DiplomaDetailsPage() {
                   alt={diploma?.name || 'غلاف الدبلومة'}
                 />
                 <div className={styles.coverOverlay}>
-                   <button
-                     className={styles.playButton}
-                     onClick={handleEnroll}
-                     disabled={enrollStatus.type === 'loading' || checkingEnrollment}
-                   >
-                     {isEnrolled ? <FiEye /> : <FiPlay />}
-                   </button>
-                 </div>
-              </div>
-              <div className={styles.detailsContent}>
-                <h2 className={styles.detailsTitle}>نبذة عن الدبلومة</h2>
-                <p className={styles.detailsDescription}>{diploma?.description}</p>
-                <div className={styles.detailsMeta}>
-                  {/* <div className={styles.metaItem}>
-                    <strong>الحالة:</strong> 
-                    <span className={diploma?.is_free ? styles.freeTag : styles.paidTag}>
-                      {diploma?.is_free ? 'مجاني' : 'مدفوعة'}
-                    </span>
-                  </div> */}
-                  <div className={styles.metaItem}>
-                    <strong>السعر:</strong> 
-                    <span className={styles.priceTag}>
-                      {diploma?.is_free ? 'مجاني' : `${diploma?.price} جنيه`}
-                    </span>
-                  </div>
-                  {typeof diploma?.courses_count !== 'undefined' && (
-                    <div className={styles.metaItem}>
-                      <strong>عدد المقررات:</strong> 
-                      <span className={styles.countTag}>{diploma?.courses_count}</span>
-                    </div>
-                  )}
-                </div>
-                <div className={styles.detailsActions}>
                   <button
-                    className={`${styles.enrollButtonSecondary} ${isEnrolled ? styles.viewCoursesButtonSecondary : ''}`}
+                    className={styles.playButton}
                     onClick={handleEnroll}
                     disabled={enrollStatus.type === 'loading' || checkingEnrollment}
-                    aria-label={isEnrolled ? 'مشاهدة المقررات' : 'التسجيل بالدبلومة'}
                   >
-                    <span className={styles.buttonText}>{getButtonText()}</span>
-                    <span className={styles.buttonIconSmall} aria-hidden="true">
-                      {isEnrolled ? <FiEye /> : <FiBook />}
-                    </span>
+                    {isEnrolled ? <FiEye /> : <FiPlay />}
                   </button>
-                </div>
+                  aria-label={isEnrolled ? 'مشاهدة المقررات' : 'التسجيل بالدبلومة'}
+                  >
+                  <span className={styles.buttonText}>{getButtonText()}</span>
+                  <span className={styles.buttonIconSmall} aria-hidden="true">
+                    {isEnrolled ? <FiEye /> : <FiBook />}
+                  </span>
+                </button>
               </div>
             </div>
-          </section>
+          </div>
+        </section>
 
           {/* مقررات الدبلومة */}
-          <section ref={coursesRef} className={styles.coursesSection}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>مقررات الدبلومة</h2>
-              <div className={styles.sectionLine}></div>
+      <section ref={coursesRef} className={styles.coursesSection}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>مقررات الدبلومة</h2>
+          <div className={styles.sectionLine}></div>
+        </div>
+
+        <div className={styles.coursesGrid}>
+          {(diploma?.courses || []).length === 0 && (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIcon}><FiBook /></div>
+              <p>لا توجد مقررات مرتبطة حالياً.</p>
             </div>
+          )}
 
-            <div className={styles.coursesGrid}>
-              {(diploma?.courses || []).length === 0 && (
-                <div className={styles.emptyState}>
-                  <div className={styles.emptyIcon}><FiBook /></div>
-                  <p>لا توجد مقررات مرتبطة حالياً.</p>
-                </div>
-              )}
+          {(diploma?.courses || []).map((course) => {
+            const c = transformCourse(course);
+            return (
+              <Link href={`/course-details/${c.id}`} key={c.id} className={styles.courseCard}>
+                <div className={styles.courseImageWrapper}>
+                  <img src={c.image} alt={c.title} className={styles.courseImage} />
+                  <div className={styles.courseOverlay}>
+                    <div className={styles.coursePlayButton}><FiPlay /></div>
+                  </div>
+                  <div className={styles.courseBadge}>
+                    {c.priceText}
+}
 
-              {(diploma?.courses || []).map((course) => {
-                const c = transformCourse(course);
-                return (
-                  <Link href={`/course-details/${c.id}`} key={c.id} className={styles.courseCard}>
-                    <div className={styles.courseImageWrapper}>
-                      <img src={c.image} alt={c.title} className={styles.courseImage} />
-                      <div className={styles.courseOverlay}>
-                        <div className={styles.coursePlayButton}><FiPlay /></div>
-                      </div>
-                      <div className={styles.courseBadge}>
-                        {c.priceText}
-                      </div>
-                    </div>
-                    <div className={styles.courseContent}>
-                      <h3 className={styles.courseTitle}>{c.title}</h3>
-                      <p className={styles.courseDescription}>{c.description}</p>
-                      <div className={styles.courseMeta}>
-                        <div className={styles.courseInstructor}>
-                          <i className={styles.instructorIcon}><FiUser /></i>
-                          <span>المحاضر: {c.instructorName}</span>
-                        </div>
-                      </div>
-                      <div className={styles.courseFooter}>
-                        <span className={styles.courseAction}>ابدأ التعلم</span>
-                        <i className={styles.arrowIcon}>←</i>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </section>
-        </main>
-      )}
+                    <EnrollmentInfoModal
+                      isOpen={isEnrollmentModalOpen}
+                      onClose={() => setIsEnrollmentModalOpen(false)}
+                      onSubmit={handleEnrollmentSubmit}
+                    />
 
-      <EnrollmentInfoModal
-        isOpen={isEnrollmentModalOpen}
-        onClose={() => setIsEnrollmentModalOpen(false)}
-        onSubmit={handleEnrollmentSubmit}
-      />
-
-      <Footer />
-      <ScrollToTop />
-      <SocialMediaFloat />
-      <Toast
-        message={toastMessage}
-        type={toastType}
-        isVisible={toastVisible}
-        onClose={() => setToastVisible(false)}
-        duration={3000}
-      />
-    </div>
-  );
+                    <Footer />
+                    <ScrollToTop />
+                    <SocialMediaFloat />
+                    <Toast
+                      message={toastMessage}
+                      type={toastType}
+                      isVisible={toastVisible}
+                      onClose={() => setToastVisible(false)}
+                      duration={3000}
+                    />
+                  </div >
+                  );
 }
