@@ -144,6 +144,8 @@ export default function CourseFinalExamPage() {
           "flash-toast",
           JSON.stringify({ message: "تم إرسال الإجابات بنجاح", type: "success" })
         );
+        // احفظ معرف المقرر لفتح تفاصيل النتائج تلقائيًا في صفحة اختباراتي
+        sessionStorage.setItem("last-exam-course-id", String(courseId));
       } catch {}
       // اخرج فورًا إلى صفحة اختباراتي بدون إمكانية الرجوع لهذه الصفحة
       router.replace("/user/my_exams");

@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import {
   getMyEnrolledCourses,
   Course,
-  getEnrollmentFilters
+  getEnrollmentFilters,
+  getCourseDetails,
+  getCourseProgressDetails
 } from '../utils/courseService';
 import styles from './ExamCard.module.css';
 import FilterBar from './FilterBar';
@@ -113,6 +115,62 @@ const ExamCard: React.FC<ExamCardProps> = ({ showAll = false, exams, onExamSelec
     }
   };
 
+  // متابعة الدراسة: نحدد آخر درس غير مكتمل ونذهب إليه
+  const handleContinueStudyClick = async (exam: Course, e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    try {
+      const [courseDetails, progressDetails] = await Promise.all([
+        getCourseDetails(exam.id),
+        getCourseProgressDetails(exam.id)
+      ]);
+
+      const chapters = (courseDetails?.chapters || []).slice().sort((a: any, b: any) => Number(a?.order ?? 0) - Number(b?.order ?? 0));
+      const flatLessons: Array<{ id: number; chapterId: number }> = [];
+      chapters.forEach((ch: any) => {
+        const lessons = (ch.lessons || []).slice().sort((a: any, b: any) => Number(a?.order ?? 0) - Number(b?.order ?? 0));
+        lessons.forEach((ls: any) => {
+          if (ls && ls.id != null) flatLessons.push({ id: Number(ls.id), chapterId: Number(ch.id) });
+        });
+      });
+
+      // إذا لم نجد دروسًا، نعود لعرض التفاصيل
+      if (!flatLessons.length) {
+        if (onExamSelect) onExamSelect(exam); else router.push(`/user/my_exams/${exam.id}`);
+        return;
+      }
+
+      const completedIds = new Set(
+        (progressDetails?.lessons || [])
+          .filter((l: any) => String(l.status).toLowerCase() === 'completed')
+          .map((l: any) => Number(l.lesson_id))
+      );
+
+      const nextLesson = flatLessons.find((l) => !completedIds.has(l.id)) || flatLessons[0];
+
+      router.push(`/watch?lessonId=${nextLesson.id}&chapterId=${nextLesson.chapterId}&courseId=${exam.id}`);
+    } catch (err) {
+      console.error('Failed to navigate to continue study:', err);
+      // في حالة الفشل، نسقط لعرض تفاصيل الامتحان بدلًا من تعطيل التجربة
+      if (onExamSelect) onExamSelect(exam); else router.push(`/user/my_exams/${exam.id}`);
+    }
+  };
+
+  // دخول الامتحان النهائي
+  const handleFinalExamClick = (exam: Course, e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    router.push(`/user/final-exam/${exam.id}`);
+  };
+
+  // عرض النتيجة وطلب الشهادة (يفتح صفحة تفاصيل الاختبار)
+  const handleResultAndCertificateClick = (exam: Course, e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    if (onExamSelect) {
+      onExamSelect(exam);
+    } else {
+      router.push(`/user/my_exams/${exam.id}`);
+    }
+  };
+
   if (loading && enrolledCourses.length === 0) {
     return <div className={styles.loading}>جاري التحميل...</div>;
   }
@@ -184,12 +242,34 @@ const ExamCard: React.FC<ExamCardProps> = ({ showAll = false, exams, onExamSelec
                   </div>
                 </div>
 
-                <button className={styles.actionButton}>
-                  متابعة الدراسة
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
+                <div className={styles.actionButtons}>
+                  {/* استكمال الدراسة */}
+                  <button
+                    className={styles.actionButton}
+                    onClick={(e) => handleContinueStudyClick(exam, e)}
+                    disabled={Math.round(Number(exam.progress_percentage || 0)) >= 100}
+                  >
+                    استكمال الدراسة
+                  </button>
+
+                  {/* دخول الامتحان النهائي */}
+                  <button
+                    className={styles.actionButton}
+                    onClick={(e) => handleFinalExamClick(exam, e)}
+                    disabled={Math.round(Number(exam.progress_percentage || 0)) < 100}
+                  >
+                    دخول الامتحان النهائي
+                  </button>
+
+                  {/* طلب النتيجة والشهادة */}
+                  <button
+                    className={styles.actionButton}
+                    onClick={(e) => handleResultAndCertificateClick(exam, e)}
+                    disabled={Math.round(Number(exam.progress_percentage || 0)) < 100}
+                  >
+                    طلب النتيجة والشهادة
+                  </button>
+                </div>
               </div>
             </div>
           ))}

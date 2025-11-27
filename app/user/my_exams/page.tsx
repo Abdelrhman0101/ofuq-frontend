@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import ExamCard from '../../../components/ExamCard';
 import ExamDetails from '../../../components/ExamDetails';
+import type { Course } from '../../../utils/courseService';
+import { getCourseDetails } from '../../../utils/courseService';
 import styles from '../my_courses/MyCourses.module.css';
 import Toast from '../../../components/Toast';
 
@@ -41,8 +43,32 @@ export default function MyExams() {
     } catch {}
   }, []);
 
-  const handleExamSelect = (examId: number, examName: string, progress: number) => {
-    setSelectedExam({ id: examId, name: examName, progress });
+  // افتح تفاصيل الامتحان تلقائيًا إذا كانت هناك عملية إرسال حديثة
+  useEffect(() => {
+    let cancelled = false;
+    async function openLatestExam() {
+      try {
+        const lastId = sessionStorage.getItem('last-exam-course-id');
+        if (!lastId) return;
+        sessionStorage.removeItem('last-exam-course-id');
+        const courseId = Number(lastId);
+        if (!courseId || Number.isNaN(courseId)) return;
+        const course = await getCourseDetails(courseId);
+        if (cancelled || !course) return;
+        const progress = Number(course.progress_percentage || 0);
+        setSelectedExam({ id: course.id, name: course.title, progress });
+      } catch (err) {
+        // تجاهل أي خطأ؛ يمكن للمستخدم فتح التفاصيل يدويًا
+        console.warn('Failed to auto-open latest exam details:', err);
+      }
+    }
+    openLatestExam();
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleExamSelect = (course: Course) => {
+    const progress = Number(course.progress_percentage || 0);
+    setSelectedExam({ id: course.id, name: course.title, progress });
   };
 
   const handleBackToExams = () => {
