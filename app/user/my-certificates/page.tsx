@@ -11,7 +11,8 @@ import '@/components/Toast';
 interface CertificateData {
   id: number;
   uuid: string;
-  diploma_name: string;
+  diploma_name?: string;
+  course_title?: string;
   user_name: string;
   issued_at: string;
   file_path?: string;
@@ -46,23 +47,16 @@ export default function MyCertificatesPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // جلب جميع الشهادات
       const allCertificates = await getMyCertificates();
-      
+
       // فصل شهادات الدبلومات عن شهادات الكورسات
-      const diplomas = allCertificates.filter(cert => cert.type === 'diploma' || !cert.type);
-      const courses = allCertificates.filter(cert => cert.type === 'course')
-        .map(cert => ({
-          ...cert as any,
-          course_title: cert.diploma_name, // استخدام diploma_name كـ course_title للتوافق
-          uuid: cert.uuid || '', // تأكد من وجود uuid
-          file_path: cert.file_path || '', // تأكد من وجود file_path
-          issued_at: cert.issued_at || '' // تأكد من وجود issued_at
-        }));
-      
+      const diplomas = allCertificates.filter(cert => cert.type === 'diploma');
+      const courses = allCertificates.filter(cert => cert.type === 'course');
+
       setDiplomaCertificates(diplomas);
-      setCourseCertificates(courses);
+      setCourseCertificates(courses as unknown as CourseCertificate[]);
     } catch (err: any) {
       console.error('Error fetching certificates:', err);
       setError(err.message || 'فشل في تحميل الشهادات');
@@ -78,21 +72,6 @@ export default function MyCertificatesPage() {
       month: 'long',
       day: 'numeric'
     });
-  };
-
-  const handleShareCertificate = (certificate: DiplomaCertificate | CourseCertificate) => {
-    const verificationUrl = (certificate as DiplomaCertificate).qr_path || `${window.location.origin}/verify-certificate/${(certificate as DiplomaCertificate).uuid}`;
-    const title = (certificate as DiplomaCertificate).diploma_name || (certificate as CourseCertificate).course_title || 'الشهادة';
-    if (navigator.share) {
-      navigator.share({
-        title: `شهادتي في ${title}`,
-        text: `أنا فخور بمشاركة شهادتي في ${title}!`,
-        url: verificationUrl,
-      });
-    } else {
-      navigator.clipboard.writeText(verificationUrl);
-      alert('تم نسخ رابط التحقق من الشهادة!');
-    }
   };
 
   if (loading) {
@@ -159,7 +138,7 @@ export default function MyCertificatesPage() {
                   <div className="empty-icon">🎓</div>
                   <h3>لا توجد شهادات دبلومات</h3>
                   <p>لم تحصل على أي شهادات دبلومات بعد. أكمل متطلبات الدبلومات للحصول على شهاداتك.</p>
-                  <button 
+                  <button
                     className="browse-btn"
                     onClick={() => router.push('/diploms')}
                   >
@@ -171,7 +150,7 @@ export default function MyCertificatesPage() {
                   {diplomaCertificates.map((certificate) => (
                     <CertificateCard
                       key={certificate.id}
-                      courseName={certificate.diploma_name}
+                      courseName={certificate.diploma_name || 'دبلومة'}
                       completionDate={formatDate(certificate.issued_at || '')}
                       certificateId={certificate.uuid}
                       downloadUrl={certificate.file_path}
@@ -179,6 +158,8 @@ export default function MyCertificatesPage() {
                       type="diploma"
                       categoryId={certificate.category_id}
                       userName={certificate.user_name}
+                      showShareButton={false}
+                      showViewButton={false}
                     />
                   ))}
                 </div>
@@ -194,7 +175,7 @@ export default function MyCertificatesPage() {
                   <div className="empty-icon">📚</div>
                   <h3>لا توجد شهادات كورسات</h3>
                   <p>لم تحصل على أي شهادات كورسات بعد. أكمل الكورسات للحصول على شهاداتك.</p>
-                  <button 
+                  <button
                     className="browse-btn"
                     onClick={() => router.push('/courses')}
                   >
@@ -206,7 +187,7 @@ export default function MyCertificatesPage() {
                   {courseCertificates.map((certificate) => (
                     <CertificateCard
                       key={certificate.id}
-                      courseName={certificate.course_title}
+                      courseName={(certificate as any).course_title || 'مقرر'}
                       completionDate={formatDate(certificate.issued_at || '')}
                       certificateId={(certificate as any).uuid}
                       downloadUrl={(certificate as any).file_path}
@@ -214,6 +195,9 @@ export default function MyCertificatesPage() {
                       type="course"
                       courseId={(certificate as any).course_id}
                       userName={(certificate as any).user_name}
+                      showShareButton={false}
+                      showViewButton={false}
+                      diplomaName={(certificate as any).diploma_name}
                     />
                   ))}
                 </div>

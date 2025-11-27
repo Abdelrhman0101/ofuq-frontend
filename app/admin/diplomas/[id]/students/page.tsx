@@ -54,9 +54,9 @@ export default function AdminDiplomaStudentsPage() {
     };
   }, []);
 
-  const fetchStudents = async (search = "", filter = "") => {
+  const fetchStudents = async (search = "", filter = "", silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       setError(null);
       const resp = await apiClient.get(`/admin/diplomas/${diplomaId}/students`, {
         params: { search, filter },
@@ -89,13 +89,15 @@ export default function AdminDiplomaStudentsPage() {
       });
       setStudents(normalized);
     } catch (err: any) {
-      const message = err?.message || err?.response?.data?.message || "فشل في جلب قائمة الطلاب";
-      setError(message);
-      setToastMessage(message);
-      setToastType("error");
-      setToastVisible(true);
+      if (!silent) {
+        const message = err?.message || err?.response?.data?.message || "فشل في جلب قائمة الطلاب";
+        setError(message);
+        setToastMessage(message);
+        setToastType("error");
+        setToastVisible(true);
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -111,6 +113,20 @@ export default function AdminDiplomaStudentsPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diplomaId, searchTerm, filterStatus]);
+
+  // Polling for processing certificates
+  useEffect(() => {
+    const hasProcessing = students.some(s => s.certificate_status === 'processing');
+
+    if (!hasProcessing) return;
+
+    const intervalId = setInterval(() => {
+      fetchStudents(searchTerm, filterStatus, true);
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [students, searchTerm, filterStatus]);
 
   const goBack = () => router.push(`/admin/diplomas/${diplomaId}`);
 

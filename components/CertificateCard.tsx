@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import '../styles/certificate-card.css';
-import { ensureCourseCertificateFile, ensureDiplomaCertificateFile, ensureCourseCertificateFileBySummary, ensureDiplomaCertificateFileBySummary, getDownloadUrl } from '../utils/certificateService';
+import { getDownloadUrl, getCertificateStatus } from '../utils/certificateService';
+import { http } from '@/lib/http';
 
 interface CertificateCardProps {
   courseName: string;
@@ -15,6 +16,9 @@ interface CertificateCardProps {
   courseId?: number; // للمقررات
   categoryId?: number; // للدبلومات
   userName?: string; // من "شهاداتي" للاستخدام عند عدم توفر IDs
+  showShareButton?: boolean;
+  showViewButton?: boolean;
+  diplomaName?: string;
 }
 
 const CertificateCard: React.FC<CertificateCardProps> = ({
@@ -27,64 +31,54 @@ const CertificateCard: React.FC<CertificateCardProps> = ({
   type,
   courseId,
   categoryId,
-  userName
+  userName,
+  showShareButton = true,
+  showViewButton = true,
+  diplomaName
 }) => {
   const [showModal, setShowModal] = useState(false);
 
   const ensureFilePath = async (): Promise<string | null> => {
     try {
       console.log('[CertificateCard] ensureFilePath', { type, courseId, categoryId, downloadUrl });
+
+      // 1. Try using the provided downloadUrl
       if (downloadUrl) {
-        // طبّع مسار التخزين إلى رابط كامل على مضيف الباك إند
         const normalized = getDownloadUrl(downloadUrl);
         if (normalized) {
           console.log('[CertificateCard] using normalized downloadUrl', { normalized });
           return normalized;
         }
-        console.log('[CertificateCard] downloadUrl present but not normalized, will try generation if possible');
-      }
-      if (type === 'course' && typeof courseId !== 'undefined') {
-        console.log('[CertificateCard] generating course certificate PDF');
-        const url = await ensureCourseCertificateFile(courseId);
-        console.log('[CertificateCard] course certificate ready', { url });
-        return url;
-      }
-      if (type === 'diploma' && typeof categoryId !== 'undefined') {
-        console.log('[CertificateCard] generating diploma certificate PDF');
-        const url = await ensureDiplomaCertificateFile(categoryId);
-        console.log('[CertificateCard] diploma certificate ready', { url });
-        return url;
+        console.log('[CertificateCard] downloadUrl present but not normalized by getDownloadUrl');
       }
 
-      // Fallback: توليد من ملخص "شهاداتي" عندما لا تتوفر معرفات course/category
-      if (type === 'course' && !courseId && certificateId && userName && verificationUrl) {
-        console.log('[CertificateCard] summary fallback: generating course certificate PDF');
-        const url = await ensureCourseCertificateFileBySummary({
-          certificateId: Number(certificateId),
-          userName,
-          title: courseName,
-          completionDate,
-          verificationUrl,
-        });
-        console.log('[CertificateCard] course summary certificate ready', { url });
-        return url;
+      // 2. If no valid downloadUrl, and it's a course, check status (like ExamDetails)
+      if (type === 'course' && courseId) {
+        console.log('[CertificateCard] checking certificate status for course', courseId);
+        try {
+          const statusData = await getCertificateStatus(courseId);
+          if (statusData?.status === 'completed') {
+            const raw = statusData.file_url ?? statusData.file_path ?? '';
+            if (raw) {
+              let url = getDownloadUrl(raw);
+              // Fallback normalization logic from ExamDetails
+              if (!url) {
+                const base = (http?.defaults?.baseURL || '').replace(/\/api\/?$/, '').replace(/\/+$/, '');
+                const path = raw.startsWith('/') ? raw : `/${raw}`;
+                url = base ? `${base}${path}` : path;
+              }
+              console.log('[CertificateCard] found certificate via status', { url });
+              return url;
+            }
+          }
+        } catch (err) {
+          console.warn('[CertificateCard] failed to check status', err);
+        }
       }
-      if (type === 'diploma' && !categoryId && certificateId && userName && verificationUrl) {
-        console.log('[CertificateCard] summary fallback: generating diploma certificate PDF');
-        const url = await ensureDiplomaCertificateFileBySummary({
-          certificateId: Number(certificateId),
-          userName,
-          title: courseName,
-          completionDate,
-          verificationUrl,
-        });
-        console.log('[CertificateCard] diploma summary certificate ready', { url });
-        return url;
-      }
+
       return null;
     } catch (e) {
       console.error('Failed to ensure certificate file:', e);
-      alert('فشل في توليد الشهادة. حاول مرة أخرى لاحقًا.');
       return null;
     }
   };
@@ -159,40 +153,49 @@ const CertificateCard: React.FC<CertificateCardProps> = ({
             </div>
             <div className="certificate-details">
               <h3 className="course-name">{courseName}</h3>
+              {diplomaName && (
+                <p className="diploma-name" style={{ fontSize: '0.9rem', color: '#666', marginTop: '4px' }}>
+                  ضمن دبلومة: {diplomaName}
+                </p>
+              )}
               <p className="completion-date">
                 حصلت عليها في يوم <span className="date">{completionDate}</span>
               </p>
-              <button 
-                className="view-certificate-btn"
-                onClick={handleViewCertificate}
-              >
-                عرض الشهادة
-              </button>
+              {showViewButton && (
+                <button
+                  className="view-certificate-btn"
+                  onClick={handleViewCertificate}
+                >
+                  عرض الشهادة
+                </button>
+              )}
             </div>
           </div>
-          
+
           <div className="certificate-actions">
-            <button 
+            <button
               className="action-btn download-btn"
               onClick={handleDownloadCertificate}
               title="تحميل الشهادة"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
               </svg>
               تحميل
             </button>
-            
-            <button 
-              className="action-btn share-btn"
-              onClick={handleShareCertificate}
-              title="مشاركة الشهادة"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
-              </svg>
-              مشاركة
-            </button>
+
+            {showShareButton && (
+              <button
+                className="action-btn share-btn"
+                onClick={handleShareCertificate}
+                title="مشاركة الشهادة"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />
+                </svg>
+                مشاركة
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -206,8 +209,8 @@ const CertificateCard: React.FC<CertificateCardProps> = ({
             </button>
             <div className="certificate-preview">
               {certificateImage ? (
-                <img 
-                  src={certificateImage} 
+                <img
+                  src={certificateImage}
                   alt={`شهادة ${courseName}`}
                   className="certificate-image"
                 />
@@ -218,18 +221,20 @@ const CertificateCard: React.FC<CertificateCardProps> = ({
               )}
             </div>
             <div className="modal-actions">
-              <button 
+              <button
                 className="modal-btn download-modal-btn"
                 onClick={handleDownloadCertificate}
               >
                 تحميل الشهادة
               </button>
-              <button 
-                className="modal-btn share-modal-btn"
-                onClick={handleShareCertificate}
-              >
-                مشاركة الشهادة
-              </button>
+              {showShareButton && (
+                <button
+                  className="modal-btn share-modal-btn"
+                  onClick={handleShareCertificate}
+                >
+                  مشاركة الشهادة
+                </button>
+              )}
             </div>
           </div>
         </div>

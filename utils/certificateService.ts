@@ -12,6 +12,7 @@ export interface DiplomaCertificate {
   id: number;
   uuid: string;         // معرف التحقق الفريد
   diploma_name: string; // اسم الدبلومة (سيأتي من الباك إند)
+  course_title?: string; // اسم المقرر (إن وجد)
   user_name: string;    // اسم الطالب (سيأتي من الباك إند)
   issued_at: string;    // تاريخ الإصدار
   file_path: string;    // المسار الكامل لملف PDF (إن توفر)
@@ -28,6 +29,7 @@ export interface DiplomaCertificate {
 export interface CourseCertificate {
   id: number;
   course_title: string;
+  diploma_name?: string; // اسم الدبلومة التابع لها المقرر
   issued_at?: string;
   completion_date?: string;
   serial_number?: string;
@@ -65,7 +67,8 @@ export async function getMyCertificates(): Promise<DiplomaCertificate[]> {
     return list.map((cert: any) => ({
       id: Number(cert.id),
       uuid: String(cert.uuid || cert.verification_token || ''), // الحقل الجديد
-      diploma_name: String(cert.diploma_name || cert.course_title || 'الشهادة'),
+      diploma_name: String(cert.diploma_name || ''),
+      course_title: String(cert.course_title || ''),
       user_name: String(cert.user_name || cert.student_name || ''),
       issued_at: String(cert.issued_at || cert.completion_date || ''),
       // لا نستخدم download_url القديم لتفادي الدوران نحو الـ API القديم
