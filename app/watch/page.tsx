@@ -9,6 +9,7 @@ import Footer from '../../components/Footer';
 import VideoSection from '../../components/VideoSection';
 import CourseContent from '../../components/CourseContent';
 import ScrollToTop from '../../components/ScrollToTop';
+import { WatchPageSkeleton, SkeletonVideo, SkeletonBreadcrumb, SkeletonNavigation, SkeletonCourseContent } from '../../components/Skeleton';
 import styles from './watch.module.css'; // تأكد من أن هذا المسار صحيح
 import FinalExam from '../../components/FinalExam';
 import Certificate from '../../components/Certificate';
@@ -57,7 +58,7 @@ interface LessonQuiz {
 function WatchPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // استخراج المعاملات من URL
   const lessonId = searchParams.get('lessonId') ? parseInt(searchParams.get('lessonId')!) : null;
   const chapterId = searchParams.get('chapterId') ? parseInt(searchParams.get('chapterId')!) : null;
@@ -104,13 +105,13 @@ function WatchPageContent() {
       try {
         setLoading(true);
         setError(null);
-        
+
         // التحقق من وجود المعاملات المطلوبة
         if (!lessonId || !chapterId || !courseId) {
           setError('معاملات غير صحيحة في الرابط');
           return;
         }
-        
+
         // حارس الوصول: استخدم GET /api/courses/{courseId}/progress للتحقق النهائي
         try {
           const access = await checkCourseAccess(courseId);
@@ -137,52 +138,54 @@ function WatchPageContent() {
         // الاعتماد فقط على التوكن بدون أي مزامنة كوكيز
         // لا يوجد أي تعامل مع الكوكيز هنا حسب طلبك
 
-        // تحميل بيانات الكورس مرة واحدة فقط إذا لم تكن موجودة أو تغيّر المعرف
-        if (!course || Number(course.id) !== Number(courseId)) {
-          const courseData = await getCourseDetails(courseId);
+        // تحميل بيانات الكورس والدرس بالتوازي لتسريع التحميل
+        const [courseData, lessonData] = await Promise.all([
+          // تحميل الكورس إذا لم يكن موجوداً
+          (!course || Number(course.id) !== Number(courseId))
+            ? getCourseDetails(courseId)
+            : Promise.resolve(course),
+          // تحميل الدرس
+          getUserLesson(lessonId)
+        ]);
+
+        if (courseData && (!course || Number(course.id) !== Number(courseId))) {
           setCourse(courseData);
         }
-
-        // تحميل بيانات الدرس بعد التأكد من الوصول
-        const lessonData = await getUserLesson(lessonId);
         setLesson(lessonData.lesson);
 
         // استخدام الرابط المباشر فقط مع تحويله لمسار كامل من الباك إند
         const direct = getBackendAssetUrl(String(lessonData?.lesson?.video_url || ''));
         setResolvedVideoUrl(direct);
 
-        // لا حاجة لإعادة جلب التقدم إذا كان متاحًا من حارس الوصول
-        if (!courseProgress) {
-          try {
-            const progress = await getCourseProgress(courseId);
-            setCourseProgress(progress);
-          } catch (progressError) {
-            console.warn('تعذر تحميل تقدم الكورس:', progressError);
-          }
-        }
+        // إيقاف loading بعد تحميل البيانات الأساسية (الفيديو جاهز للعرض)
+        setLoading(false);
 
-        // تحميل بيانات الكويز إذا كان متاحاً
-        try {
-          const quiz = await getLessonQuiz(lessonId);
-          setQuizData(quiz);
-          
-          // التحقق من حالة إنجاز الكويز
-          if (quiz && courseProgress) {
-            const lessonProgress = courseProgress.lessons?.find((l: any) => l.lesson_id === lessonId);
-            setQuizFinished(lessonProgress?.quiz_completed || false);
-          }
-        } catch (quizError) {
-          console.log('لا يوجد كويز لهذا الدرس:', quizError);
-          setQuizData(null);
-        }
+        // العمليات الثانوية تتم في الخلفية بعد عرض المحتوى
+        // إكمال الدرس تلقائياً
+        completeLesson(lessonId)
+          .then(() => {
+            console.log('[Watch] Auto-completed lesson:', lessonId);
+            setAutoCompleted(true);
+          })
+          .catch((err) => console.warn('[Watch] Failed to auto-complete:', err));
 
-        // جلب بيانات تنقل الدرس (السابق/التالي وهل الحالي الأخير)
-        try {
-          const nav = await getLessonNavigation(lessonId);
-          setLessonNav(nav);
-        } catch (navError) {
-          console.warn('تعذر جلب بيانات تنقل الدرس:', navError);
-        }
+        // تحديث التقدم وجلب الكويز والتنقل بالتوازي
+        Promise.all([
+          getCourseProgressDetails(courseId).catch(() => null),
+          getLessonQuiz(lessonId).catch(() => null),
+          getLessonNavigation(lessonId).catch(() => null)
+        ]).then(([progressDetails, quiz, nav]) => {
+          if (progressDetails) setCourseProgress(progressDetails as any);
+          if (quiz) {
+            setQuizData(quiz);
+            if (progressDetails) {
+              const lessons = (progressDetails as any).lessons;
+              const lessonProgress = lessons?.find((l: any) => l.lesson_id === lessonId);
+              setQuizFinished(lessonProgress?.quiz_completed || false);
+            }
+          }
+          if (nav) setLessonNav(nav);
+        });
 
       } catch (err) {
         console.error('خطأ في تحميل البيانات:', err);
@@ -194,25 +197,6 @@ function WatchPageContent() {
 
     loadData();
   }, [lessonId, chapterId, courseId, router]);
-
-  // إكمال تلقائي عند فتح الدرس إذا جئنا من زر "مشاهدة الآن"
-  useEffect(() => {
-    if (!completeOnOpen || !lessonId || autoCompleted) return;
-    (async () => {
-      try {
-        await completeLesson(lessonId);
-        setAutoCompleted(true);
-        // تحديث التقدم لإظهار الحالة فورًا
-        if (courseId) {
-          try { const progress = await getCourseProgress(courseId); setCourseProgress(progress); } catch {}
-        }
-        // ممكن إظهار توست بسيط للتأكيد
-        showToast('تم اعتبار هذا الدرس مكتمل عند الفتح', 'success');
-      } catch (e: any) {
-        console.warn('تعذر الإكمال التلقائي للدرس عند الفتح:', e?.message || e);
-      }
-    })();
-  }, [completeOnOpen, lessonId, courseId, autoCompleted]);
 
   // بناء تسلسل الدروس اعتمادًا على بيانات الكورس كـ fallback آمن
   const flatLessons = useMemo(() => {
@@ -253,18 +237,18 @@ function WatchPageContent() {
     if (currentIndex < 0) return false;
     return currentIndex === flatLessons.length - 2;
   }, [flatLessons, currentIndex]);
-  
+
   // دالة إنهاء الدبلومة
   const handleDiplomaCompletion = async () => {
     if (!course || !lesson) return;
-    
+
     try {
       // إكمال الدرس الحالي أولاً
       await completeLesson(lesson.id);
-      
+
       // عرض alert مبروك
       alert('🎉 مبروك! لقد أتممت المقرر بنجاح 🎉\n\nسيتم تحويلك الآن إلى صفحة تفاصيل الدبلومة');
-      
+
       // التحويل لصفحة تفاصيل الدبلومة
       if (course.category?.name) {
         // استخدام اسم الدبلومة كـ slug (يمكن تحسينه لاحقاً)
@@ -375,9 +359,7 @@ function WatchPageContent() {
         {/* Video Section */}
         <div className={styles['video-container']} style={{ width: '100%' }}>
           {loading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '280px' }}>
-              جاري تحميل محتوى الدرس...
-            </div>
+            <SkeletonVideo />
           ) : error ? (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '280px', color: '#e74c3c' }}>
               {error}
@@ -393,8 +375,51 @@ function WatchPageContent() {
             />
           )}
 
+          {/* Breadcrumb Navigation - تحت الفيديو */}
+          {loading ? (
+            <SkeletonBreadcrumb items={4} />
+          ) : lesson && course && (
+            <nav className={styles['breadcrumb']}>
+              <a href="/" className={styles['breadcrumb-item']}>
+                <svg className={styles['breadcrumb-home-icon']} viewBox="0 0 24 24">
+                  <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+                </svg>
+                الرئيسية
+              </a>
+              <a href="/diploms" className={styles['breadcrumb-item']}>
+                دبلومات أفق
+              </a>
+              <a
+                href={`/diplomas/${(course.category as any)?.name?.slug || (course.category as any)?.slug || (course.category as any)?.id || ''}`}
+                className={styles['breadcrumb-item']}
+              >
+                {(() => {
+                  const cat = course.category as any;
+                  if (!cat) return 'الدبلومة';
+                  // البيانات تأتي بصيغة: category.name = { id, name, slug, ... }
+                  // اسم الدبلومة الفعلي هو category.name.name
+                  if (cat.name && typeof cat.name === 'object' && cat.name.name) {
+                    return cat.name.name;
+                  }
+                  if (typeof cat.name === 'string') return cat.name;
+                  return cat.title || 'الدبلومة';
+                })()}
+              </a>
+              <a
+                href={`/course-details/${course.id}`}
+                className={styles['breadcrumb-item']}
+              >
+                {course.title || 'المقرر'}
+              </a>
+              <span className={`${styles['breadcrumb-item']} ${styles['active']}`}>
+                {typeof lesson.title === 'string' ? lesson.title : ((lesson.title as any)?.ar || (lesson.title as any)?.en || 'الدرس')}
+              </span>
+            </nav>
+          )}
+
           {/* Previous / Next lesson navigation */}
           <div className={styles['lesson-navigation']}>
+            {/* زر السابق - على اليمين دائماً */}
             <button
               className={styles['lesson-nav-btn']}
               onClick={() => navigateToLesson(prevLesson)}
@@ -406,6 +431,19 @@ function WatchPageContent() {
               <span>السابق</span>
             </button>
 
+            {/* الملاحظة - في المنتصف */}
+            {isNextLast && (
+              <div className={styles['last-lesson-note']} role="status" aria-live="polite">
+                <svg className={styles['note-icon']} viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 2L1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z" />
+                </svg>
+                <span>ملاحظة: الدرس القادم هو الأخير</span>
+              </div>
+            )}
+            {/* placeholder للحفاظ على المسافات عند عدم وجود ملاحظة */}
+            {!isNextLast && <div className={styles['nav-spacer']}></div>}
+
+            {/* زر التالي/اختباراتي - على اليسار دائماً */}
             {isLastLesson ? (
               <button
                 className={styles['lesson-nav-btn']}
@@ -431,20 +469,14 @@ function WatchPageContent() {
                 </svg>
               </button>
             )}
-            {isNextLast && (
-              <div className={styles['last-lesson-note']} role="status" aria-live="polite">
-                <svg className={styles['note-icon']} viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12 2L1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V9h2v4z" />
-                </svg>
-                <span>ملاحظة: الدرس القادم هو الأخير</span>
-              </div>
-            )}
           </div>
         </div>
 
         {/* Course Content Section */}
         <div className={styles['course-content-section']} style={{ width: '100%', maxWidth: '100%', margin: 0 }}>
-          {course && (
+          {loading ? (
+            <SkeletonCourseContent chapters={2} lessonsPerChapter={4} />
+          ) : course && (
             <CourseContent
               rating={Number(course.average_rating ?? course.rating ?? 0)}
               courseTitle={lesson?.title || 'عنوان الدرس'}

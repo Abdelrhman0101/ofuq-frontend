@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import InstructorProfile from './InstructorProfile';
 import '../styles/student-reviews.css';
-import { getLessonWatchStatus, LessonWatchStatus } from '@/utils/lessonService';
+import { LessonWatchStatus } from '@/utils/lessonService';
+import { getCourseProgressDetails } from '@/utils/courseService';
 import { FaCheckCircle } from 'react-icons/fa';
 
 interface CourseContentProps {
@@ -71,8 +72,9 @@ const CourseContent: React.FC<CourseContentProps> = ({
   instructorBio = ""
 }) => {
   const router = useRouter();
+  const pathname = usePathname();
   const [activeTab, setActiveTab] = useState('overview');
-  const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>(() => {
+  const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>(() => {
     // فتح جميع الأقسام افتراضياً عند التحميل الأول
     const initial: Record<string, boolean> = {};
     if (Array.isArray(chapters) && chapters.length > 0) {
@@ -83,6 +85,29 @@ const CourseContent: React.FC<CourseContentProps> = ({
     return initial;
   });
   const [lessonStatuses, setLessonStatuses] = useState<Record<number, LessonWatchStatus>>({});
+  // مفتاح لإعادة جلب حالة الدروس عند العودة للصفحة
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // إعادة جلب حالة الدروس عند العودة للصفحة (من صفحة المشاهدة مثلاً)
+  // نستخدم pathname + visibilitychange لضمان التحديث مع client-side navigation
+  React.useEffect(() => {
+    // تحديث فوري عند mount أو تغير الـ pathname (client-side navigation)
+    console.log('[CourseContent] Component mounted/pathname changed, refreshing...');
+    setRefreshKey((prev) => prev + 1);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('[CourseContent] Page became visible, refreshing lesson statuses...');
+        setRefreshKey((prev) => prev + 1);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [pathname]);
 
   // Detect if we have real backend content (with numeric lesson IDs)
   const hasRealContent = Array.isArray(chapters) && chapters.length > 0 && chapters.some(ch => Array.isArray(ch.lessons) && ch.lessons.some(l => typeof l.id === 'number' && l.id > 0));
@@ -143,25 +168,25 @@ const CourseContent: React.FC<CourseContentProps> = ({
   const contentSections =
     chapters && chapters.length > 0
       ? chapters.map((ch) => ({
-          id: `chapter-${ch.id}`,
-          title: ch.title,
-          lessons: (ch.lessons || []).map((l) => ({
-            id: l.id,
-            title: l.title,
-            video_url: l.video_url ?? null,
-          })),
-        }))
+        id: `chapter-${ch.id}`,
+        title: ch.title,
+        lessons: (ch.lessons || []).map((l) => ({
+          id: l.id,
+          title: l.title,
+          video_url: l.video_url ?? null,
+        })),
+      }))
       : [
-          {
-            id: 'sample-1',
-            title: 'محتوى تجريبي',
-            lessons: ['درس تمهيدي', 'مقدمة عامة', 'التعرف على المحتوى'].map((t, i) => ({
-              id: i + 1,
-              title: t,
-              video_url: null,
-            })),
-          },
-        ];
+        {
+          id: 'sample-1',
+          title: 'محتوى تجريبي',
+          lessons: ['درس تمهيدي', 'مقدمة عامة', 'التعرف على المحتوى'].map((t, i) => ({
+            id: i + 1,
+            title: t,
+            video_url: null,
+          })),
+        },
+      ];
 
   // فتح جميع الأقسام افتراضياً بعد توفر المحتوى، إذا لم تكن مهيأة بعد
   React.useEffect(() => {
@@ -178,41 +203,29 @@ const CourseContent: React.FC<CourseContentProps> = ({
   // جلب حالة مشاهدة كل درس للمستخدم الحالي (إن كان مشتركًا ومحتوى حقيقي)
   React.useEffect(() => {
     console.log('[CourseContent][LessonStatusEffect][start]', { isEnrolled, hasRealContent, chaptersCount: (chapters || []).length });
-    if (!isEnrolled || !hasRealContent) return;
-    try {
-      const ids: number[] = (chapters || [])
-        .flatMap((ch) => (ch.lessons || []).map((l) => l.id))
-        .filter((id): id is number => typeof id === 'number' && id > 0);
-      if (ids.length === 0) return;
+    if (!isEnrolled || !courseId) return;
 
-      // عدم إعادة الجلب إذا كانت الحالات موجودة بالفعل لنفس القائمة
-      const uniqueIds = Array.from(new Set(ids));
-      console.log('[CourseContent][LessonStatusEffect][uniqueIds]', uniqueIds);
-      Promise.allSettled(
-        uniqueIds.map((id) =>
-          getLessonWatchStatus(id).then((status) => {
-            console.log('[CourseContent][LessonStatusEffect][fetched]', { id, status });
-            return { id, status };
-          })
-        )
-      ).then((settled) => {
-        const map: Record<number, LessonWatchStatus> = {};
-        settled.forEach((res) => {
-          if (res.status === 'fulfilled') {
-            map[res.value.id] = res.value.status;
-          }
-        });
-        if (Object.keys(map).length > 0) {
-          console.log('[CourseContent][LessonStatusEffect][applyMap]', map);
-          setLessonStatuses((prev) => ({ ...prev, ...map }));
+    console.log('[CourseContent] Fetching lesson statuses via getCourseProgressDetails...');
+    getCourseProgressDetails(courseId).then((details) => {
+      if (!details?.lessons || !Array.isArray(details.lessons)) {
+        console.log('[CourseContent] No lessons in progress details');
+        return;
+      }
+      const map: Record<number, LessonWatchStatus> = {};
+      details.lessons.forEach((l) => {
+        const lessonId = Number(l.lesson_id);
+        if (lessonId > 0) {
+          map[lessonId] = l.status === 'completed' ? 'completed' : 'in_progress';
         }
-      }).catch((err) => {
-        console.warn('[CourseContent][LessonStatusEffect][error]', err?.message || err);
       });
-    } catch (e) {
-      console.warn('[CourseContent][LessonStatusEffect][prepareError]', e);
-    }
-  }, [isEnrolled, hasRealContent, chapters]);
+      if (Object.keys(map).length > 0) {
+        console.log('[CourseContent] Lesson statuses fetched:', map);
+        setLessonStatuses((prev) => ({ ...prev, ...map }));
+      }
+    }).catch((err) => {
+      console.warn('[CourseContent] Error fetching lesson statuses:', err?.message || err);
+    });
+  }, [isEnrolled, courseId, refreshKey]);
 
   // تتبع تغيّر الحالات بعد التحديث
   React.useEffect(() => {
@@ -220,6 +233,22 @@ const CourseContent: React.FC<CourseContentProps> = ({
     const keys = Object.keys(lessonStatuses);
     console.log('[CourseContent][LessonStatusEffect][stateUpdated]', { count: keys.length, keys });
   }, [lessonStatuses, isEnrolled, hasRealContent]);
+
+  // تحديث حالة الدروس من courseProgress prop مباشرة (عند التنقل بين الدروس في صفحة المشاهدة)
+  React.useEffect(() => {
+    if (!courseProgress?.lessons || !Array.isArray(courseProgress.lessons)) return;
+    const map: Record<number, LessonWatchStatus> = {};
+    courseProgress.lessons.forEach((lp: any) => {
+      const lessonId = Number(lp.lesson_id);
+      if (lessonId > 0 && lp.status) {
+        map[lessonId] = lp.status === 'completed' ? 'completed' : 'in_progress';
+      }
+    });
+    if (Object.keys(map).length > 0) {
+      console.log('[CourseContent] Updating lesson statuses from courseProgress prop', map);
+      setLessonStatuses((prev) => ({ ...prev, ...map }));
+    }
+  }, [courseProgress]);
 
   const handleLessonNavigate = (lessonId: number, chapterId?: number, canWatch?: boolean, isPreview?: boolean) => {
     // Prevent navigating for sample/fallback content
@@ -242,6 +271,8 @@ const CourseContent: React.FC<CourseContentProps> = ({
       router.push(`/checkout/${courseId}`);
       return;
     }
+
+    // ملاحظة: الدرس يُكمل تلقائياً عند فتح صفحة /watch
     const query = `lessonId=${lessonId}` + (chapterId ? `&chapterId=${chapterId}` : '') + (courseId ? `&courseId=${courseId}` : '');
     router.push(`/watch?${query}`);
   };
@@ -262,14 +293,14 @@ const CourseContent: React.FC<CourseContentProps> = ({
               </>
             )}
             {/* إزالة النص التجريبي واستبداله بالوصف الحقيقي فقط */}
-            
+
             <h2>محتوى الكورس :</h2>
             <p className="course-content-subtitle">نحن هنا لمساعدتك والإجابة على أسئلتك</p>
-            
+
             <div className="course-content-dropdowns">
               {contentSections.map((section, index) => (
                 <div key={section.id} className="dropdown-section">
-                  <button 
+                  <button
                     className={`dropdown-header ${expandedSections[section.id] ? 'expanded' : ''}`}
                     aria-expanded={!!expandedSections[section.id]}
                     onClick={() => toggleSection(section.id)}
@@ -277,14 +308,14 @@ const CourseContent: React.FC<CourseContentProps> = ({
                     <div className="dropdown-title-container">
                       <span className="dropdown-title">{section.title}</span>
                     </div>
-                    <svg 
-                      className={`dropdown-arrow ${expandedSections[section.id] ? 'rotated' : ''}`} 
+                    <svg
+                      className={`dropdown-arrow ${expandedSections[section.id] ? 'rotated' : ''}`}
                       viewBox="0 0 24 24"
                     >
-                      <path d="M7 10l5 5 5-5z"/>
+                      <path d="M7 10l5 5 5-5z" />
                     </svg>
                   </button>
-                  
+
                   {expandedSections[section.id] && (
                     <div className="dropdown-content">
                       {section.lessons.map((lesson, lessonIndex) => (
@@ -319,13 +350,13 @@ const CourseContent: React.FC<CourseContentProps> = ({
                             }
                           >
                             <svg viewBox="0 0 24 24" className="play-icon-small">
-                              <path d="M8 5v14l11-7z"/>
+                              <path d="M8 5v14l11-7z" />
                             </svg>
                             <span>{
                               hasRealContent
                                 ? (isEnrolled
-                                    ? 'مشاهدة'
-                                    : (lesson.video_url ? 'معاينة' : 'اشترِ الآن'))
+                                  ? 'مشاهدة'
+                                  : (lesson.video_url ? 'معاينة' : 'اشترِ الآن'))
                                 : 'قريباً'
                             }</span>
                           </button>
@@ -336,12 +367,12 @@ const CourseContent: React.FC<CourseContentProps> = ({
                 </div>
               ))}
             </div>
-            
+
           </div>
         );
       case 'instructor':
         return (
-          <InstructorProfile 
+          <InstructorProfile
             instructorName={instructorName}
             instructorImage={instructorImage}
             rating={instructorRating}
@@ -376,19 +407,19 @@ const CourseContent: React.FC<CourseContentProps> = ({
         <div className="course-stats">
           <div className="stat-item">
             <svg className="stat-icon" viewBox="0 0 24 24">
-              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
             </svg>
             <span>{lecturesCount} محاضرة</span>
           </div>
           <div className="stat-item">
             <svg className="stat-icon" viewBox="0 0 24 24">
-              <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.5 7.5h-5A1.5 1.5 0 0 0 12.04 8.37L9.5 16H12v6h8zM12.5 11.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5S11 9.17 11 10s.67 1.5 1.5 1.5zM5.5 6c1.11 0 2-.89 2-2s-.89-2-2-2-2 .89-2 2 .89 2 2 2zm2 16 v-6H10l-2.54-7.63A1.5 1.5 0 0 0 6 7.5H1A1.5 1.5 0 0 0 -.46 8.37L-3 16h2.5v6h8z"/>
+              <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.5 7.5h-5A1.5 1.5 0 0 0 12.04 8.37L9.5 16H12v6h8zM12.5 11.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5S11 9.17 11 10s.67 1.5 1.5 1.5zM5.5 6c1.11 0 2-.89 2-2s-.89-2-2-2-2 .89-2 2 .89 2 2 2zm2 16 v-6H10l-2.54-7.63A1.5 1.5 0 0 0 6 7.5H1A1.5 1.5 0 0 0 -.46 8.37L-3 16h2.5v6h8z" />
             </svg>
             <span>{studentsCount} طالب</span>
           </div>
           <div className="stat-item">
             <svg className="stat-icon" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
             </svg>
             <span>{hoursCount} ساعة</span>
           </div>
@@ -398,7 +429,7 @@ const CourseContent: React.FC<CourseContentProps> = ({
       {/* Tabs */}
       <div className="tabs-container">
         <div className="tabs-nav">
-          <button 
+          <button
             className={`tab-button ${activeTab === 'overview' ? 'active' : ''}`}
             onClick={() => setActiveTab('overview')}
           >

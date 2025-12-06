@@ -5,6 +5,7 @@ import { getMyDiplomas, MyDiploma } from '../../../utils/categoryService';
 import { getBackendAssetUrl } from '../../../utils/url';
 import { isAuthenticated } from '../../../utils/authService';
 import { getDownloadUrl } from '../../../utils/certificateService';
+import { SkeletonCourseCard } from '../../../components/Skeleton';
 import styles from './MyCourses.module.css';
 
 interface DiplomaCard {
@@ -41,7 +42,7 @@ export default function MyDiplomas() {
         }
 
         const myDiplomas = await getMyDiplomas();
-        
+
         const diplomaCards: DiplomaCard[] = myDiplomas.map((enrollment: MyDiploma) => ({
           id: enrollment.id,
           name: enrollment.category.name,
@@ -82,10 +83,14 @@ export default function MyDiplomas() {
         <h1>الدبلومات والمقررات</h1>
         <p>جميع الدبلومات التي تتابعها</p>
       </div>
-      
+
       <div className="courses-container">
         {loading && (
-          <div className="loading-state">جاري التحميل...</div>
+          <div className="diplomas-grid">
+            {[1, 2, 3, 4].map((i) => (
+              <SkeletonCourseCard key={i} />
+            ))}
+          </div>
         )}
         {error && !loading && (
           <div className="error-state">{error}</div>
@@ -100,8 +105,8 @@ export default function MyDiplomas() {
               diplomas.map((diploma) => (
                 <div key={diploma.id} className="diploma-card">
                   <div className="diploma-image">
-                    <img 
-                      src={diploma.image || '/placeholder-diploma.jpg'} 
+                    <img
+                      src={diploma.image || '/placeholder-diploma.jpg'}
                       alt={diploma.name}
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = '/placeholder-diploma.jpg';
@@ -143,14 +148,14 @@ export default function MyDiplomas() {
                       تاريخ التسجيل: {new Date(diploma.enrolled_at).toLocaleDateString('ar-SA')}
                     </div>
                     <div className="diploma-actions">
-                      <button 
+                      <button
                         className="btn-primary"
                         onClick={() => window.location.href = `/diplomas/${diploma.slug || diploma.category_id}`}
                       >
                         عرض الدبلومة
                       </button>
                       {diploma.can_download_certificate && diploma.certificate_url && (
-                        <button 
+                        <button
                           className="btn-primary"
                           onClick={() => {
                             window.open(diploma.certificate_url!, '_blank');

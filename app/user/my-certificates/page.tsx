@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getMyCertificates, DiplomaCertificate, CourseCertificate } from '@/utils/certificateService';
 import { isAuthenticated } from '@/utils/authService';
 import CertificateCard from '@/components/CertificateCard';
+import { SkeletonCourseCard } from '@/components/Skeleton';
 import styles from './MyCertificates.module.css';
 import '@/components/Toast';
 
@@ -77,9 +78,16 @@ export default function MyCertificatesPage() {
   if (loading) {
     return (
       <div className={`my-certificates-page ${styles.myCertificatesPage}`}>
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>جاري تحميل الشهادات...</p>
+        <div className="certificates-container">
+          <div className="page-header">
+            <h1>شهاداتي</h1>
+            <p className="page-subtitle">جاري تحميل الشهادات...</p>
+          </div>
+          <div className="certificates-grid">
+            {[1, 2, 3, 4].map((i) => (
+              <SkeletonCourseCard key={i} />
+            ))}
+          </div>
         </div>
       </div>
     );

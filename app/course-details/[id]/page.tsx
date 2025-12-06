@@ -9,6 +9,7 @@ import CourseSidebar from '../../../components/CourseSidebar';
 import CourseContent from '../../../components/CourseContent';
 import CourseCard from '../../../components/CourseCard';
 import ScrollToTop from '../../../components/ScrollToTop';
+import { CourseDetailsSkeleton, SkeletonCourseCard } from '../../../components/Skeleton';
 import SocialMediaFloat from '../../../components/SocialMediaFloat';
 import { getCourseDetails, getFeaturedCourses, getMyEnrollments, Course, checkCourseAccess, enrollCourse } from '../../../utils/courseService';
 import { isAuthenticated } from '../../../utils/authService';
@@ -258,15 +259,7 @@ const CourseDetailsPage = () => {
       <div className="course-details-page">
         <HomeHeader />
         <main className="main-content">
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            minHeight: '400px',
-            fontSize: '18px'
-          }}>
-            جاري تحميل بيانات الكورس...
-          </div>
+          <CourseDetailsSkeleton />
         </main>
         <Footer />
       </div>

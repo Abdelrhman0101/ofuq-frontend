@@ -9,6 +9,7 @@ import HeroSearchSection from '../../components/HeroSearchSection'; // تأكد 
 // --- تغيير الكومبوننت ---
 // import CourseCard from '../../components/CourseCard'; // لم نعد نستخدمه هنا
 import DiplomaCard from '../../components/DiplomaCard'; // <-- كومبوننت جديد (سننشئه)
+import { SkeletonCourseCard } from '../../components/Skeleton';
 import ScrollToTop from '../../components/ScrollToTop'; // تأكد من المسار
 import SocialMediaFloat from '../../components/SocialMediaFloat'; // تأكد من المسار
 // --- تغيير الخدمات ---
@@ -142,7 +143,11 @@ function DiplomsContent() {
           {/* --- تغيير عرض البطاقات --- */}
           <div className={styles['courses-grid']}> {/* يمكن تغيير اسم الكلاس */}
             {loading ? (
-              <div className={styles['loading-state']}>جاري تحميل الدبلومات...</div>
+              <>
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <SkeletonCourseCard key={i} />
+                ))}
+              </>
             ) : error ? (
               <div className={styles['error-state']}>{error}</div>
             ) : filteredDiplomas.length > 0 ? (
@@ -157,7 +162,7 @@ function DiplomsContent() {
                   isFree={diploma.isFree}
                   slug={diploma.slug}
                   coursesCount={diploma.coursesCount}
-                  // يمكنك تمرير أي بيانات أخرى يحتاجها الكومبوننت
+                // يمكنك تمرير أي بيانات أخرى يحتاجها الكومبوننت
                 />
               ))
             ) : (
@@ -218,9 +223,9 @@ const DiplomaCard: React.FC<DiplomaCardProps> = ({
 
   return (
     <div className="diploma-card"> {/* استخدم كلاسات CSS الخاصة بك */
-      {/* <Link href={`/diplomas/${slug}`} passHref> */}
-        {/* <a className="diploma-card-link"> */}
-          {/* <div className="diploma-card-image-container">
+{/* <Link href={`/diplomas/${slug}`} passHref> */ }
+{/* <a className="diploma-card-link"> */ }
+{/* <div className="diploma-card-image-container">
             <Image
               src={image}
               alt={name}
@@ -241,17 +246,17 @@ const DiplomaCard: React.FC<DiplomaCardProps> = ({
               </span>
             </div>
              <button className="diploma-card-button">عرض التفاصيل</button> {/* أو اجعل الرابط كله زرًا */}
-          {/* </div> */}
-        {/* </a> */}
-      {/* </Link> */}
-      {/* إصلاح لـ Link */}
-      {/* <Link href={`/diplomas/${slug}`} passHref legacyBehavior> */}
-        {/* <a className="diploma-card-link"> */}
-          {/* ... (نفس محتوى البطاقة أعلاه) ... */}
-        {/* </a> */}
-      {/* </Link> */}
-    {/* </div> */}
-  {/* ); */}
-{/* }; */}
+{/* </div> */ }
+{/* </a> */ }
+{/* </Link> */ }
+{/* إصلاح لـ Link */ }
+{/* <Link href={`/diplomas/${slug}`} passHref legacyBehavior> */ }
+{/* <a className="diploma-card-link"> */ }
+{/* ... (نفس محتوى البطاقة أعلاه) ... */ }
+{/* </a> */ }
+{/* </Link> */ }
+{/* </div> */ }
+{/* ); */ }
+{/* }; */ }
 
-{/* export default DiplomaCard; */}
+{/* export default DiplomaCard; */ }

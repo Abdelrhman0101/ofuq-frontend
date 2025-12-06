@@ -40,7 +40,7 @@ export default function MyExams() {
         setToastVisible(true);
         sessionStorage.removeItem('exam-block-message');
       }
-    } catch {}
+    } catch { }
   }, []);
 
   // افتح تفاصيل الامتحان تلقائيًا إذا كانت هناك عملية إرسال حديثة
@@ -89,15 +89,15 @@ export default function MyExams() {
             <h1>اختباراتي</h1>
             <p>جميع الاختبارات المتاحة لك</p>
           </div>
-          
+
           <div className="courses-container">
-            <ExamCard showAll={false} onExamSelect={handleExamSelect} />
+            <ExamCard showAll={true} onExamSelect={handleExamSelect} />
           </div>
         </>
       ) : (
-        <ExamDetails 
+        <ExamDetails
           courseId={selectedExam.id}
-          courseName={selectedExam.name} 
+          courseName={selectedExam.name}
           completionPercentage={selectedExam.progress}
           onBack={handleBackToExams}
         />

@@ -61,7 +61,7 @@ const ExamCard: React.FC<ExamCardProps> = ({ showAll = false, exams, onExamSelec
       else if (activeFilter === 'in_progress') filterParams.status = 'in_progress';
       else if (typeof activeFilter === 'number') filterParams.category_id = activeFilter;
 
-      const response = await getMyEnrolledCourses(page, 9, filterParams);
+      const response = await getMyEnrolledCourses(page, 50, filterParams);
 
       if (response && response.data) {
         setEnrolledCourses(response.data);

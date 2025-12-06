@@ -8,6 +8,7 @@ import { FiBook, FiStar, FiDollarSign, FiEye, FiPlay, FiUser } from 'react-icons
 import HomeHeader from '../../../components/HomeHeader';
 import Footer from '../../../components/Footer';
 import ScrollToTop from '../../../components/ScrollToTop';
+import { SkeletonImage, SkeletonTitle, SkeletonText, SkeletonButton, SkeletonCourseCard } from '../../../components/Skeleton';
 import SocialMediaFloat from '../../../components/SocialMediaFloat';
 import EnrollmentInfoModal from '../../../components/EnrollmentInfoModal';
 import Toast from '../../../components/Toast';
@@ -58,7 +59,7 @@ export default function DiplomaDetailsPage() {
     try {
       setCheckingEnrollment(true);
       const myDiplomas = await getMyDiplomas();
-      const enrolled = myDiplomas.some((myDiploma: MyDiploma) => 
+      const enrolled = myDiplomas.some((myDiploma: MyDiploma) =>
         myDiploma.category?.id === diploma.id || myDiploma.category?.slug === diploma.slug
       );
       setIsEnrolled(enrolled);
@@ -94,7 +95,7 @@ export default function DiplomaDetailsPage() {
       if (notice === 'enroll_required') {
         showToast('يرجى الاشتراك في الدبلومة لعرض محتويات هذا المقرر', 'warning', 4000);
       }
-    } catch {}
+    } catch { }
   }, [searchParams]);
 
   // Check enrollment status when diploma is loaded
@@ -106,7 +107,7 @@ export default function DiplomaDetailsPage() {
 
   const scrollToCourses = () => {
     if (coursesRef.current) {
-      coursesRef.current.scrollIntoView({ 
+      coursesRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'start'
       });
@@ -115,7 +116,7 @@ export default function DiplomaDetailsPage() {
 
   const handleEnroll = async () => {
     if (!diploma) return;
-    
+
     // If already enrolled, scroll to courses section
     if (isEnrolled) {
       scrollToCourses();
@@ -140,7 +141,7 @@ export default function DiplomaDetailsPage() {
       setIsEnrollmentModalOpen(false);
       // Update enrollment status
       setIsEnrolled(true);
-      try { router.push('/dashboard/my-diplomas'); } catch {}
+      try { router.push('/dashboard/my-diplomas'); } catch { }
     } catch (e: any) {
       setEnrollStatus({ type: 'error', message: e?.message || 'فشلت عملية التسجيل بالدبلومة' });
     }
@@ -179,9 +180,30 @@ export default function DiplomaDetailsPage() {
       <HomeHeader />
 
       {loading && (
-        <section className={styles.loadingSection}>
-          <div className={styles.loader}>جاري تحميل تفاصيل الدبلومة…</div>
-        </section>
+        <main className={styles.page} dir="rtl">
+          <section className={styles.detailsSection}>
+            <div className={styles.detailsGrid}>
+              <div className={styles.coverWrapper}>
+                <SkeletonImage aspectRatio="4/3" />
+              </div>
+              <div className={styles.detailsContent}>
+                <SkeletonTitle width="50%" />
+                <SkeletonText lines={4} />
+                <div style={{ marginTop: '20px' }}>
+                  <SkeletonButton width={200} />
+                </div>
+              </div>
+            </div>
+          </section>
+          <section className={styles.coursesSection}>
+            <SkeletonTitle width="200px" />
+            <div className={styles.coursesGrid}>
+              {[1, 2, 3].map((i) => (
+                <SkeletonCourseCard key={i} />
+              ))}
+            </div>
+          </section>
+        </main>
       )}
 
       {!loading && error && (
@@ -261,14 +283,14 @@ export default function DiplomaDetailsPage() {
                   alt={diploma?.name || 'غلاف الدبلومة'}
                 />
                 <div className={styles.coverOverlay}>
-                   <button
-                     className={styles.playButton}
-                     onClick={handleEnroll}
-                     disabled={enrollStatus.type === 'loading' || checkingEnrollment}
-                   >
-                     {isEnrolled ? <FiEye /> : <FiPlay />}
-                   </button>
-                 </div>
+                  <button
+                    className={styles.playButton}
+                    onClick={handleEnroll}
+                    disabled={enrollStatus.type === 'loading' || checkingEnrollment}
+                  >
+                    {isEnrolled ? <FiEye /> : <FiPlay />}
+                  </button>
+                </div>
               </div>
               <div className={styles.detailsContent}>
                 <h2 className={styles.detailsTitle}>نبذة عن الدبلومة</h2>
@@ -281,14 +303,14 @@ export default function DiplomaDetailsPage() {
                     </span>
                   </div> */}
                   <div className={styles.metaItem}>
-                    <strong>السعر:</strong> 
+                    <strong>السعر:</strong>
                     <span className={styles.priceTag}>
                       {diploma?.is_free ? 'مجاني' : `${diploma?.price} جنيه`}
                     </span>
                   </div>
                   {typeof diploma?.courses_count !== 'undefined' && (
                     <div className={styles.metaItem}>
-                      <strong>عدد المقررات:</strong> 
+                      <strong>عدد المقررات:</strong>
                       <span className={styles.countTag}>{diploma?.courses_count}</span>
                     </div>
                   )}
