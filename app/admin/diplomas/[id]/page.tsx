@@ -36,6 +36,7 @@ export default function AdminDiplomaPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Toast state
   const [toastVisible, setToastVisible] = useState(false);
@@ -187,6 +188,24 @@ export default function AdminDiplomaPage() {
 
       <div className={styles.list}>
         <h2 className={styles.sectionTitle}>قائمة المقررات</h2>
+        {/* Search Bar */}
+        <div className={styles.searchContainer}>
+          <input
+            type="text"
+            placeholder="بحث عن مقرر..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={styles.searchInput}
+          />
+          {searchQuery && (
+            <button
+              className={styles.clearSearch}
+              onClick={() => setSearchQuery('')}
+            >
+              ×
+            </button>
+          )}
+        </div>
         <div className={styles.tableContainer}>
           <table className={styles.table}>
             <thead>
@@ -201,39 +220,49 @@ export default function AdminDiplomaPage() {
               </tr>
             </thead>
             <tbody>
-              {courses.map((course) => {
-                const published = isCoursePublished(course);
-                const coverUrl = getBackendAssetUrl(course.cover_image ?? (course as any).cover_image_url);
-                const lessonsCount = Number(course.chapters_count ?? 0);
-                return (
-                  <tr key={String(course.id)}>
-                    <td className={styles.coverCell}>
-                      {coverUrl ? (
-                        <img className={styles.coverThumb} src={coverUrl} alt={course.title} />
-                      ) : (
-                        <div className={styles.coverThumb} style={{ display: "grid", placeItems: "center", color: "#6b7280" }}>—</div>
-                      )}
-                    </td>
-                    <td>{course.title}</td>
-                    <td>{course.instructor?.name || "—"}</td>
-                    <td>{getStatusText(published)}</td>
-                    <td>{formatPrice(Number(course.price ?? 0), Boolean(course.is_free))}</td>
-                    <td>{lessonsCount}</td>
-                    <td className={styles.actionsCell}>
-                      <button className={styles.btnAction} onClick={() => router.push(`/course-details/${course.id}`)}>عرض</button>
-                      <button className={styles.btnAction} onClick={() => router.push(`/admin/diplomas/${diplomaId}/courses/${course.id}/chapters`)}>إدارة الفصول</button>
-                      <button className={styles.btnAction} onClick={() => router.push(`/admin/courses/${course.id}`)}>تعديل</button>
-                      <button
-                        className={styles.btnDanger}
-                        onClick={() => confirmDeleteCourse(Number(course.id))}
-                        disabled={isDeletingCourseId === Number(course.id)}
-                      >
-                        {isDeletingCourseId === Number(course.id) ? "جاري الحذف..." : "حذف"}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {courses
+                .filter((course) => {
+                  if (!searchQuery.trim()) return true;
+                  const query = searchQuery.toLowerCase();
+                  return (
+                    course.title?.toLowerCase().includes(query) ||
+                    course.instructor?.name?.toLowerCase().includes(query) ||
+                    course.description?.toLowerCase().includes(query)
+                  );
+                })
+                .map((course) => {
+                  const published = isCoursePublished(course);
+                  const coverUrl = getBackendAssetUrl(course.cover_image ?? (course as any).cover_image_url);
+                  const lessonsCount = Number(course.chapters_count ?? 0);
+                  return (
+                    <tr key={String(course.id)}>
+                      <td className={styles.coverCell}>
+                        {coverUrl ? (
+                          <img className={styles.coverThumb} src={coverUrl} alt={course.title} />
+                        ) : (
+                          <div className={styles.coverThumb} style={{ display: "grid", placeItems: "center", color: "#6b7280" }}>—</div>
+                        )}
+                      </td>
+                      <td>{course.title}</td>
+                      <td>{course.instructor?.name || "—"}</td>
+                      <td>{getStatusText(published)}</td>
+                      <td>{formatPrice(Number(course.price ?? 0), Boolean(course.is_free))}</td>
+                      <td>{lessonsCount}</td>
+                      <td className={styles.actionsCell}>
+                        <button className={styles.btnAction} onClick={() => router.push(`/course-details/${course.id}`)}>عرض</button>
+                        <button className={styles.btnAction} onClick={() => router.push(`/admin/diplomas/${diplomaId}/courses/${course.id}/chapters`)}>إدارة الفصول</button>
+                        <button className={styles.btnAction} onClick={() => router.push(`/admin/courses/${course.id}`)}>تعديل</button>
+                        <button
+                          className={styles.btnDanger}
+                          onClick={() => confirmDeleteCourse(Number(course.id))}
+                          disabled={isDeletingCourseId === Number(course.id)}
+                        >
+                          {isDeletingCourseId === Number(course.id) ? "جاري الحذف..." : "حذف"}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               {courses.length === 0 && (
                 <tr>
                   <td colSpan={7} style={{ textAlign: "center", color: "#6b7280" }}>لا توجد مقررات مرتبطة بهذه الدبلومة</td>

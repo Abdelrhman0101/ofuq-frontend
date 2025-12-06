@@ -392,3 +392,59 @@
 .copyButton:hover {
   background: #cbd5e0;
 }
+
+.validationErrors {
+  background: #fff5f5;
+  border: 2px solid #fc8181;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.validationErrors .errorHeader {
+  font-weight: 700;
+  color: #c53030;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.validationErrors ul {
+  margin: 0;
+  padding-right: 24px;
+  color: #742a2a;
+}
+
+.validationErrors li {
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+
+.dismissButton {
+  margin-top: 12px;
+  background: #e2e8f0;
+  color: #2d3748;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dismissButton:hover {
+  background: #cbd5e0;
+}
+
+.safetyNote {
+  background: #f0fff4;
+  border: 2px solid #9ae6b4;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 14px 0;
+  color: #22543d;
+  font-size: 14px;
+  line-height: 1.6;
+  display: flex;
+  align-items: center;
+}

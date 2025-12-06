@@ -9,6 +9,7 @@ import {
   getActiveCourseFinalExamAttempt,
   getCourseFinalExamMeta,
 } from "@/utils/quizService";
+import { getCourseDetails } from "@/utils/courseService";
 import Toast from "@/components/Toast";
 import "@/styles/toast.css";
 import styles from "./FinalExam.module.css";
@@ -19,6 +20,7 @@ export default function CourseFinalExamPage() {
   const courseId = useMemo(() => Number(params?.courseId), [params]);
 
   const [loading, setLoading] = useState(true);
+  const [courseName, setCourseName] = useState<string>("");
   const [attemptId, setAttemptId] = useState<number | null>(null);
   const [questions, setQuestions] = useState<Array<{
     id: number;
@@ -53,6 +55,11 @@ export default function CourseFinalExamPage() {
 
       setLoading(true);
       try {
+        // جلب اسم المقرر
+        getCourseDetails(courseId).then((course) => {
+          if (course?.title) setCourseName(course.title);
+        }).catch(() => { });
+
         // 1) حاول استرجاع المحاولة النشطة أولاً
         const active = await getActiveCourseFinalExamAttempt(courseId);
         if (!mounted) return;
@@ -83,13 +90,13 @@ export default function CourseFinalExamPage() {
         const msg = remaining > 0
           ? `محاولة جديدة غير متاحة الآن. يمكنك إعادة المحاولة بعد ${remaining} ثانية.`
           : (meta?.next_allowed_at
-              ? `محاولة جديدة غير متاحة الآن. متاح بعد ${new Date(meta.next_allowed_at).toLocaleString()}`
-              : "محاولة جديدة غير متاحة الآن");
+            ? `محاولة جديدة غير متاحة الآن. متاح بعد ${new Date(meta.next_allowed_at).toLocaleString()}`
+            : "محاولة جديدة غير متاحة الآن");
         showToast(msg, "warning");
         try {
           sessionStorage.setItem("exam-block-message", msg);
           sessionStorage.setItem("flash-toast", JSON.stringify({ message: msg, type: "warning" }));
-        } catch {}
+        } catch { }
         router.replace("/user/my_exams");
       } catch (err: any) {
         // 422 بنك أسئلة غير كافٍ أو أخطاء أخرى
@@ -100,7 +107,7 @@ export default function CourseFinalExamPage() {
         try {
           sessionStorage.setItem("exam-block-message", message);
           sessionStorage.setItem("flash-toast", JSON.stringify({ message, type: "error" }));
-        } catch {}
+        } catch { }
         router.replace("/user/my_exams");
       } finally {
         if (mounted) setLoading(false);
@@ -146,7 +153,7 @@ export default function CourseFinalExamPage() {
         );
         // احفظ معرف المقرر لفتح تفاصيل النتائج تلقائيًا في صفحة اختباراتي
         sessionStorage.setItem("last-exam-course-id", String(courseId));
-      } catch {}
+      } catch { }
       // اخرج فورًا إلى صفحة اختباراتي بدون إمكانية الرجوع لهذه الصفحة
       router.replace("/user/my_exams");
     } catch (err: any) {
@@ -182,7 +189,9 @@ export default function CourseFinalExamPage() {
         isVisible={toastVisible}
         onClose={() => setToastVisible(false)}
       />
-      <h1 className="question-number" style={{ marginBottom: 10 }}>الامتحان النهائي للمقرر</h1>
+      <h1 className="question-number" style={{ marginBottom: 10 }}>
+        الامتحان النهائي للمقرر{courseName ? `: ${courseName}` : ""}
+      </h1>
 
       {loading && <p>جارِ تحميل الأسئلة...</p>}
 

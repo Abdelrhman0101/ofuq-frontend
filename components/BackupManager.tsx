@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaDatabase, FaDownload, FaRedo, FaTrash, FaPlus, FaUpload, FaExclamationTriangle, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaDatabase, FaDownload, FaRedo, FaTrash, FaPlus, FaUpload, FaExclamationTriangle, FaCheckCircle, FaTimesCircle, FaShieldAlt } from 'react-icons/fa';
 import styles from './BackupManager.module.css';
 import Toast from './Toast';
 
@@ -12,6 +12,14 @@ interface Backup {
     size: string;
     size_bytes: number;
     exists: boolean;
+    filename?: string;
+}
+
+interface ValidationResult {
+    valid: boolean;
+    errors: string[];
+    file_size?: string;
+    sql_size?: string;
 }
 
 export default function BackupManager() {
@@ -24,6 +32,7 @@ export default function BackupManager() {
     const [selectedBackup, setSelectedBackup] = useState<Backup | null>(null);
     const [confirmationCode, setConfirmationCode] = useState('');
     const [restoreError, setRestoreError] = useState<string | null>(null);
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
     // Meta from API
     const [diskName, setDiskName] = useState<string>('');
@@ -83,6 +92,7 @@ export default function BackupManager() {
 
         try {
             setUploading(true);
+            setValidationErrors([]);
             const token = localStorage.getItem('auth_token');
             const formData = new FormData();
             formData.append('backup_file', file);
@@ -99,14 +109,25 @@ export default function BackupManager() {
             );
 
             if (response.data.success) {
-                showToast('تم رفع النسخة الاحتياطية بنجاح!', 'success');
+                const validation = response.data.validation;
+                const sizeInfo = validation
+                    ? ` (حجم الملف: ${validation.file_size}، حجم SQL: ${validation.sql_size})`
+                    : '';
+                showToast(`تم رفع النسخة الاحتياطية بنجاح وتم التحقق من صحتها${sizeInfo}`, 'success');
                 await loadBackups();
             } else {
                 showToast('فشل رفع النسخة الاحتياطية', 'error');
             }
         } catch (error: any) {
             console.error('Error uploading backup:', error);
-            showToast(error.response?.data?.message || 'فشل رفع النسخة الاحتياطية', 'error');
+
+            // Handle validation errors
+            if (error.response?.status === 422 && error.response?.data?.validation_errors) {
+                setValidationErrors(error.response.data.validation_errors);
+                showToast('فشل التحقق من صحة النسخة الاحتياطية - الملف قد يكون تالفاً', 'error');
+            } else {
+                showToast(error.response?.data?.message || 'فشل رفع النسخة الاحتياطية', 'error');
+            }
         } finally {
             setUploading(false);
             // Reset file input
@@ -144,7 +165,8 @@ export default function BackupManager() {
     const downloadBackup = async (backup: Backup) => {
         try {
             const token = localStorage.getItem('auth_token');
-            const filename = backup.path.split('/').pop();
+            // Use filename directly if available, otherwise extract from path (cross-platform)
+            const filename = backup.filename || backup.path.split(/[/\\]/).pop();
 
             const response = await axios.get(
                 `${API_URL}/admin/backups/${encodeURIComponent(filename!)}/download`,
@@ -180,7 +202,8 @@ export default function BackupManager() {
         if (!backupPendingDeletion) return;
         try {
             const token = localStorage.getItem('auth_token');
-            const filename = backupPendingDeletion.path.split('/').pop();
+            // Use filename directly if available, otherwise extract from path (cross-platform)
+            const filename = backupPendingDeletion.filename || backupPendingDeletion.path.split(/[/\\]/).pop();
 
             const response = await axios.delete(`${API_URL}/admin/backups/${encodeURIComponent(filename!)}`, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -208,6 +231,8 @@ export default function BackupManager() {
         setSelectedBackup(backup);
         setShowRestoreModal(true);
         setConfirmationCode('');
+        setRestoreError(null);
+        setValidationErrors([]);
     };
 
     const restoreBackup = async () => {
@@ -221,8 +246,10 @@ export default function BackupManager() {
         try {
             setRestoring(selectedBackup.path);
             setRestoreError(null);
+            setValidationErrors([]);
             const token = localStorage.getItem('auth_token');
-            const filename = selectedBackup.path.split('/').pop();
+            // Use filename directly if available, otherwise extract from path (cross-platform)
+            const filename = selectedBackup.filename || selectedBackup.path.split(/[/\\]/).pop();
 
             const response = await axios.post(
                 `${API_URL}/admin/backups/restore`,
@@ -236,21 +263,37 @@ export default function BackupManager() {
             );
 
             if (response.data.success) {
-                showToast('تم استرجاع قاعدة البيانات بنجاح! يرجى تحديث الصفحة.', 'success');
+                const preRestoreMsg = response.data.pre_restore_backup
+                    ? ' (تم إنشاء نسخة احتياطية تلقائية من الحالة السابقة)'
+                    : '';
+                showToast(`تم استرجاع قاعدة البيانات بنجاح!${preRestoreMsg} يرجى تحديث الصفحة.`, 'success');
                 setShowRestoreModal(false);
+                await loadBackups();
             }
         } catch (error: any) {
             console.error('Error restoring backup:', error);
-            const errMsg = error.response?.data?.message || 'فشل الاسترجاع';
-            const errDetails = error.response?.data?.error_output;
-            const passwordProvided = error.response?.data?.password_provided;
-            const composed = [
-                errMsg,
-                typeof passwordProvided !== 'undefined' ? `كلمة المرور مُمرَّرة: ${passwordProvided ? 'نعم' : 'لا'}` : null,
-                errDetails ? `تفاصيل الخطأ:\n${String(errDetails).slice(0, 1500)}` : null,
-            ].filter(Boolean).join('\n\n');
-            setRestoreError(composed);
-            showToast(errMsg, 'error');
+
+            // Handle validation errors
+            if (error.response?.status === 422 && error.response?.data?.validation_errors) {
+                setValidationErrors(error.response.data.validation_errors);
+                setRestoreError('فشل التحقق من صحة النسخة الاحتياطية');
+            } else {
+                const errMsg = error.response?.data?.message || 'فشل الاسترجاع';
+                const errDetails = error.response?.data?.error_output;
+                const preRestoreError = error.response?.data?.pre_restore_error;
+                const passwordProvided = error.response?.data?.password_provided;
+                const preRestoreBackup = error.response?.data?.pre_restore_backup;
+
+                const composed = [
+                    errMsg,
+                    preRestoreBackup ? '✓ تم إنشاء نسخة احتياطية من الحالة السابقة قبل محاولة الاسترجاع' : null,
+                    preRestoreError ? `خطأ في النسخ الاحتياطي المسبق: ${preRestoreError}` : null,
+                    typeof passwordProvided !== 'undefined' ? `كلمة المرور مُمرَّرة: ${passwordProvided ? 'نعم' : 'لا'}` : null,
+                    errDetails ? `تفاصيل الخطأ:\n${String(errDetails).slice(0, 1500)}` : null,
+                ].filter(Boolean).join('\n\n');
+                setRestoreError(composed);
+            }
+            showToast(error.response?.data?.message || 'فشل الاسترجاع', 'error');
         } finally {
             setRestoring(null);
         }
@@ -266,7 +309,8 @@ export default function BackupManager() {
     };
 
     const getFilename = (path: string) => {
-        return path.split('/').pop() || path;
+        // Cross-platform path splitting
+        return path.split(/[/\\]/).pop() || path;
     };
 
     return (
@@ -278,6 +322,10 @@ export default function BackupManager() {
                     <div className={styles.meta}>
                         {diskName && <span className={styles.metaItem}>الديسك: {diskName}</span>}
                         <span className={styles.metaItem}>عدد النسخ: {totalBackups}</span>
+                        <span className={styles.metaItem} style={{ background: '#c6f6d5', color: '#22543d' }}>
+                            <FaShieldAlt style={{ marginLeft: '4px' }} />
+                            نسخة تلقائية قبل الاسترجاع
+                        </span>
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
@@ -298,6 +346,27 @@ export default function BackupManager() {
                     </button>
                 </div>
             </div>
+
+            {/* Validation Errors Display */}
+            {validationErrors.length > 0 && (
+                <div className={styles.validationErrors}>
+                    <div className={styles.errorHeader}>
+                        <FaExclamationTriangle style={{ marginLeft: '8px' }} />
+                        فشل التحقق من صحة الملف:
+                    </div>
+                    <ul>
+                        {validationErrors.map((error, index) => (
+                            <li key={index}>{error}</li>
+                        ))}
+                    </ul>
+                    <button
+                        className={styles.dismissButton}
+                        onClick={() => setValidationErrors([])}
+                    >
+                        إغلاق
+                    </button>
+                </div>
+            )}
 
             {loading ? (
                 <div className={styles.loading}>جاري تحميل النسخ الاحتياطية...</div>
@@ -375,6 +444,10 @@ export default function BackupManager() {
                         <p className={styles.warning}>
                             <strong>تحذير:</strong> هذا الإجراء سيستبدل جميع البيانات الحالية ببيانات النسخة الاحتياطية.
                         </p>
+                        <p className={styles.safetyNote}>
+                            <FaShieldAlt style={{ marginLeft: '6px', color: '#38a169' }} />
+                            <strong>أمان:</strong> سيتم إنشاء نسخة احتياطية تلقائية من الحالة الحالية قبل الاسترجاع.
+                        </p>
                         <p>
                             تاريخ النسخة: <strong>{selectedBackup?.date}</strong>
                         </p>
@@ -393,6 +466,18 @@ export default function BackupManager() {
                                 placeholder="RESTORE-CONFIRM"
                             />
                         </div>
+
+                        {/* Validation Errors in Modal */}
+                        {validationErrors.length > 0 && (
+                            <div className={styles.errorDetails}>
+                                <div className={styles.errorHeader}>فشل التحقق من صحة النسخة الاحتياطية:</div>
+                                <ul style={{ margin: '8px 0', paddingRight: '20px' }}>
+                                    {validationErrors.map((error, index) => (
+                                        <li key={index} style={{ color: '#742a2a', marginBottom: '4px' }}>{error}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
 
                         {restoreError && (
                             <div className={styles.errorDetails}>
@@ -444,3 +529,4 @@ export default function BackupManager() {
         </div>
     );
 }
+

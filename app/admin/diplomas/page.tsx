@@ -39,6 +39,7 @@ export default function AdminDiplomasPage() {
   const [error, setError] = useState<string | null>(null);
   const [showDiplomaForm, setShowDiplomaForm] = useState(false);
   const [editingDiploma, setEditingDiploma] = useState<Diploma | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Toast state
   const [toastVisible, setToastVisible] = useState(false);
@@ -211,6 +212,25 @@ export default function AdminDiplomasPage() {
       </button>
       </div>
 
+      {/* --- Search Bar --- */}
+      <div className={styles.searchContainer}>
+        <input
+          type="text"
+          placeholder="بحث عن دبلوم..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className={styles.searchInput}
+        />
+        {searchQuery && (
+          <button
+            className={styles.clearSearch}
+            onClick={() => setSearchQuery('')}
+          >
+            ×
+          </button>
+        )}
+      </div>
+
       {/* --- Add/Edit Diploma Modal --- */}
       {showDiplomaForm && (
         <div className={styles.modalOverlay} onClick={() => setShowDiplomaForm(false)}>
@@ -318,42 +338,52 @@ export default function AdminDiplomasPage() {
               </tr>
             </thead>
             <tbody>
-              {diplomas.map((diploma) => (
-                <tr key={diploma.id}>
-                  <td>{diploma.display_order ?? 0}</td>
-                  <td>
-                    <div className={styles.nameCell}>
-                      <div>{diploma.name}</div>
-                      <div className={styles.slugText}>{diploma.slug}</div>
-                    </div>
-                  </td>
-                  <td>
-                    <img className={styles.thumb} src={getBackendAssetUrl(diploma.cover_image_url || '/logo.png')} alt={`غلاف ${diploma.name}`} />
-                  </td>
-                  <td>
-                    <div className={styles.descCell}>{diploma.description || '-'}</div>
-                  </td>
-                  <td>
-                    {diploma.is_free ? (
-                      <span className={styles.priceFree}>مجاني</span>
-                    ) : (
-                      formatPrice(diploma.price || 0)
-                    )}
-                  </td>
-                  <td>
-                    <span className={`${styles.badge} ${diploma.is_published ? styles.badgePublished : styles.badgeDraft}`}>
-                      {getStatusText(Boolean(diploma.is_published))}
-                    </span>
-                  </td>
-                  <td className={styles.actionsCell}>
-                    <button className={styles.btnAction} onClick={() => handleViewDetails(diploma.id)}>عرض</button>
-                    <button className={styles.btnAction} onClick={() => handleEdit(diploma)}>تعديل</button>
-                    <button className={`${styles.btnAction} ${styles.btnInfo}`} onClick={() => handleViewStudents(diploma.id)}>الخريجين</button>
-                    <button className={`${styles.btnAction} ${styles.btnDanger}`} onClick={() => handleDelete(diploma.id)}>حذف</button>
-                    <button className={`${styles.btnAction} ${styles.btnSuccess}`} onClick={() => handleAddCourse(diploma.id)}>+ مقرر</button>
-                  </td>
-                </tr>
-              ))}
+              {diplomas
+                .filter((diploma) => {
+                  if (!searchQuery.trim()) return true;
+                  const query = searchQuery.toLowerCase();
+                  return (
+                    diploma.name?.toLowerCase().includes(query) ||
+                    diploma.slug?.toLowerCase().includes(query) ||
+                    diploma.description?.toLowerCase().includes(query)
+                  );
+                })
+                .map((diploma) => (
+                  <tr key={diploma.id}>
+                    <td>{diploma.display_order ?? 0}</td>
+                    <td>
+                      <div className={styles.nameCell}>
+                        <div>{diploma.name}</div>
+                        <div className={styles.slugText}>{diploma.slug}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <img className={styles.thumb} src={getBackendAssetUrl(diploma.cover_image_url || '/logo.png')} alt={`غلاف ${diploma.name}`} />
+                    </td>
+                    <td>
+                      <div className={styles.descCell}>{diploma.description || '-'}</div>
+                    </td>
+                    <td>
+                      {diploma.is_free ? (
+                        <span className={styles.priceFree}>مجاني</span>
+                      ) : (
+                        formatPrice(diploma.price || 0)
+                      )}
+                    </td>
+                    <td>
+                      <span className={`${styles.badge} ${diploma.is_published ? styles.badgePublished : styles.badgeDraft}`}>
+                        {getStatusText(Boolean(diploma.is_published))}
+                      </span>
+                    </td>
+                    <td className={styles.actionsCell}>
+                      <button className={styles.btnAction} onClick={() => handleViewDetails(diploma.id)}>عرض</button>
+                      <button className={styles.btnAction} onClick={() => handleEdit(diploma)}>تعديل</button>
+                      <button className={`${styles.btnAction} ${styles.btnInfo}`} onClick={() => handleViewStudents(diploma.id)}>الخريجين</button>
+                      <button className={`${styles.btnAction} ${styles.btnDanger}`} onClick={() => handleDelete(diploma.id)}>حذف</button>
+                      <button className={`${styles.btnAction} ${styles.btnSuccess}`} onClick={() => handleAddCourse(diploma.id)}>+ مقرر</button>
+                    </td>
+                  </tr>
+                ))}
               {diplomas.length === 0 && (
                 <tr>
                   <td colSpan={7} style={{ textAlign: 'center' }}>لا توجد دبلومات متاحة</td>
