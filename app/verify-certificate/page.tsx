@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { http } from '@/lib/http';
 import HomeHeader from '@/components/HomeHeader';
 import Footer from '@/components/Footer';
@@ -21,26 +22,36 @@ interface ApiResponse {
 }
 
 function VerifyCertificateContent() {
+  const searchParams = useSearchParams();
   const [serialNumber, setSerialNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
+  const [autoVerifyDone, setAutoVerifyDone] = useState(false);
 
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!serialNumber.trim()) {
-      setError('يرجى إدخال الرقم التسلسلي');
-      return;
+  // التحقق التلقائي عند تحميل الصفحة مع parameter
+  useEffect(() => {
+    const serialFromUrl = searchParams.get('s');
+    if (serialFromUrl && !autoVerifyDone) {
+      setSerialNumber(serialFromUrl);
+      setAutoVerifyDone(true);
+      // تشغيل التحقق تلقائياً
+      handleVerifyAuto(serialFromUrl);
     }
+  }, [searchParams, autoVerifyDone]);
+
+  // دالة التحقق التلقائي (بدون event)
+  const handleVerifyAuto = async (serial: string) => {
+    if (!serial.trim()) return;
 
     setLoading(true);
     setError('');
     setResult(null);
 
     try {
-      const response = await http.get(`/public/verify-certificate?serial_number=${serialNumber}`);
-      setResult(response.data.data); // استخدام response.data.data للوصول للبيانات الفعلية
-      setError(''); // مسح أي خطأ سابق عند النجاح
+      const response = await http.get(`/public/verify-certificate?serial_number=${serial}`);
+      setResult(response.data.data);
+      setError('');
     } catch (err: any) {
       if (err.response?.status === 404) {
         setError('لم يتم العثور على شهادة بهذا الرقم التسلسلي. يرجى التحقق من الرقم والمحاولة مرة أخرى.');
@@ -52,6 +63,16 @@ function VerifyCertificateContent() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // دالة التحقق اليدوي (عند الضغط على الزر)
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!serialNumber.trim()) {
+      setError('يرجى إدخال الرقم التسلسلي');
+      return;
+    }
+    await handleVerifyAuto(serialNumber);
   };
 
   return (
@@ -77,7 +98,7 @@ function VerifyCertificateContent() {
               <h2 className="form-title">التحقق من الشهادة</h2>
               <p className="form-subtitle">أدخل الرقم التسلسلي للتحقق</p>
             </div>
-            
+
             <div className="input-group">
               <label htmlFor="serialNumber" className="input-label">
                 الرقم التسلسلي للشهادة
@@ -92,7 +113,7 @@ function VerifyCertificateContent() {
                 disabled={loading}
               />
             </div>
-            
+
             <button type="submit" className="verify-button" disabled={loading}>
               {loading ? (
                 <div className="loading-spinner">
@@ -129,25 +150,25 @@ function VerifyCertificateContent() {
 
           {result && (
             <div className="result-card success-card">
-              
+
               <h3 className="result-title">الشهادة موثقة وصحيحة</h3>
-              
+
               <div className="certificate-details">
                 <div className="detail-row">
                   <span className="detail-label">اسم الطالب:</span>
                   <span className="detail-value">{result.student_name}</span>
                 </div>
-                
+
                 <div className="detail-row">
                   <span className="detail-label">اسم الدورة:</span>
                   <span className="detail-value">{result.course_title}</span>
                 </div>
-                
+
                 <div className="detail-row">
                   <span className="detail-label">النتيجة:</span>
                   <span className="detail-value grade-value">{result.exam_grade}</span>
                 </div>
-                
+
                 <div className="detail-row">
                   <span className="detail-label">تاريخ الاختبار:</span>
                   <span className="detail-value">
@@ -158,13 +179,13 @@ function VerifyCertificateContent() {
                     }) : '-'}
                   </span>
                 </div>
-                
+
                 <div className="detail-row">
                   <span className="detail-label">الرقم التسلسلي:</span>
                   <span className="detail-value serial-value">{result.serial_number}</span>
                 </div>
               </div>
-              
+
               <div className="verification-badge">
                 <div className="badge-icon">🔒</div>
                 <span>تم التحقق من قبل منصة أفق</span>
@@ -190,7 +211,9 @@ export default function VerifyCertificate() {
   return (
     <div>
       <HomeHeader />
-      <VerifyCertificateContent />
+      <Suspense fallback={<div className="verify-certificate-main"><div className="verify-content"><p style={{ textAlign: 'center', padding: '2rem' }}>جاري التحميل...</p></div></div>}>
+        <VerifyCertificateContent />
+      </Suspense>
       <Footer />
     </div>
   );

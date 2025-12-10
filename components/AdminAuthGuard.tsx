@@ -15,13 +15,13 @@ export default function AdminAuthGuard({ children }: AdminAuthGuardProps) {
 
   useEffect(() => {
     const user = getCurrentUser();
-    
-    // Check if user is not authenticated OR if user role is not admin
-    if (!user || user.role !== 'admin') {
+
+    // Check if user is not authenticated OR if user role is not admin or supervisor
+    if (!user || !['admin', 'supervisor'].includes(user.role)) {
       router.replace('/auth');
       return;
     }
-    
+
     setIsAuthorized(true);
     setIsLoading(false);
   }, [router]);

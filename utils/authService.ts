@@ -6,8 +6,9 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  role: 'student' | 'admin';
+  role: 'student' | 'admin' | 'supervisor';
   profile_picture?: string;
+  permissions?: string[];
 }
 
 export interface AuthResponse {
@@ -88,7 +89,7 @@ export const googleAuth = (): void => {
   try {
     // Get the backend URL from environment or use default
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-    
+
     // Redirect to the backend Google OAuth endpoint
     window.location.href = `${backendUrl}/auth/google`;
   } catch (error) {
@@ -109,30 +110,30 @@ export const handleGoogleCallback = async (): Promise<AuthResponse | null> => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     const error = urlParams.get('error');
-    
+
     // Check for error first
     if (error) {
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
       throw new Error('فشل في تسجيل الدخول عبر Google. يرجى المحاولة مرة أخرى.');
     }
-    
+
     if (!token) {
       return null;
     }
 
     // Store the token
     localStorage.setItem('auth_token', token);
-    
+
     // Get user profile with the token
     const userProfile = await getProfile();
-    
+
     // Store user data
     localStorage.setItem('user_data', JSON.stringify(userProfile));
-    
+
     // Clean up URL
     window.history.replaceState({}, document.title, window.location.pathname);
-    
+
     return {
       user: userProfile,
       access_token: token,

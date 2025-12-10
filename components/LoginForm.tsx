@@ -32,11 +32,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onTabChange, initialTab }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   // جديد: تبديل وضع تسجيل الدخول بالبريد/الهاتف
   const [isLoginWithPhone, setIsLoginWithPhone] = useState(false);
   const [loginPhone, setLoginPhone] = useState<string | undefined>('');
-  
+
   // جديد: حقول التسجيل للهاتف والجنسية
   const [signupPhone, setSignupPhone] = useState<string | undefined>('');
   const [nationality, setNationality] = useState<{ value: string; label: string } | null>(null);
@@ -52,7 +52,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onTabChange, initialTab }) => {
         const result = await handleGoogleCallback();
         if (result) {
           // Redirect based on role
-          if (result.user.role === 'admin') {
+          if (result.user.role === 'admin' || result.user.role === 'supervisor') {
             router.push('/admin');
           } else {
             router.push('/user');
@@ -170,7 +170,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onTabChange, initialTab }) => {
 
         console.log('Signup successful:', result);
         // Redirect based on role
-        if (result.user.role === 'admin') {
+        if (result.user.role === 'admin' || result.user.role === 'supervisor') {
           console.log('[Signup] Routing to /admin');
           router.push('/admin');
         } else {
@@ -207,7 +207,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onTabChange, initialTab }) => {
 
         console.log('Signin successful:', result);
         // Redirect based on role
-        if (result.user.role === 'admin') {
+        if (result.user.role === 'admin' || result.user.role === 'supervisor') {
           console.log('[Signin] Routing to /admin');
           router.push('/admin');
         } else {

@@ -1,20 +1,79 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import styles from './Sidebar.module.css';
+import { getCurrentUser } from '../utils/authService';
+import apiClient from '../utils/apiClient';
 
 interface SidebarProps {
   isMobileOpen?: boolean;
   onClose?: () => void;
 }
 
+interface MenuItem {
+  href: string;
+  label: string;
+  icon: string;
+  permission?: string; // Required permission to view this item
+  adminOnly?: boolean; // Only visible to admin
+}
+
 const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
   const pathname = usePathname();
-  const [openDropdown, setOpenDropdown] = useState<{ [key: string]: boolean }>({});
+  const [userPermissions, setUserPermissions] = useState<string[]>([]);
+  const [userRole, setUserRole] = useState<string>('');
+  const [loading, setLoading] = useState(true);
 
-  const toggleDropdown = (key: string) => {
-    setOpenDropdown((prev) => ({ ...prev, [key]: !prev[key] }));
+  // Menu items with their required permissions
+  const menuItems: MenuItem[] = [
+    { href: '/admin', label: 'لوحة التحكم', icon: '🏠' },
+    { href: '/admin/diplomas', label: 'إدارة الدبلومات', icon: '🎓', permission: 'diplomas.view' },
+    { href: '/admin/diplomas/question-bank', label: 'بنك الأسئلة', icon: '❓', permission: 'questions.view' },
+    { href: '/admin/students', label: 'إدارة الطلاب', icon: '👨‍🎓', permission: 'students.view' },
+    { href: '/admin/instructors', label: 'المحاضرون', icon: '👨‍🏫', permission: 'instructors.view' },
+    { href: '/admin/supervisors', label: 'إدارة المشرفين', icon: '👥', adminOnly: true },
+    { href: '/admin/database-backups', label: 'النسخ الاحتياطية', icon: '💾', permission: 'backups.view' },
+    { href: '/admin/profile-management', label: 'إدارة الملف الشخصي', icon: '⚙️' },
+  ];
+
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const user = getCurrentUser();
+        if (user) {
+          setUserRole(user.role);
+
+          // Admin has all permissions
+          if (user.role === 'admin') {
+            setUserPermissions(['*']);
+          } else {
+            // Fetch permissions from API
+            const response = await apiClient.get('/user/permissions');
+            if (response.data.permissions) {
+              setUserPermissions(response.data.permissions);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch permissions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPermissions();
+  }, []);
+
+  const hasPermission = (permission?: string): boolean => {
+    if (!permission) return true; // No permission required
+    if (userPermissions.includes('*')) return true; // Admin has all
+    return userPermissions.includes(permission);
+  };
+
+  const canViewItem = (item: MenuItem): boolean => {
+    if (item.adminOnly && userRole !== 'admin') return false;
+    return hasPermission(item.permission);
   };
 
   const isActive = (href: string) => {
@@ -44,6 +103,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
     onClose?.();
   };
 
+  // Filter menu items based on permissions
+  const visibleItems = menuItems.filter(canViewItem);
+
   return (
     <aside className={`${styles.sidebar} ${isMobileOpen ? styles.open : ''}`}>
       <div className={styles['sidebar-header']}>
@@ -56,89 +118,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
 
       <nav className={styles['sidebar-nav']}>
         <ul>
-          <li className={styles['nav-item']}>
-            <Link
-              href="/admin"
-              prefetch={false}
-              className={`${styles['nav-link']} ${isActive('/admin') ? styles.active : ''}`}
-              onClick={handleNavigate}
-            >
-              <span className={styles['nav-icon']}>🏠</span>
-              <span>لوحة التحكم</span>
-            </Link>
-          </li>
-
-          <li className={styles['nav-item']}>
-            <Link
-              href="/admin/diplomas"
-              prefetch={false}
-              className={`${styles['nav-link']} ${isActive('/admin/diplomas') ? styles.active : ''}`}
-              onClick={handleNavigate}
-            >
-              <span className={styles['nav-icon']}>🎓</span>
-              <span>إدارة الدبلومات</span>
-            </Link>
-          </li>
-
-          <li className={styles['nav-item']}>
-            <Link
-              href="/admin/diplomas/question-bank"
-              prefetch={false}
-              className={`${styles['nav-link']} ${isActive('/admin/diplomas/question-bank') ? styles.active : ''}`}
-              onClick={handleNavigate}
-            >
-              <span className={styles['nav-icon']}>❓</span>
-              <span>بنك الأسئلة</span>
-            </Link>
-          </li>
-
-          <li className={styles['nav-item']}>
-            <Link
-              href="/admin/students"
-              prefetch={false}
-              className={`${styles['nav-link']} ${isActive('/admin/students') ? styles.active : ''}`}
-              onClick={handleNavigate}
-            >
-              <span className={styles['nav-icon']}>👨‍🎓</span>
-              <span>إدارة الطلاب</span>
-            </Link>
-          </li>
-
-          <li className={styles['nav-item']}>
-            <Link
-              href="/admin/instructors"
-              prefetch={false}
-              className={`${styles['nav-link']} ${isActive('/admin/instructors') ? styles.active : ''}`}
-              onClick={handleNavigate}
-            >
-              <span className={styles['nav-icon']}>👨‍🏫</span>
-              <span>المحاضرون</span>
-            </Link>
-          </li>
-
-          <li className={styles['nav-item']}>
-            <Link
-              href="/admin/database-backups"
-              prefetch={false}
-              className={`${styles['nav-link']} ${isActive('/admin/database-backups') ? styles.active : ''}`}
-              onClick={handleNavigate}
-            >
-              <span className={styles['nav-icon']}>�</span>
-              <span>النسخ الاحتياطية</span>
-            </Link>
-          </li>
-
-          <li className={styles['nav-item']}>
-            <Link
-              href="/admin/profile-management"
-              prefetch={false}
-              className={`${styles['nav-link']} ${isActive('/admin/profile-management') ? styles.active : ''}`}
-              onClick={handleNavigate}
-            >
-              <span className={styles['nav-icon']}>⚙️</span>
-              <span>إدارة الملف الشخصي</span>
-            </Link>
-          </li>
+          {visibleItems.map((item) => (
+            <li key={item.href} className={styles['nav-item']}>
+              <Link
+                href={item.href}
+                prefetch={false}
+                className={`${styles['nav-link']} ${isActive(item.href) ? styles.active : ''}`}
+                onClick={handleNavigate}
+              >
+                <span className={styles['nav-icon']}>{item.icon}</span>
+                <span>{item.label}</span>
+              </Link>
+            </li>
+          ))}
         </ul>
       </nav>
 
