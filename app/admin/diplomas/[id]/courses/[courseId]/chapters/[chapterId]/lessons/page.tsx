@@ -500,7 +500,6 @@ export default function AdminChapterLessons() {
                       <td className="actions-cell">
                         <button className="btn-action" onClick={() => handleEdit(lesson)}>تعديل</button>
                         <button className="btn-action btn-danger" onClick={() => handleDelete(lesson.id)}>حذف</button>
-                        <button className="btn-action" onClick={() => openQuestionPopup(lesson)}>سؤال الدرس</button>
                       </td>
                     </tr>
                   ))}

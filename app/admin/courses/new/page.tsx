@@ -176,9 +176,31 @@ function NewCoursePageComponent() {
       if (formData.rank && formData.rank.trim() !== '') {
         formDataToSend.append('rank', formData.rank.trim());
       }
+
+      // Debug: Log cover_image details before appending
+      console.log('📸 Cover image check:', {
+        hasCoverImage: !!formData.cover_image,
+        coverImageName: formData.cover_image?.name,
+        coverImageType: formData.cover_image?.type,
+        coverImageSize: formData.cover_image?.size,
+      });
+
       if (formData.cover_image) {
         formDataToSend.append('cover_image', formData.cover_image);
+        console.log('✅ Cover image appended to FormData');
+      } else {
+        console.warn('⚠️ No cover image to append');
       }
+
+      // Debug: Log all FormData entries
+      console.log('📦 FormData contents before sending:');
+      Array.from(formDataToSend.entries()).forEach(([key, value]) => {
+        if (value instanceof File) {
+          console.log(`  ${key}: [File] ${value.name} (${value.size} bytes, ${value.type})`);
+        } else {
+          console.log(`  ${key}: ${value}`);
+        }
+      });
 
       await createCourse(formDataToSend);
       showToast('تم إنشاء المقرر بنجاح!', 'success');

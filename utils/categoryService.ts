@@ -95,9 +95,16 @@ export const getAdminCategories = async (): Promise<Diploma[]> => {
     const response = await apiClient.get('/admin/categories');
     const result = response.data;
 
+    // Log the total count for debugging
+    if (result.meta?.total !== undefined) {
+      console.log('[GetAdminCategories] Total diplomas from API:', result.meta.total);
+    }
+
     if (result.data && Array.isArray(result.data)) {
+      console.log('[GetAdminCategories] Returning', result.data.length, 'diplomas');
       return result.data;
     } else if (Array.isArray(result)) {
+      console.log('[GetAdminCategories] Returning', result.length, 'diplomas (array format)');
       return result;
     }
     console.warn('[GetAdminCategories] Unexpected response structure:', result);
