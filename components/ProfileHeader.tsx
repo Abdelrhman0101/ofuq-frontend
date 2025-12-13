@@ -140,7 +140,7 @@ const ProfileHeader = () => {
               <div className={styles['profile-menu-container']} onClick={toggleProfileMenu}>
                 <div className={styles['profile-info']}>
                   <div className={clsx(styles['profile-avatar'], avatarClicked && styles['click-effect'])} ref={avatarRef}>
-                    <Image src={profileImageUrl} alt="Profile" width={36} height={36} className={styles['profile-image']} />
+                    <img src={profileImageUrl} alt="Profile" width={36} height={36} className={styles['profile-image']} style={{ borderRadius: '50%', objectFit: 'cover' }} />
                   </div>
                   <div className={styles['profile-details']}>
                     <span className={styles['profile-name']}>مرحباً، {user?.name}</span>
