@@ -16,6 +16,7 @@ const HomeHeader = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [avatarClicked, setAvatarClicked] = useState(false);
+  const [imageTimestamp, setImageTimestamp] = useState<number>(Date.now());
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -31,13 +32,29 @@ const HomeHeader = () => {
     setIsSidebarOpen(false);
   };
 
-  // Check authentication status on mount
+  // Check authentication status on mount and listen for updates
   useEffect(() => {
-    const authenticated = isAuthenticated();
-    setIsLoggedIn(authenticated);
-    if (authenticated) {
-      setUser(getCurrentUser());
-    }
+    const checkAuth = () => {
+      const authenticated = isAuthenticated();
+      setIsLoggedIn(authenticated);
+      if (authenticated) {
+        setUser(getCurrentUser());
+      }
+    };
+
+    checkAuth();
+
+    // Listen for profile updates
+    const handleUserDataUpdate = () => {
+      checkAuth();
+      setImageTimestamp(Date.now());
+    };
+
+    window.addEventListener('userDataUpdated', handleUserDataUpdate);
+
+    return () => {
+      window.removeEventListener('userDataUpdated', handleUserDataUpdate);
+    };
   }, []);
 
   // Close profile menu on outside click
@@ -115,7 +132,13 @@ const HomeHeader = () => {
               <div className={styles['profile-menu-container']} onClick={toggleProfileMenu}>
                 <div className={styles['profile-info']}>
                   <div className={clsx(styles['profile-avatar'], avatarClicked && styles['click-effect'])} ref={avatarRef}>
-                    <Image src={user?.profile_picture ? getBackendAssetUrl(user.profile_picture) : '/avatar.jpg'} alt="Profile" width={36} height={36} className={styles['profile-image']} />
+                    <img
+                      src={user?.profile_picture ? `${getBackendAssetUrl(user.profile_picture)}${getBackendAssetUrl(user.profile_picture).includes('?') ? '&' : '?'}t=${imageTimestamp}` : '/avatar.jpg'}
+                      alt="Profile"
+                      width={36}
+                      height={36}
+                      className={styles['profile-image']}
+                    />
                   </div>
                   <div className={styles['profile-details']}>
                     <span className={styles['profile-name']}>مرحباً، {user?.name}</span>

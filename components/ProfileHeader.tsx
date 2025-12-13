@@ -18,6 +18,7 @@ const ProfileHeader = () => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [avatarClicked, setAvatarClicked] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [imageTimestamp, setImageTimestamp] = useState<number>(Date.now());
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -31,14 +32,30 @@ const ProfileHeader = () => {
     setIsSidebarOpen(false);
   };
 
-  // Check authentication status on mount (same logic as HomeHeader)
+  // Check authentication status on mount and listen for updates
   useEffect(() => {
     setIsMounted(true);
-    const authenticated = isAuthenticated();
-    setIsLoggedIn(authenticated);
-    if (authenticated) {
-      setUser(getCurrentUser());
-    }
+    const checkAuth = () => {
+      const authenticated = isAuthenticated();
+      setIsLoggedIn(authenticated);
+      if (authenticated) {
+        setUser(getCurrentUser());
+      }
+    };
+
+    checkAuth();
+
+    // Listen for profile updates
+    const handleUserDataUpdate = () => {
+      checkAuth();
+      setImageTimestamp(Date.now());
+    };
+
+    window.addEventListener('userDataUpdated', handleUserDataUpdate);
+
+    return () => {
+      window.removeEventListener('userDataUpdated', handleUserDataUpdate);
+    };
   }, []);
 
   // Close profile menu on outside click
@@ -70,7 +87,9 @@ const ProfileHeader = () => {
     }
   };
 
-  const profileImageUrl = user?.profile_picture ? getBackendAssetUrl(user.profile_picture) : '/avatar.jpg';
+  const profileImageUrl = user?.profile_picture
+    ? `${getBackendAssetUrl(user.profile_picture)}${getBackendAssetUrl(user.profile_picture).includes('?') ? '&' : '?'}t=${imageTimestamp}`
+    : '/avatar.jpg';
 
   if (!isMounted) {
     return null;
@@ -84,10 +103,10 @@ const ProfileHeader = () => {
           {!(pathname?.startsWith('/dashboard') || pathname?.startsWith('/user') || pathname?.startsWith('/admin')) && (
             <div className={ph['header-logo']}>
               <Link href="/">
-                <Image 
-                  src="/mahad_alofk2.png" 
-                  alt="منصة أفق" 
-                  width={120} 
+                <Image
+                  src="/mahad_alofk2.png"
+                  alt="منصة أفق"
+                  width={120}
                   height={50}
                   className={ph['logo-image']}
                 />
@@ -105,15 +124,15 @@ const ProfileHeader = () => {
           </nav>
 
           {/* Mobile Hamburger Button */}
-          <button 
-          className={clsx(ph['hamburger-btn'], ph['mobile-only'])}
-             onClick={toggleSidebar}
-             aria-label="فتح القائمة"
-           >
-          <span className={ph['hamburger-line']}></span>
-          <span className={ph['hamburger-line']}></span>
-          <span className={ph['hamburger-line']}></span>
-           </button>
+          <button
+            className={clsx(ph['hamburger-btn'], ph['mobile-only'])}
+            onClick={toggleSidebar}
+            aria-label="فتح القائمة"
+          >
+            <span className={ph['hamburger-line']}></span>
+            <span className={ph['hamburger-line']}></span>
+            <span className={ph['hamburger-line']}></span>
+          </button>
 
           {/* Profile Menu (reused from HomeHeader for consistency) */}
           <div className={ph['header-profile']} ref={profileMenuRef}>
@@ -177,9 +196,9 @@ const ProfileHeader = () => {
         <div className={ph['sidebar-content']}>
           <div className={ph['sidebar-header']}>
             <button className={ph['close-btn']} onClick={closeSidebar}>
-               <span>&times;</span>
-             </button>
-           </div>
+              <span>&times;</span>
+            </button>
+          </div>
           <nav className={ph['sidebar-nav']}>
             <Link href="/" prefetch={false} className={clsx(ph['sidebar-link'], pathname === '/' && ph['sidebar-active'])} onClick={closeSidebar}>الرئيسية</Link>
             <Link href="/diploms" prefetch={false} className={clsx(ph['sidebar-link'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && ph['sidebar-active'])} onClick={closeSidebar}>دبلومات منصة أفق</Link>
