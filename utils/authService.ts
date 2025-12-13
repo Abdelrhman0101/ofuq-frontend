@@ -176,7 +176,7 @@ export const uploadProfilePicture = async (file: File): Promise<{ message: strin
       if (error.response.status === 401) {
         message = 'غير مصرح لك بالوصول. يرجى تسجيل الدخول مرة أخرى.';
       } else if (error.response.status === 422) {
-        message = 'ملف غير صالح. يرجى اختيار صورة بصيغة JPEG أو PNG أو JPG وحجم أقل من 2MB.';
+        message = 'ملف غير صالح. يرجى اختيار صورة بصيغة JPEG أو PNG أو JPG وحجم أقل من 10MB.';
       } else if (error.response.data?.message) {
         message = error.response.data.message;
       } else {

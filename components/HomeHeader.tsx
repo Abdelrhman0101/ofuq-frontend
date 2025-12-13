@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { isAuthenticated, getCurrentUser, signout, User } from '../utils/authService';
+import { getBackendAssetUrl } from '../utils/url';
 import styles from './HomeHeader.module.css';
 import clsx from 'clsx';
 // Removed help button and VideoPopup integration
@@ -77,10 +78,10 @@ const HomeHeader = () => {
             {/* Logo */}
             <div className={styles['header-logo']}>
               <Link href="/" prefetch={false}>
-                <Image 
-                  src="/mahad_alofk2.png" 
-                  alt="منصة أفق" 
-                  width={120} 
+                <Image
+                  src="/mahad_alofk2.png"
+                  alt="منصة أفق"
+                  width={120}
                   height={50}
                   className={styles['logo-image']}
                 />
@@ -98,7 +99,7 @@ const HomeHeader = () => {
           </div>
 
           {/* Mobile Hamburger Button */}
-          <button 
+          <button
             className={clsx(styles['hamburger-btn'], styles['mobile-only'])}
             onClick={toggleSidebar}
             aria-label="فتح القائمة"
@@ -114,7 +115,7 @@ const HomeHeader = () => {
               <div className={styles['profile-menu-container']} onClick={toggleProfileMenu}>
                 <div className={styles['profile-info']}>
                   <div className={clsx(styles['profile-avatar'], avatarClicked && styles['click-effect'])} ref={avatarRef}>
-                    <Image src="/avatar.jpg" alt="Profile" width={36} height={36} className={styles['profile-image']} />
+                    <Image src={user?.profile_picture ? getBackendAssetUrl(user.profile_picture) : '/avatar.jpg'} alt="Profile" width={36} height={36} className={styles['profile-image']} />
                   </div>
                   <div className={styles['profile-details']}>
                     <span className={styles['profile-name']}>مرحباً، {user?.name}</span>

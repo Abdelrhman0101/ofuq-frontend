@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser, updateProfile, changePassword, signout } from '../../../utils/authService';
+import { getCurrentUser, updateProfile, changePassword, signout, uploadProfilePicture } from '../../../utils/authService';
+import { getBackendAssetUrl } from '../../../utils/url';
 import styles from './Settings.module.css';
 
 export default function AdminProfileManagementPage() {
@@ -13,6 +14,11 @@ export default function AdminProfileManagementPage() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMessage, setProfileMessage] = useState<string>('');
   const [profileError, setProfileError] = useState<string>('');
+
+  // Profile picture states
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -26,13 +32,48 @@ export default function AdminProfileManagementPage() {
     if (user) {
       setName(user.name || '');
       setEmail(user.email || '');
+      if (user.profile_picture) {
+        setProfileImage(getBackendAssetUrl(user.profile_picture));
+      }
     }
   }, []);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadLoading(true);
+    setUploadError(null);
+
+    try {
+      // Show instant preview
+      const previewUrl = URL.createObjectURL(file);
+      setProfileImage(previewUrl);
+
+      // Upload the file
+      const response = await uploadProfilePicture(file);
+      const imageUrl = getBackendAssetUrl(response.path);
+      setProfileImage(imageUrl);
+
+      // Update localStorage
+      const userData = localStorage.getItem('user_data');
+      if (userData) {
+        const parsed = JSON.parse(userData);
+        parsed.profile_picture = response.path;
+        localStorage.setItem('user_data', JSON.stringify(parsed));
+        window.dispatchEvent(new CustomEvent('userDataUpdated'));
+      }
+    } catch (error: any) {
+      setUploadError(error.message || 'فشل في رفع الصورة');
+    } finally {
+      setUploadLoading(false);
+    }
+  };
 
   const handleSaveProfile = async () => {
     setProfileMessage('');
     setProfileError('');
-    setSavingProfile(true);0
+    setSavingProfile(true);
     try {
       await updateProfile({ name, email });
       // مزامنة التخزين المحلي بعد التحديث
@@ -83,7 +124,32 @@ export default function AdminProfileManagementPage() {
     <div className={styles["settingsPage"]} style={{ direction: 'rtl' }}>
       <div className="settings-header">
         <h1 className="settings-title">إدارة حساب الأدمن</h1>
-        <p className="settings-subtitle">تعديل الاسم وتغيير كلمة المرور</p>
+        <p className="settings-subtitle">تعديل الاسم والصورة وكلمة المرور</p>
+      </div>
+
+      {/* Profile Picture Section */}
+      <div className={styles["profileImageSection"]}>
+        <h2 className="settings-title" style={{ fontSize: '1.6rem' }}>صورة الحساب</h2>
+        <div className={styles["profileImageContainer"]}>
+          {profileImage ? (
+            <img src={profileImage} alt="Profile" className={styles["profileImg"]} />
+          ) : (
+            <span className={styles["profilePlaceholder"]}>👤</span>
+          )}
+        </div>
+        <label className={styles["imageUploadButton"]}>
+          {uploadLoading ? 'جاري الرفع...' : 'تغيير الصورة'}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+            disabled={uploadLoading}
+          />
+        </label>
+        {uploadError && (
+          <div role="alert" style={{ color: '#c20000', marginTop: '12px', fontWeight: 600 }}>{uploadError}</div>
+        )}
       </div>
 
       <div className="profile-section">
