@@ -8,7 +8,115 @@ import { isAuthenticated, getCurrentUser, signout, User } from '../utils/authSer
 import { getBackendAssetUrl } from '../utils/url';
 import styles from './HomeHeader.module.css';
 import clsx from 'clsx';
-// Removed help button and VideoPopup integration
+import MegaMenu from './MegaMenu';
+import { PiCertificate, PiCaretDown, PiCaretLeft } from 'react-icons/pi';
+
+// Mobile Sidebar Menu Data
+const mobileMenuData = [
+  {
+    label: 'الرئيسية',
+    href: '/',
+    children: [
+      { label: 'من نحن', href: '/about' },
+      { label: 'رواد المنصة حول العالم', href: '#', comingSoon: true },
+      { label: 'الإحصائيات', href: '#', comingSoon: true },
+      { label: 'بيانات التواصل', href: '#', comingSoon: true },
+      { label: 'عداد المسجلين', href: '#', comingSoon: true },
+      { label: 'شؤون الطلاب', href: '#', comingSoon: true },
+      { label: 'الدعم الفني', href: '#', comingSoon: true },
+      { label: 'الصفحات في الوسائط', href: '#', comingSoon: true },
+    ]
+  },
+  {
+    label: 'الدبلومات',
+    href: '/diploms',
+    children: [
+      { label: 'التربوية', href: '/diploms?category=educational' },
+      { label: 'الدعوية', href: '/diploms?category=dawah' },
+      { label: 'الإعلامية', href: '/diploms?category=media' },
+      { label: 'الإدارية', href: '/diploms?category=management' },
+      { label: 'الشرعية', href: '/diploms?category=sharia' },
+      { label: 'تطوير الذات', href: '/diploms?category=self-development' },
+      { label: 'التقنية', href: '/diploms?category=tech' },
+      { label: 'السلوكية', href: '/diploms?category=behavioral' },
+      { label: 'المهنية', href: '/diploms?category=professional' },
+      { label: 'خدمة المجتمع', href: '/diploms?category=community-service' },
+    ]
+  },
+  {
+    label: 'مجتمع أفق',
+    href: '/community',
+    children: [
+      { label: 'اللقاءات الإثرائية', href: '#', comingSoon: true },
+      { label: 'المنتدى التفاعلي', href: '#', comingSoon: true },
+      { label: 'الإعلانات', href: '#', comingSoon: true },
+      { label: 'أخبار المنصة', href: '#', comingSoon: true },
+      { label: 'صفحة الخبراء', href: '#', comingSoon: true },
+      { label: 'شات الحوار بين الرواد', href: '#', comingSoon: true },
+      { label: 'الاستشارات', href: '#', comingSoon: true },
+    ]
+  },
+  {
+    label: 'نادي الابتكار',
+    href: '#',
+    comingSoon: true,
+    children: [
+      { label: 'كورسات الابتكار', href: '#', comingSoon: true },
+      { label: 'ابتكارات الرواد', href: '#', comingSoon: true },
+      { label: 'براءات الاختراع', href: '#', comingSoon: true },
+      { label: 'ورش عمل صناعة الأفكار', href: '#', comingSoon: true },
+      { label: 'الذكاء الاصطناعي', href: '#', comingSoon: true },
+      {
+        label: 'كتابي',
+        href: '#',
+        comingSoon: true,
+        children: [
+          { label: 'تلخيص', href: '#', comingSoon: true },
+          { label: 'صوتي', href: '#', comingSoon: true },
+          { label: 'بودكاست', href: '#', comingSoon: true },
+          { label: 'تشجير', href: '#', comingSoon: true },
+          { label: 'رسم بياني', href: '#', comingSoon: true },
+          { label: 'أصل الكتاب', href: '#', comingSoon: true },
+          { label: 'اختبار وشهادة', href: '#', comingSoon: true },
+        ]
+      },
+    ]
+  },
+  {
+    label: 'المعرض',
+    href: '#',
+    comingSoon: true,
+    children: [
+      { label: 'الكتب والمقررات', href: '#', comingSoon: true },
+      { label: 'الأدلة والوثائق', href: '#', comingSoon: true },
+      { label: 'الملخصات', href: '#', comingSoon: true },
+      { label: 'الكورسات', href: '#', comingSoon: true },
+      { label: 'الفيديوهات', href: '#', comingSoon: true },
+      { label: 'الملفات الصوتية', href: '#', comingSoon: true },
+      { label: 'البحوث والدراسات', href: '#', comingSoon: true },
+      { label: 'اكسب معنا', href: '#', comingSoon: true },
+    ]
+  },
+  {
+    label: 'زاد المحاضر والخطيب',
+    href: '#',
+    comingSoon: true,
+    children: []
+  },
+  {
+    label: 'فضاء أفق',
+    href: '#',
+    comingSoon: true,
+    children: [
+      { label: 'التطبيقات', href: '#', comingSoon: true },
+      { label: 'الأكاديميات', href: '#', comingSoon: true },
+      { label: 'المتجر', href: '#', comingSoon: true },
+      { label: 'الخدمات الرقمية', href: '#', comingSoon: true },
+      { label: 'الخدمات البحثية', href: '#', comingSoon: true },
+      { label: 'التوكيلات', href: '#', comingSoon: true },
+    ]
+  },
+];
 
 const HomeHeader = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -17,6 +125,8 @@ const HomeHeader = () => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [avatarClicked, setAvatarClicked] = useState(false);
   const [imageTimestamp, setImageTimestamp] = useState<number>(Date.now());
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
+  const [expandedSubmenus, setExpandedSubmenus] = useState<string[]>([]);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -30,6 +140,24 @@ const HomeHeader = () => {
 
   const closeSidebar = () => {
     setIsSidebarOpen(false);
+    setExpandedMenus([]);
+    setExpandedSubmenus([]);
+  };
+
+  const toggleMobileMenu = (label: string) => {
+    setExpandedMenus(prev =>
+      prev.includes(label)
+        ? prev.filter(item => item !== label)
+        : [...prev, label]
+    );
+  };
+
+  const toggleMobileSubmenu = (label: string) => {
+    setExpandedSubmenus(prev =>
+      prev.includes(label)
+        ? prev.filter(item => item !== label)
+        : [...prev, label]
+    );
   };
 
   // Check authentication status on mount and listen for updates
@@ -105,14 +233,21 @@ const HomeHeader = () => {
               </Link>
             </div>
 
-            {/* Desktop Navigation Links */}
-            <nav className={clsx(styles['header-nav'], styles['desktop-nav'])}>
-              <Link href="/" prefetch={false} className={clsx(styles['nav-link'], pathname === '/' && styles['active'])}>الرئيسية</Link>
-              <Link href="/diploms" prefetch={false} className={clsx(styles['nav-link'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && styles['active'])}>دبلومات منصة أفق</Link>
-              <Link href="/community" prefetch={false} className={clsx(styles['nav-link'], pathname?.startsWith('/community') && styles['active'])}>مجتمع أفق</Link>
-              <Link href="/verify-certificate" prefetch={false} className={clsx(styles['nav-link'], pathname?.startsWith('/verify-certificate') && styles['active'])}>التحقق من الشهادة</Link>
-              <Link href="/about" prefetch={false} className={clsx(styles['nav-link'], pathname?.startsWith('/about') && styles['active'])}>من نحن</Link>
-            </nav>
+            {/* Desktop Navigation - MegaMenu */}
+            <div className={styles['desktop-nav']}>
+              <MegaMenu />
+            </div>
+
+            {/* Certificate Verification Button - Icon Only with Tooltip */}
+            <Link
+              href="/verify-certificate"
+              prefetch={false}
+              className={clsx(styles['verify-btn-icon'], styles['desktop-only'])}
+              title="تحقق من شهادتك"
+            >
+              <PiCertificate className={styles['verify-icon']} />
+              <span className={styles['verify-tooltip']}>تحقق من شهادتك</span>
+            </Link>
           </div>
 
           {/* Mobile Hamburger Button */}
@@ -194,12 +329,93 @@ const HomeHeader = () => {
               <span>&times;</span>
             </button>
           </div>
+
+          {/* Certificate Verification Button in Sidebar */}
+          <Link
+            href="/verify-certificate"
+            prefetch={false}
+            className={styles['sidebar-verify-btn']}
+            onClick={closeSidebar}
+          >
+            <PiCertificate className={styles['sidebar-verify-icon']} />
+            <span>التحقق من الشهادة</span>
+          </Link>
+
+          {/* Accordion Navigation */}
           <nav className={styles['sidebar-nav']}>
-            <Link href="/" prefetch={false} className={clsx(styles['sidebar-link'], pathname === '/' && styles['active'])} onClick={closeSidebar}>الرئيسية</Link>
-            <Link href="/diploms" prefetch={false} className={clsx(styles['sidebar-link'], (pathname?.startsWith('/diploms') || pathname?.startsWith('/course-details')) && styles['active'])} onClick={closeSidebar}>دبلومات منصة أفق</Link>
-            <Link href="/community" prefetch={false} className={clsx(styles['sidebar-link'], pathname?.startsWith('/community') && styles['active'])} onClick={closeSidebar}>مجتمع أفق</Link>
-            <Link href="/verify-certificate" prefetch={false} className={clsx(styles['sidebar-link'], pathname?.startsWith('/verify-certificate') && styles['active'])} onClick={closeSidebar}>التحقق من الشهادة</Link>
-            <Link href="/about" prefetch={false} className={clsx(styles['sidebar-link'], pathname?.startsWith('/about') && styles['active'])} onClick={closeSidebar}>عنّا</Link>
+            {mobileMenuData.map((item) => (
+              <div key={item.label} className={styles['accordion-item']}>
+                <div
+                  className={styles['accordion-header']}
+                  onClick={() => item.children.length > 0 && toggleMobileMenu(item.label)}
+                >
+                  {item.children.length > 0 ? (
+                    <>
+                      <span className={styles['accordion-label']}>{item.label}</span>
+                      <PiCaretDown className={clsx(
+                        styles['accordion-arrow'],
+                        expandedMenus.includes(item.label) && styles['rotated']
+                      )} />
+                    </>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className={styles['accordion-link']}
+                      onClick={closeSidebar}
+                    >
+                      {item.label}
+                    </Link>
+                  )}
+                </div>
+
+                {/* Accordion Content */}
+                {item.children.length > 0 && expandedMenus.includes(item.label) && (
+                  <div className={styles['accordion-content']}>
+                    {item.children.map((child: any) => (
+                      <div key={child.label}>
+                        {child.children ? (
+                          // Nested submenu (كتابي)
+                          <div className={styles['nested-accordion']}>
+                            <div
+                              className={styles['nested-header']}
+                              onClick={() => toggleMobileSubmenu(child.label)}
+                            >
+                              <span>{child.label}</span>
+                              <PiCaretLeft className={clsx(
+                                styles['nested-arrow'],
+                                expandedSubmenus.includes(child.label) && styles['rotated']
+                              )} />
+                            </div>
+                            {expandedSubmenus.includes(child.label) && (
+                              <div className={styles['nested-content']}>
+                                {child.children.map((subChild: any) => (
+                                  <Link
+                                    key={subChild.label}
+                                    href={subChild.href}
+                                    className={styles['nested-link']}
+                                    onClick={closeSidebar}
+                                  >
+                                    {subChild.label}
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <Link
+                            href={child.href}
+                            className={styles['accordion-sublink']}
+                            onClick={closeSidebar}
+                          >
+                            {child.label}
+                          </Link>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </nav>
 
           {!isLoggedIn && (
