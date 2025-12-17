@@ -203,20 +203,19 @@
 .header-auth {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
 .auth-btn {
-  padding: 10px 20px;
+  padding: 8px 14px;
   border: none;
-  border-radius: 25px;
-  font-size: 14px;
+  border-radius: 20px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
-  min-width: 100px;
 }
 
 /* Help button styles removed per request */
