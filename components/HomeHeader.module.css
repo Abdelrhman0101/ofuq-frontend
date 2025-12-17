@@ -271,8 +271,8 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
+  gap: 0;
+  padding: 4px 10px 4px 4px;
   border-radius: 25px;
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.6);
@@ -317,6 +317,13 @@
   font-size: 13px;
   font-weight: 600;
   line-height: 1.2;
+}
+
+.profile-role {
+  color: #019EBB;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 /* Dropdown Menu */
@@ -733,6 +740,51 @@
 .nested-link:hover {
   color: #019EBB;
   background: rgba(1, 158, 187, 0.08);
+}
+
+/* Mobile Sidebar Icon Styles */
+.accordion-icon {
+  font-size: 20px;
+  color: #019EBB;
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+}
+
+.sublink-icon {
+  font-size: 16px;
+  color: #019EBB;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.nested-icon {
+  font-size: 14px;
+  color: #019EBB;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+}
+
+/* Coming Soon Badge for Mobile */
+.coming-soon-badge {
+  padding: 2px 8px;
+  background: linear-gradient(135deg, #f0ad4e 0%, #ec971f 100%);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  white-space: nowrap;
+  margin-right: auto;
+  margin-left: 10px;
+}
+
+/* Disabled Link Style */
+.disabled-link {
+  opacity: 0.8;
+  cursor: default;
+  pointer-events: none;
 }
 
 /* ==============================================

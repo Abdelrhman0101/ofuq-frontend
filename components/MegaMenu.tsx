@@ -84,14 +84,63 @@ const menuData: MenuItem[] = [
         icon: <PiHouse />,
         hasDropdown: true,
         children: [
-            { label: 'من نحن', href: '/about', icon: <PiUsersThree /> },
+            {
+                label: 'من نحن',
+                href: '/about',
+                icon: <PiUsersThree />,
+                children: [
+                    { label: 'التعريف', href: '/about#intro', icon: <PiFile /> },
+                    { label: 'الأهداف', href: '/about#goals', icon: <PiLightbulb /> },
+                    { label: 'القيم', href: '/about#values', icon: <PiHeart /> },
+                    { label: 'منهجية التعليم والتدريب', href: '/about#methodology', icon: <PiChalkboardTeacher /> },
+                    { label: 'الرسالة', href: '/about#mission', icon: <PiScroll /> },
+                    { label: 'الميزات التنافسية', href: '/about#advantages', icon: <PiTrophy /> },
+                ]
+            },
             { label: 'رواد المنصة حول العالم', href: '#', icon: <PiGlobe />, comingSoon: true },
-            { label: 'الإحصائيات', href: '#', icon: <PiChartLine />, comingSoon: true },
+            {
+                label: 'الإحصائيات',
+                href: '#',
+                icon: <PiChartLine />,
+                comingSoon: true,
+                children: [
+                    { label: 'عدد رواد المنصة', href: '#', icon: <PiUsers />, comingSoon: true },
+                    { label: 'عدد الكورسات', href: '#', icon: <PiGraduationCap />, comingSoon: true },
+                    { label: 'عدد الملفات الصوتية', href: '#', icon: <PiFileAudio />, comingSoon: true },
+                    { label: 'أخرى', href: '#', icon: <PiChartLine />, comingSoon: true },
+                ]
+            },
             { label: 'بيانات التواصل', href: '#', icon: <PiPhone />, comingSoon: true },
             { label: 'عداد المسجلين', href: '#', icon: <PiUsers />, comingSoon: true },
-            { label: 'شؤون الطلاب', href: '#', icon: <PiGraduationCap />, comingSoon: true },
+            {
+                label: 'شؤون الطلاب',
+                href: '#',
+                icon: <PiGraduationCap />,
+                comingSoon: true,
+                children: [
+                    { label: 'الإحصاءات والحركة', href: '#', icon: <PiChartLine />, comingSoon: true },
+                    { label: 'الشهادات المجانية', href: '#', icon: <PiCertificate />, comingSoon: true },
+                    { label: 'الشهادات المعتمدة', href: '#', icon: <PiCertificate />, comingSoon: true },
+                    { label: 'السجل التعليمي للطلاب', href: '#', icon: <PiBookOpen />, comingSoon: true },
+                    { label: 'مجموعات التواصل التعليمية', href: '#', icon: <PiChatCircle />, comingSoon: true },
+                ]
+            },
             { label: 'الدعم الفني', href: '#', icon: <PiHeadset />, comingSoon: true },
-            { label: 'الصفحات في الوسائط', href: '#', icon: <PiNewspaper />, comingSoon: true },
+            {
+                label: 'الصفحات في الوسائط',
+                href: '#',
+                icon: <PiNewspaper />,
+                comingSoon: true,
+                children: [
+                    { label: 'تويتر', href: '#', icon: <PiGlobe />, comingSoon: true },
+                    { label: 'فيس بوك', href: '#', icon: <PiGlobe />, comingSoon: true },
+                    { label: 'تيك توك', href: '#', icon: <PiGlobe />, comingSoon: true },
+                    { label: 'تلجرام', href: '#', icon: <PiGlobe />, comingSoon: true },
+                    { label: 'واتساب', href: '#', icon: <PiGlobe />, comingSoon: true },
+                    { label: 'انستجرام', href: '#', icon: <PiGlobe />, comingSoon: true },
+                    { label: 'يوتيوب', href: '#', icon: <PiGlobe />, comingSoon: true },
+                ]
+            },
         ]
     },
     {
@@ -118,13 +167,40 @@ const menuData: MenuItem[] = [
         icon: <PiUsers />,
         hasDropdown: true,
         children: [
-            { label: 'اللقاءات الإثرائية', href: '#', icon: <PiCalendarCheck />, comingSoon: true },
+            {
+                label: 'اللقاءات الإثرائية',
+                href: '#',
+                icon: <PiCalendarCheck />,
+                comingSoon: true,
+                children: [
+                    { label: 'للدعاة', href: '#', icon: <PiMosque />, comingSoon: true },
+                    { label: 'لطلاب العلم', href: '#', icon: <PiGraduationCap />, comingSoon: true },
+                    { label: 'للوجهاء', href: '#', icon: <PiUsers />, comingSoon: true },
+                    { label: 'للقيادات المجتمعية', href: '#', icon: <PiUsersThree />, comingSoon: true },
+                    { label: 'للمؤثرين', href: '#', icon: <PiMegaphone />, comingSoon: true },
+                    { label: 'للتجار', href: '#', icon: <PiBriefcase />, comingSoon: true },
+                    { label: 'للمتفقين', href: '#', icon: <PiBookOpen />, comingSoon: true },
+                ]
+            },
             { label: 'المنتدى التفاعلي', href: '#', icon: <PiChatCircle />, comingSoon: true },
             { label: 'الإعلانات', href: '#', icon: <PiMegaphone />, comingSoon: true },
             { label: 'أخبار المنصة', href: '#', icon: <PiNewspaper />, comingSoon: true },
             { label: 'صفحة الخبراء', href: '#', icon: <PiChalkboardTeacher />, comingSoon: true },
             { label: 'شات الحوار بين الرواد', href: '#', icon: <PiChatCircle />, comingSoon: true },
-            { label: 'الاستشارات', href: '#', icon: <PiQuestion />, comingSoon: true },
+            {
+                label: 'الاستشارات',
+                href: '#',
+                icon: <PiQuestion />,
+                comingSoon: true,
+                children: [
+                    { label: 'مستشارك الدعوي', href: '#', icon: <PiMosque />, comingSoon: true },
+                    { label: 'مستشارك التربوي', href: '#', icon: <PiChalkboardTeacher />, comingSoon: true },
+                    { label: 'مستشارك التعليمي', href: '#', icon: <PiGraduationCap />, comingSoon: true },
+                    { label: 'مستشارك في التدريب', href: '#', icon: <PiWrench />, comingSoon: true },
+                    { label: 'مستشارك البحثي', href: '#', icon: <PiMagnifyingGlass />, comingSoon: true },
+                    { label: 'مستشارك الأسري', href: '#', icon: <PiHeart />, comingSoon: true },
+                ]
+            },
         ]
     },
     {
@@ -138,7 +214,17 @@ const menuData: MenuItem[] = [
             { label: 'ابتكارات الرواد', href: '#', icon: <PiLightning />, comingSoon: true },
             { label: 'براءات الاختراع', href: '#', icon: <PiTrophy />, comingSoon: true },
             { label: 'ورش عمل صناعة الأفكار', href: '#', icon: <PiWrench />, comingSoon: true },
-            { label: 'الذكاء الاصطناعي', href: '#', icon: <PiRobot />, comingSoon: true },
+            {
+                label: 'الذكاء الاصطناعي',
+                href: '#',
+                icon: <PiRobot />,
+                comingSoon: true,
+                children: [
+                    { label: 'منتدى الذكاء', href: '#', icon: <PiChatCircle />, comingSoon: true },
+                    { label: 'محركات بحث الذكاء', href: '#', icon: <PiMagnifyingGlass />, comingSoon: true },
+                    { label: 'الذكاء التوليدي', href: '#', icon: <PiRobot />, comingSoon: true },
+                ]
+            },
             {
                 label: 'كتابي',
                 href: '#',
@@ -148,8 +234,7 @@ const menuData: MenuItem[] = [
                     { label: 'تلخيص', href: '#', icon: <PiFile />, comingSoon: true },
                     { label: 'صوتي', href: '#', icon: <PiFileAudio />, comingSoon: true },
                     { label: 'بودكاست', href: '#', icon: <PiMicrophone />, comingSoon: true },
-                    { label: 'تشجير', href: '#', icon: <PiBrain />, comingSoon: true },
-                    { label: 'رسم بياني', href: '#', icon: <PiChartLine />, comingSoon: true },
+                    { label: 'رسم بياناتي', href: '#', icon: <PiChartLine />, comingSoon: true },
                     { label: 'أصل الكتاب', href: '#', icon: <PiBookOpen />, comingSoon: true },
                     { label: 'اختبار وشهادة', href: '#', icon: <PiCertificate />, comingSoon: true },
                 ]
@@ -170,15 +255,52 @@ const menuData: MenuItem[] = [
             { label: 'الفيديوهات', href: '#', icon: <PiVideo />, comingSoon: true },
             { label: 'الملفات الصوتية', href: '#', icon: <PiFileAudio />, comingSoon: true },
             { label: 'البحوث والدراسات', href: '#', icon: <PiFlask />, comingSoon: true },
-            { label: 'اكسب معنا', href: '#', icon: <PiCurrencyDollar />, comingSoon: true },
+            {
+                label: 'اكسب معنا',
+                href: '#',
+                icon: <PiCurrencyDollar />,
+                comingSoon: true,
+                children: [
+                    { label: 'كتاب ومسابقة', href: '#', icon: <PiBookOpen />, comingSoon: true },
+                    { label: 'السحب العشوائي على المتفاعلين', href: '#', icon: <PiTrophy />, comingSoon: true },
+                    { label: 'مسابقات بناء المحتوى الهادف', href: '#', icon: <PiLightbulb />, comingSoon: true },
+                    { label: 'المسابقات الثقافية', href: '#', icon: <PiFlask />, comingSoon: true },
+                ]
+            },
         ]
     },
     {
         label: 'زاد المحاضر والخطيب',
         href: '#',
         icon: <PiMicrophone />,
-        hasDropdown: false,
+        hasDropdown: true,
         comingSoon: true,
+        children: [
+            { label: 'دليل الموضوعات', href: '#', icon: <PiFile />, comingSoon: true },
+            {
+                label: 'الخطب',
+                href: '#',
+                icon: <PiMosque />,
+                comingSoon: true,
+                children: [
+                    { label: 'خطب نموذجية من المساجد المركزية', href: '#', icon: <PiMosque />, comingSoon: true },
+                    { label: 'دليل الخطب المنبرية', href: '#', icon: <PiBookOpen />, comingSoon: true },
+                ]
+            },
+            { label: 'الدروس المهمة', href: '#', icon: <PiChalkboardTeacher />, comingSoon: true },
+            {
+                label: 'المجالس',
+                href: '#',
+                icon: <PiUsersThree />,
+                comingSoon: true,
+                children: [
+                    { label: 'مجالس التدبر', href: '#', icon: <PiBookOpen />, comingSoon: true },
+                    { label: 'مجالس التفسير', href: '#', icon: <PiScroll />, comingSoon: true },
+                    { label: 'ديوانيات الدعاة والمؤثرين', href: '#', icon: <PiUsers />, comingSoon: true },
+                    { label: 'مجالس أهل الذكر', href: '#', icon: <PiMosque />, comingSoon: true },
+                ]
+            },
+        ]
     },
     {
         label: 'فضاء أفق',
@@ -187,12 +309,83 @@ const menuData: MenuItem[] = [
         hasDropdown: true,
         comingSoon: true,
         children: [
-            { label: 'التطبيقات', href: '#', icon: <PiDevices />, comingSoon: true },
-            { label: 'الأكاديميات', href: '#', icon: <PiBuilding />, comingSoon: true },
-            { label: 'المتجر', href: '#', icon: <PiStorefront />, comingSoon: true },
-            { label: 'الخدمات الرقمية', href: '#', icon: <PiGlobe />, comingSoon: true },
-            { label: 'الخدمات البحثية', href: '#', icon: <PiMagnifyingGlass />, comingSoon: true },
-            { label: 'التوكيلات', href: '#', icon: <PiHandCoins />, comingSoon: true },
+            {
+                label: 'التطبيقات',
+                href: '#',
+                icon: <PiDevices />,
+                comingSoon: true,
+                children: [
+                    { label: 'تطبيق معلومة', href: '#', icon: <PiLightbulb />, comingSoon: true },
+                    { label: 'تطبيق تربية', href: '#', icon: <PiChalkboardTeacher />, comingSoon: true },
+                    { label: 'تطبيق مشورة', href: '#', icon: <PiQuestion />, comingSoon: true },
+                ]
+            },
+            {
+                label: 'الأكاديميات',
+                href: '#',
+                icon: <PiBuilding />,
+                comingSoon: true,
+                children: [
+                    { label: 'أكاديمية أفق لتأهيل الدعاة', href: '#', icon: <PiMosque />, comingSoon: true },
+                    { label: 'أكاديمية أفق للتقنية والعلوم', href: '#', icon: <PiCode />, comingSoon: true },
+                    { label: 'أكاديمية بارع الإعلامية', href: '#', icon: <PiMegaphone />, comingSoon: true },
+                    { label: 'أكاديمية تمكين', href: '#', icon: <PiLightning />, comingSoon: true },
+                ]
+            },
+            {
+                label: 'المتجر',
+                href: '#',
+                icon: <PiStorefront />,
+                comingSoon: true,
+                children: [
+                    { label: 'معرض المنتجات', href: '#', icon: <PiStorefront />, comingSoon: true },
+                    { label: 'الاشتراك في الكورسات والدورات', href: '#', icon: <PiGraduationCap />, comingSoon: true },
+                    { label: 'الوسائل التعليمية', href: '#', icon: <PiBookOpen />, comingSoon: true },
+                ]
+            },
+            {
+                label: 'الخدمات الرقمية',
+                href: '#',
+                icon: <PiGlobe />,
+                comingSoon: true,
+                children: [
+                    { label: 'تصميم المواقع للجهات والأفراد', href: '#', icon: <PiCode />, comingSoon: true },
+                    { label: 'نوافذ فرعية للتأجير', href: '#', icon: <PiBuilding />, comingSoon: true },
+                    { label: 'مواقع مصغرة لأفرع متخصصة', href: '#', icon: <PiGlobe />, comingSoon: true },
+                    { label: 'استضافة المسابقات والأنشطة', href: '#', icon: <PiTrophy />, comingSoon: true },
+                    { label: 'عقود تنفيذ المناشط', href: '#', icon: <PiHandshake />, comingSoon: true },
+                    { label: 'التنسيق مع الشبكات الإعلامية', href: '#', icon: <PiNewspaper />, comingSoon: true },
+                    { label: 'الدعم الفني بمقابل', href: '#', icon: <PiHeadset />, comingSoon: true },
+                ]
+            },
+            {
+                label: 'الخدمات البحثية',
+                href: '#',
+                icon: <PiMagnifyingGlass />,
+                comingSoon: true,
+                children: [
+                    { label: 'بناء الدبلوم العلمية والمهنية', href: '#', icon: <PiCertificate />, comingSoon: true },
+                    { label: 'بناء المناهج', href: '#', icon: <PiBookOpen />, comingSoon: true },
+                    { label: 'البحوث والدراسات', href: '#', icon: <PiFlask />, comingSoon: true },
+                    { label: 'الحقائب التعليمية والتدريبية', href: '#', icon: <PiBriefcase />, comingSoon: true },
+                    { label: 'ملخصات الكتب والبحوث', href: '#', icon: <PiFile />, comingSoon: true },
+                    { label: 'الفهرسة والمراجعة والتدقيق', href: '#', icon: <PiMagnifyingGlass />, comingSoon: true },
+                    { label: 'دراسات الجدوى', href: '#', icon: <PiChartLine />, comingSoon: true },
+                    { label: 'تصميم وإنتاج الإعلانات', href: '#', icon: <PiMegaphone />, comingSoon: true },
+                    { label: 'الحملات الإعلامية الرقمية', href: '#', icon: <PiGlobe />, comingSoon: true },
+                    { label: 'كتابة الخطط والمشاريع', href: '#', icon: <PiFile />, comingSoon: true },
+                ]
+            },
+            {
+                label: 'التوكيلات',
+                href: '#',
+                icon: <PiHandCoins />,
+                comingSoon: true,
+                children: [
+                    { label: 'تسويق الوسائل التعليمية', href: '#', icon: <PiStorefront />, comingSoon: true },
+                    { label: 'تعاقدات تنفيذ البرامج التعليمية والتدريبية', href: '#', icon: <PiHandshake />, comingSoon: true },
+                ]
+            },
         ]
     },
 ];
@@ -277,7 +470,7 @@ const MegaMenu = () => {
                                 onMouseLeave={handleMouseLeave}
                             >
                                 <div className={styles.dropdownGrid}>
-                                    {item.children.map((child) => (
+                                    {item.children.map((child, childIndex) => (
                                         <div
                                             key={child.label}
                                             className={clsx(
@@ -301,9 +494,12 @@ const MegaMenu = () => {
                                                 </Link>
                                             )}
 
-                                            {/* Nested Submenu (for كتابي) */}
+                                            {/* Nested Submenu - position based on column */}
                                             {child.children && activeSubmenu === child.label && (
-                                                <div className={styles.submenuPanel}>
+                                                <div className={clsx(
+                                                    styles.submenuPanel,
+                                                    childIndex % 2 === 0 ? styles.submenuLeft : styles.submenuRight
+                                                )}>
                                                     {child.children.map((subChild) => (
                                                         subChild.comingSoon ? (
                                                             <span
