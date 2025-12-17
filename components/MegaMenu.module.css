@@ -210,17 +210,16 @@
 
 /* Coming Soon Badge & Disabled Links */
 .comingSoon {
-    opacity: 0.85;
+    /* No visual change - same as regular items */
 }
 
 .disabledLink {
     cursor: default;
     pointer-events: none;
-    background: rgba(255, 255, 255, 0.98) !important;
 }
 
 .disabledLink:hover {
-    background: rgba(255, 255, 255, 0.98) !important;
+    background: rgba(255, 255, 255, 0.98);
     transform: none;
 }
 
