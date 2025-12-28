@@ -201,6 +201,23 @@
     border-color: #ddd;
 }
 
+/* رسالة عدم وجود اختبار نهائي */
+.noExamMessage {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #92400e;
+    border: 1px solid #fbbf24;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
 .loading,
 .error,
 .emptyState {

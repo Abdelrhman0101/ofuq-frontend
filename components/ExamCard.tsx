@@ -252,14 +252,23 @@ const ExamCard: React.FC<ExamCardProps> = ({ showAll = false, exams, onExamSelec
                     استكمال الدراسة
                   </button>
 
-                  {/* دخول الامتحان النهائي */}
-                  <button
-                    className={styles.actionButton}
-                    onClick={(e) => handleFinalExamClick(exam, e)}
-                    disabled={Math.round(Number(exam.progress_percentage || 0)) < 100}
-                  >
-                    دخول الامتحان النهائي
-                  </button>
+                  {/* دخول الامتحان النهائي - يظهر فقط إذا كان هناك اختبار نهائي */}
+                  {exam.has_final_exam && (
+                    <button
+                      className={styles.actionButton}
+                      onClick={(e) => handleFinalExamClick(exam, e)}
+                      disabled={Math.round(Number(exam.progress_percentage || 0)) < 100}
+                    >
+                      دخول الامتحان النهائي
+                    </button>
+                  )}
+
+                  {/* عرض رسالة إذا لم يكن هناك اختبار نهائي */}
+                  {exam.has_final_exam === false && Math.round(Number(exam.progress_percentage || 0)) >= 100 && (
+                    <div className={styles.noExamMessage}>
+                      📚 هذا المقرر لا يحتوي على اختبار نهائي
+                    </div>
+                  )}
 
                   {/* طلب النتيجة والشهادة */}
                   <button
