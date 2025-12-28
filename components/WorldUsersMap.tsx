@@ -104,9 +104,44 @@ export default function WorldUsersMap() {
           getPublicDiplomasCount(),
         ]);
         if (mounted) {
-          setDistribution(dist);
+          // تطبيع وإزالة التكرارات على مستوى الفرونت إند
+          const deduplicated = new Map<string, StudentsByCountryItem>();
+
+          for (const item of dist) {
+            // تطبيع الاسم: إزالة المسافات الزائدة والتشكيل
+            const normalized = item.country_ar
+              .replace(/\s+/g, ' ')
+              .trim()
+              .replace(/[\u064B-\u0652\u0640]/g, ''); // إزالة التشكيل العربي
+
+            if (deduplicated.has(normalized)) {
+              // دمج العدد إذا وجدت نفس الدولة
+              const existing = deduplicated.get(normalized)!;
+              deduplicated.set(normalized, {
+                country_ar: normalized,
+                students_count: existing.students_count + item.students_count,
+              });
+            } else {
+              deduplicated.set(normalized, {
+                country_ar: normalized,
+                students_count: item.students_count,
+              });
+            }
+          }
+
+          const cleanedData = Array.from(deduplicated.values());
+
+          setDistribution(cleanedData);
           setGeneralStats(gen);
           setDiplomasCount(diplCount);
+
+          // للتشخيص: فحص التكرارات
+          const countryNames = dist.map(d => d.country_ar);
+          const duplicates = countryNames.filter((item, index) => countryNames.indexOf(item) !== index);
+          if (duplicates.length > 0) {
+            console.warn('⚠️ Duplicate countries detected in raw data:', duplicates);
+            console.info('✅ Deduplicated from', dist.length, 'to', cleanedData.length, 'countries');
+          }
         }
       } catch (e) {
         // Logged inside service
@@ -126,6 +161,7 @@ export default function WorldUsersMap() {
   // خريطة بيانات الدول (بالإنجليزية المطبّعة) -> { العدد، الاسم بالعربية }
   const countryDataMap = useMemo(() => {
     const m = new Map<string, { count: number; nameAr: string }>();
+
     for (const item of distribution) {
       const englishNames = arabicToEnglishCountry(item.country_ar);
       if (englishNames.length === 0) continue;
@@ -133,7 +169,17 @@ export default function WorldUsersMap() {
       // تخزين البيانات بجميع الأسماء البديلة (الأساسي + aliases)
       for (const englishName of englishNames) {
         const key = normalizeEnglish(String(englishName));
-        m.set(key, { count: item.students_count, nameAr: item.country_ar });
+
+        // إذا كانت الدولة موجودة مسبقاً، نجمع العدد (لتجنب التكرار)
+        if (m.has(key)) {
+          const existing = m.get(key)!;
+          m.set(key, {
+            count: existing.count + item.students_count,
+            nameAr: existing.nameAr, // نحتفظ بالاسم الأول
+          });
+        } else {
+          m.set(key, { count: item.students_count, nameAr: item.country_ar });
+        }
       }
     }
     return m;
