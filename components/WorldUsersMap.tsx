@@ -21,6 +21,8 @@ type HoverInfo = {
 
 // Mapping للأسماء القديمة/البديلة → الأسماء الحديثة (لحل مشكلة التسميات في أفريقيا وغيرها)
 const countryNameAliases: Record<string, string[]> = {
+  "Sudan": ["Republic of Sudan", "North Sudan"], // السودان (الشمال)
+  "South Sudan": ["Republic of South Sudan", "Southern Sudan"], // جنوب السودان (منفصل منذ 2011)
   "Eswatini": ["Swaziland", "Swatini"],
   "North Macedonia": ["Macedonia", "FYROM", "Former Yugoslav Republic of Macedonia"],
   "Czechia": ["Czech Republic"],
