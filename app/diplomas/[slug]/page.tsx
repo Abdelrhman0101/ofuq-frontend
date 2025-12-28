@@ -12,6 +12,7 @@ import { SkeletonImage, SkeletonTitle, SkeletonText, SkeletonButton, SkeletonCou
 import SocialMediaFloat from '../../../components/SocialMediaFloat';
 import EnrollmentInfoModal from '../../../components/EnrollmentInfoModal';
 import Toast from '../../../components/Toast';
+import ExamBadge from '../../../components/ExamBadge';
 import '@/styles/toast.css';
 import { getPublicDiplomaDetails, enrollInDiploma, getMyDiplomas, type Diploma, type MyDiploma } from '../../../utils/categoryService';
 import { type Course } from '../../../utils/courseService';
@@ -353,6 +354,7 @@ export default function DiplomaDetailsPage() {
                   <Link href={`/course-details/${c.id}`} key={c.id} className={styles.courseCard}>
                     <div className={styles.courseImageWrapper}>
                       <img src={c.image} alt={c.title} className={styles.courseImage} />
+                      <ExamBadge hasFinalExam={course.has_final_exam} variant="default" />
                       <div className={styles.courseOverlay}>
                         <div className={styles.coursePlayButton}><FiPlay /></div>
                       </div>

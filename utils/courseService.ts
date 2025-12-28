@@ -14,7 +14,7 @@ const getLocalized = (val: any): string => {
 const getStorageUrl = (path: string | null | undefined): string | undefined => {
   if (!path) return undefined;
   if (path.startsWith('http')) return path;
-  
+
   let baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
   // Remove /api suffix if present to get the root URL
   if (baseUrl.endsWith('/api')) {
@@ -24,7 +24,7 @@ const getStorageUrl = (path: string | null | undefined): string | undefined => {
   baseUrl = baseUrl.replace(/\/$/, '');
   // Remove leading slash from path
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-  
+
   return `${baseUrl}/${cleanPath}`;
 };
 
@@ -55,6 +55,8 @@ export interface Course {
   // تمت الإضافة: نسبة التقدم للمستخدم
   progress_percentage?: number;
   enrollment_status?: string;
+  // تمت الإضافة: مؤشر وجود اختبار نهائي
+  has_final_exam?: boolean;
 
   instructor?: {
     id: number;
@@ -714,6 +716,7 @@ export const getMyEnrollments = async (
         status: (course.status ?? 'published') as 'draft' | 'published' | 'archived',
         progress_percentage: Number(course.progress_percentage ?? 0),
         enrollment_status: course.enrollment_status,
+        has_final_exam: course.has_final_exam ?? undefined,
         created_at: course.created_at,
         updated_at: course.updated_at,
         instructor: course.instructor
@@ -759,6 +762,7 @@ export const getMyEnrollments = async (
         status: (course.status ?? 'published') as 'draft' | 'published' | 'archived',
         progress_percentage: Number(enrollment.progress_percentage ?? course.progress_percentage ?? 0),
         enrollment_status: enrollment.status ?? course.enrollment_status,
+        has_final_exam: course.has_final_exam ?? undefined,
         created_at: course.created_at,
         updated_at: course.updated_at,
         instructor: course.instructor
@@ -796,7 +800,7 @@ export const getMyEnrollments = async (
 };
 
 export const getMyEnrolledCourses = async (
-  page: number = 1, 
+  page: number = 1,
   perPage: number = 12,
   filters?: { status?: 'completed' | 'in_progress'; category_id?: number }
 ): Promise<PaginatedCourses> => {

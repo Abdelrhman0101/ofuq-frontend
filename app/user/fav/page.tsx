@@ -61,6 +61,7 @@ export default function FavPage() {
             (c as any).cover_image_url || c.cover_image || "/hero-image.png"
           ),
           category: c.category?.name || "",
+          has_final_exam: c.has_final_exam, // إضافة مؤشر الاختبار النهائي
           instructor: {
             name: c.instructor?.name || "مدرب",
             avatar: getBackendAssetUrl(
