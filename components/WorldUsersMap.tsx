@@ -9,13 +9,28 @@ import { getPublicDiplomasCount } from "@/utils/categoryService";
 import nationalities from "@/data/nationalities.json";
 import styles from "./WorldUsersMap.module.css";
 
-const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+// استخدام أحدث نسخة من world-atlas مع بيانات محدثة
+const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json";
 
 type HoverInfo = {
   nameAr: string;
   count: number;
   offsetX: number;
   offsetY: number;
+};
+
+// Mapping للأسماء القديمة/البديلة → الأسماء الحديثة (لحل مشكلة التسميات في أفريقيا وغيرها)
+const countryNameAliases: Record<string, string[]> = {
+  "Eswatini": ["Swaziland", "Swatini"],
+  "North Macedonia": ["Macedonia", "FYROM", "Former Yugoslav Republic of Macedonia"],
+  "Czechia": ["Czech Republic"],
+  "DR Congo": ["Democratic Republic of the Congo", "DRC", "Congo-Kinshasa", "Zaire"],
+  "Congo Republic": ["Republic of the Congo", "Congo-Brazzaville"],
+  "Ivory Coast": ["Côte d'Ivoire", "Cote d'Ivoire"],
+  "Myanmar": ["Burma"],
+  "East Timor": ["Timor-Leste"],
+  "Cabo Verde": ["Cape Verde"],
+  "Palestine": ["Palestinian Territories", "West Bank", "Gaza"],
 };
 
 function normalizeArabic(input: string): string {
@@ -32,15 +47,22 @@ function normalizeEnglish(input: string): string {
   return input
     .toLowerCase()
     .replace(/[\u2019'`"\-(),.]/g, "")
-    .replace(/\b(the|and|of|republic|federation|kingdom|state|states)\b/g, "")
+    .replace(/\b(the|and|of|republic|federation|kingdom|state|states|dem|democratic)\b/g, "")
     .replace(/\s+/g, "")
     .trim();
 }
 
-function arabicToEnglishCountry(arName: string): string | null {
+function arabicToEnglishCountry(arName: string): string[] {
   const arNorm = normalizeArabic(arName);
   const item = (nationalities as any[]).find((n) => normalizeArabic(String(n?.arabic_name || "")) === arNorm);
-  return item?.english_name ?? null;
+
+  if (!item?.english_name) return [];
+
+  const primaryName = item.english_name;
+  const aliases = countryNameAliases[primaryName] || [];
+
+  // إرجاع الاسم الأساسي + جميع الأسماء البديلة
+  return [primaryName, ...aliases];
 }
 
 // عدّاد رقمي بسيط مع حركة ذكية
@@ -103,10 +125,14 @@ export default function WorldUsersMap() {
   const countryDataMap = useMemo(() => {
     const m = new Map<string, { count: number; nameAr: string }>();
     for (const item of distribution) {
-      const englishName = arabicToEnglishCountry(item.country_ar);
-      if (!englishName) continue;
-      const key = normalizeEnglish(String(englishName));
-      m.set(key, { count: item.students_count, nameAr: item.country_ar });
+      const englishNames = arabicToEnglishCountry(item.country_ar);
+      if (englishNames.length === 0) continue;
+
+      // تخزين البيانات بجميع الأسماء البديلة (الأساسي + aliases)
+      for (const englishName of englishNames) {
+        const key = normalizeEnglish(String(englishName));
+        m.set(key, { count: item.students_count, nameAr: item.country_ar });
+      }
     }
     return m;
   }, [distribution]);
@@ -160,14 +186,14 @@ export default function WorldUsersMap() {
               </radialGradient>
               {/* تأثير الوهج للعلامات */}
               <filter id="markerGlow">
-                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                <feMerge> 
-                  <feMergeNode in="coloredBlur"/>
-                  <feMergeNode in="SourceGraphic"/>
+                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                <feMerge>
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
             </defs>
-            
+
             <Geographies geography={geoUrl}>
               {({ geographies }: { geographies: any[] }) => (
                 <>
