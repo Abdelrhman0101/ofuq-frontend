@@ -11,7 +11,7 @@ const HeroSection = () => {
   const [stats, setStats] = useState<GeneralStats | null>(null);
   const [loading, setLoading] = useState(true);
   const fullText = 'مستقبلك';
-  
+
   // جلب الإحصائيات من الباك إند
   useEffect(() => {
     const fetchStats = async () => {
@@ -37,7 +37,7 @@ const HeroSection = () => {
 
     fetchStats();
   }, []);
-  
+
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!isDeleting && currentIndex < fullText.length) {
@@ -92,7 +92,7 @@ const HeroSection = () => {
               </div>
               <div className={styles['student-profiles']}>
                 {studentProfiles.map((profile, index) => (
-                  <div key={index} className={styles['profile-avatar']} style={{zIndex: studentProfiles.length - index}}>
+                  <div key={index} className={styles['profile-avatar']} style={{ zIndex: studentProfiles.length - index }}>
                     <img src={profile} alt={`Student ${index + 1}`} />
                   </div>
                 ))}
@@ -124,18 +124,18 @@ const HeroSection = () => {
           {/* Right Side Content */}
           <div className={styles['hero-right']}>
             <div className={styles['hero-image-container']}>
-              <img 
-                src="/hero-image.png" 
-                alt="Learning Illustration" 
+              <img
+                src="/hero-image.png"
+                alt="Learning Illustration"
                 className={styles['hero-image']}
               />
-              
+
               {/* Course Stats */}
               <div className={styles['course-stats']}>
                 <span className={styles['course-count']}>
                   {loading ? '...' : `${stats?.total_courses || 0}+`}
                 </span>
-                <span className={styles['course-label']}>دورة تدريبية</span>
+                <span className={styles['course-label']}>دبلومات أفق</span>
               </div>
             </div>
           </div>
@@ -145,8 +145,8 @@ const HeroSection = () => {
         <div className={styles['hero-search-section']}>
           <div className={styles['smart-search']}>
             <div className={styles['search-container']}>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="ابحث عن..."
                 value={heroSearch}
                 onChange={(e) => setHeroSearch(e.target.value)}
@@ -155,7 +155,7 @@ const HeroSection = () => {
               />
               <button className={styles['search-button']} onClick={handleHeroSearch}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
             </div>

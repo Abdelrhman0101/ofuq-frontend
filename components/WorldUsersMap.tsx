@@ -1,98 +1,167 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
-import { FaGraduationCap, FaGlobe, FaUsers, FaChartLine } from 'react-icons/fa';
-import { geoCentroid } from "d3-geo";
+import React, { useEffect, useState, useMemo, useRef, memo, useCallback } from "react";
+import {
+  ComposableMap,
+  Geographies,
+  Geography
+} from "react-simple-maps";
+import {
+  FaGlobe,
+  FaUsers,
+  FaGraduationCap,
+  FaChartLine
+} from 'react-icons/fa';
+import {
+  HiSparkles
+} from 'react-icons/hi2';
+import {
+  IoRocketSharp
+} from 'react-icons/io5';
 import { getGeneralStats, getStudentsByCountry, type GeneralStats, type StudentsByCountryItem } from "@/utils/statsService";
 import { getPublicDiplomasCount } from "@/utils/categoryService";
-import nationalities from "@/data/nationalities.json";
+import { StatCard } from "./StatCard";
 import styles from "./WorldUsersMap.module.css";
 
-// استخدام أحدث نسخة من world-atlas مع بيانات محدثة
-const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json";
+// Reliable CDN for TopoJSON (includes numeric IDs usually)
+const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-type HoverInfo = {
-  nameAr: string;
-  count: number;
-  offsetX: number;
-  offsetY: number;
+// Mapping Numeric ID (from world-atlas) to ISO Alpha-3
+const ID_TO_ISO: Record<string, string> = {
+  "012": "DZA", "024": "AGO", "204": "BEN", "072": "BWA", "854": "BFA", "108": "BDI", "120": "CMR",
+  "132": "CPV", "140": "CAF", "148": "TCD", "174": "COM", "178": "COG", "180": "COD", "262": "DJI",
+  "818": "EGY", "226": "GNQ", "232": "ERI", "231": "ETH", "266": "GAB", "270": "GMB", "288": "GHA",
+  "324": "GIN", "624": "GNB", "384": "CIV", "404": "KEN", "426": "LSO", "430": "LBR", "434": "LBY",
+  "450": "MDG", "454": "MWI", "466": "MLI", "478": "MRT", "480": "MUS", "504": "MAR", "508": "MOZ",
+  "516": "NAM", "562": "NER", "566": "NGA", "646": "RWA", "678": "STP", "686": "SEN", "690": "SYC",
+  "694": "SLE", "706": "SOM", "710": "ZAF", "728": "SSD", "729": "SDN", "748": "SWZ", "834": "TZA",
+  "768": "TGO", "788": "TUN", "800": "UGA", "894": "ZMB", "716": "ZWE", "732": "ESH"
 };
 
-// Mapping للأسماء القديمة/البديلة → الأسماء الحديثة (لحل مشكلة التسميات في أفريقيا وغيرها)
-const countryNameAliases: Record<string, string[]> = {
-  "Sudan": ["Republic of Sudan", "North Sudan"], // السودان (الشمال)
-  "South Sudan": ["Republic of South Sudan", "Southern Sudan"], // جنوب السودان (منفصل منذ 2011)
-  "Eswatini": ["Swaziland", "Swatini"],
-  "North Macedonia": ["Macedonia", "FYROM", "Former Yugoslav Republic of Macedonia"],
-  "Czechia": ["Czech Republic"],
-  "DR Congo": ["Democratic Republic of the Congo", "DRC", "Congo-Kinshasa", "Zaire"],
-  "Congo Republic": ["Republic of the Congo", "Congo-Brazzaville"],
-  "Ivory Coast": ["Côte d'Ivoire", "Cote d'Ivoire"],
-  "Myanmar": ["Burma"],
-  "East Timor": ["Timor-Leste"],
-  "Cabo Verde": ["Cape Verde"],
-  "Palestine": ["Palestinian Territories", "West Bank", "Gaza"],
+
+
+const AR_TO_ISO: Record<string, string> = {
+  'مصر': 'EGY',
+  'السعودية': 'SAU',
+  'الإمارات': 'ARE',
+  'الكويت': 'KWT',
+  'قطر': 'QAT',
+  'البحرين': 'BHR',
+  'عمان': 'OMN',
+  'اليمن': 'YEM',
+  'الأردن': 'JOR',
+  'سوريا': 'SYR',
+  'لبنان': 'LBN',
+  'فلسطين': 'PSE',
+  'العراق': 'IRQ',
+  'ليبيا': 'LBY',
+  'تونس': 'TUN',
+  'الجزائر': 'DZA',
+  'المغرب': 'MAR',
+  'موريتانيا': 'MRT',
+  'السودان': 'SDN',
+  'الصومال': 'SOM',
+  'جيبوتي': 'DJI',
+  'جزر القمر': 'COM',
+  'تركيا': 'TUR',
+  'إيران': 'IRN',
+  'ماليزيا': 'MYS',
+  'إندونيسيا': 'IDN',
+  'باكستان': 'PAK',
+  'أفغانستان': 'AFG',
+  'نيجيريا': 'NGA',
+  'نيجريا': 'NGA',
+  'غانا': 'GHA',
+  'السنغال': 'SEN',
+  'مالي': 'MLI',
+  'النيجر': 'NER',
+  'تشاد': 'TCD',
+  'كينيا': 'KEN',
+  'تنزانيا': 'TZA',
+  'أوغندا': 'UGA',
+  'إثيوبيا': 'ETH',
+  'جنوب أفريقيا': 'ZAF',
+  'بنين': 'BEN',
+  'بوركينا فاسو': 'BFA',
+  'الكاميرون': 'CMR',
+  'ساحل العاج': 'CIV'
 };
 
-function normalizeArabic(input: string): string {
-  const diacritics = /[\u064B-\u0652]/g; // التشكيل
-  const tatweel = /\u0640/g; // التطويل
-  return input
-    .replace(diacritics, "")
-    .replace(tatweel, "")
-    .replace(/\s+/g, "")
-    .trim();
-}
+// Memoized Map Component
+const MapComponent = memo(({ isoToCount, onHover, onLeave }: {
+  isoToCount: Map<string, number>,
+  onHover: (name: string, count: number, iso: string) => void,
+  onLeave: () => void
+}) => {
+  return (
+    <ComposableMap
+      width={800}
+      height={450}
+      projection="geoMercator"
+      projectionConfig={{
+        scale: 140,
+        center: [0, 0] // World View
+      }}
+      style={{ width: "100%", height: "auto" }}
+    >
+      <Geographies geography={GEO_URL}>
+        {({ geographies }: { geographies: any[] }) =>
+          geographies
+            .map((geo: any) => {
+              // Resolve to ISO3 using ID mapping
+              // world-atlas uses numeric IDs
+              const numericId = geo.id;
+              // Try to get ISO from properties if available, else map from ID
+              const iso3 = geo.properties?.ISO_A3 || ID_TO_ISO[String(numericId)];
 
-function normalizeEnglish(input: string): string {
-  return input
-    .toLowerCase()
-    .replace(/[\u2019'`"\-(),.]/g, "")
-    .replace(/\b(the|and|of|republic|federation|kingdom|state|states|dem|democratic)\b/g, "")
-    .replace(/\s+/g, "")
-    .trim();
-}
+              // Render all countries, no filter
+              const count = isoToCount.get(iso3) || 0;
 
-function arabicToEnglishCountry(arName: string): string[] {
-  const arNorm = normalizeArabic(arName);
-  const item = (nationalities as any[]).find((n) => normalizeArabic(String(n?.arabic_name || "")) === arNorm);
+              return (
+                <Geography
+                  key={geo.rsmKey}
+                  geography={geo}
+                  onMouseEnter={() => onHover("", count, iso3)}
+                  onMouseLeave={onLeave}
+                  style={{
+                    default: {
+                      fill: count ? "#0891b2" : "#E2E8F0",
+                      stroke: "#FFFFFF",
+                      strokeWidth: 0.5,
+                      outline: "none",
+                      transition: "fill 0.3s"
+                    },
+                    hover: {
+                      fill: count ? "#0e7490" : "#94a3b8",
+                      stroke: "#FFFFFF",
+                      strokeWidth: 0.75,
+                      outline: "none",
+                      cursor: "pointer"
+                    },
+                    pressed: {
+                      fill: "#06b6d4",
+                      outline: "none"
+                    }
+                  }}
+                />
+              );
+            })
+        }
+      </Geographies>
+    </ComposableMap>
+  );
+});
 
-  if (!item?.english_name) return [];
-
-  const primaryName = item.english_name;
-  const aliases = countryNameAliases[primaryName] || [];
-
-  // إرجاع الاسم الأساسي + جميع الأسماء البديلة
-  return [primaryName, ...aliases];
-}
-
-// عدّاد رقمي بسيط مع حركة ذكية
-function CountUp({ value, duration = 1200 }: { value: number; duration?: number }) {
-  const [display, setDisplay] = useState(0);
-
-  useEffect(() => {
-    let raf: number;
-    const start = performance.now();
-    const step = (t: number) => {
-      const p = Math.min((t - start) / duration, 1);
-      setDisplay(Math.floor(value * p));
-      if (p < 1) raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [value, duration]);
-
-  return <span>{display.toLocaleString()}</span>;
-}
+MapComponent.displayName = 'MapComponent';
 
 export default function WorldUsersMap() {
   const [distribution, setDistribution] = useState<StudentsByCountryItem[]>([]);
   const [generalStats, setGeneralStats] = useState<GeneralStats | null>(null);
   const [diplomasCount, setDiplomasCount] = useState<number>(0);
-  const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
-  const [hoverKey, setHoverKey] = useState<string | null>(null);
-  const [hoverCoords, setHoverCoords] = useState<[number, number] | null>(null);
+
+  // Tooltip State
+  const [activeTooltip, setActiveTooltip] = useState<{ name: string; count: number } | null>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -104,294 +173,173 @@ export default function WorldUsersMap() {
           getPublicDiplomasCount(),
         ]);
         if (mounted) {
-          // تطبيع وإزالة التكرارات على مستوى الفرونت إند
-          const deduplicated = new Map<string, StudentsByCountryItem>();
-
-          for (const item of dist) {
-            // تطبيع الاسم: إزالة المسافات الزائدة والتشكيل
-            const normalized = item.country_ar
-              .replace(/\s+/g, ' ')
-              .trim()
-              .replace(/[\u064B-\u0652\u0640]/g, ''); // إزالة التشكيل العربي
-
-            if (deduplicated.has(normalized)) {
-              // دمج العدد إذا وجدت نفس الدولة
-              const existing = deduplicated.get(normalized)!;
-              deduplicated.set(normalized, {
-                country_ar: normalized,
-                students_count: existing.students_count + item.students_count,
-              });
-            } else {
-              deduplicated.set(normalized, {
-                country_ar: normalized,
-                students_count: item.students_count,
-              });
-            }
-          }
-
-          const cleanedData = Array.from(deduplicated.values());
-
-          setDistribution(cleanedData);
+          const cleanDist = dist.map(item => {
+            let name = item.country_ar.trim();
+            name = name.replace('أ', 'ا').replace('إ', 'ا');
+            return { ...item, country_ar: name };
+          });
+          setDistribution(cleanDist);
           setGeneralStats(gen);
           setDiplomasCount(diplCount);
-
-          // للتشخيص: فحص التكرارات
-          const countryNames = dist.map(d => d.country_ar);
-          const duplicates = countryNames.filter((item, index) => countryNames.indexOf(item) !== index);
-          if (duplicates.length > 0) {
-            console.warn('⚠️ Duplicate countries detected in raw data:', duplicates);
-            console.info('✅ Deduplicated from', dist.length, 'to', cleanedData.length, 'countries');
-          }
         }
       } catch (e) {
-        // Logged inside service
+        console.error("Failed to fetch map data", e);
       }
     })();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
-  // تحسين الأداء: ترتيب التوزيع تنازليًا
-  const sortedDistribution = useMemo(
-    () => [...distribution].sort((a, b) => b.students_count - a.students_count),
-    [distribution]
-  );
-
-  // خريطة بيانات الدول (بالإنجليزية المطبّعة) -> { العدد، الاسم بالعربية }
-  const countryDataMap = useMemo(() => {
-    const m = new Map<string, { count: number; nameAr: string }>();
-
-    for (const item of distribution) {
-      const englishNames = arabicToEnglishCountry(item.country_ar);
-      if (englishNames.length === 0) continue;
-
-      // تخزين البيانات بجميع الأسماء البديلة (الأساسي + aliases)
-      for (const englishName of englishNames) {
-        const key = normalizeEnglish(String(englishName));
-
-        // إذا كانت الدولة موجودة مسبقاً، نجمع العدد (لتجنب التكرار)
-        if (m.has(key)) {
-          const existing = m.get(key)!;
-          m.set(key, {
-            count: existing.count + item.students_count,
-            nameAr: existing.nameAr, // نحتفظ بالاسم الأول
-          });
-        } else {
-          m.set(key, { count: item.students_count, nameAr: item.country_ar });
-        }
+  const isoToCount = useMemo(() => {
+    const map = new Map<string, number>();
+    distribution.forEach(item => {
+      // Lookup ISO
+      let iso = AR_TO_ISO[item.country_ar];
+      if (!iso) {
+        const normalizedInput = item.country_ar.replace('أ', 'ا').replace('إ', 'ا');
+        const match = Object.keys(AR_TO_ISO).find(k => k.replace('أ', 'ا').replace('إ', 'ا') === normalizedInput);
+        if (match) iso = AR_TO_ISO[match];
       }
-    }
-    return m;
+
+      if (iso) {
+        map.set(iso, (map.get(iso) || 0) + item.students_count);
+      }
+    });
+    return map;
   }, [distribution]);
 
-  // أقصى عدد طلاب لاستخدامه في التلوين التدريجي
-  const maxStudents = useMemo(
-    () => (distribution.length ? Math.max(...distribution.map((d) => d.students_count)) : 1),
-    [distribution]
-  );
+  const handleMapHover = useCallback((namePlaceHolder: string, count: number, iso: string) => {
+    if (!count || count <= 0) {
+      setActiveTooltip(null);
+      return;
+    }
 
-  // لون تعبئة للدول بحسب كثافة الطلاب
-  const getCountryFill = (count: number) => {
-    const max = Math.max(1, maxStudents);
-    const t = Math.sqrt(count / max); // توزيع لطيف
-    const alpha = Math.min(0.5, 0.15 + t * 0.5); // من 0.15 إلى 0.5
-    return `rgba(1, 158, 187, ${alpha})`;
+    // Lookup Arabic name
+    let displayName = "منطقة غير معرفة";
+    const reverseMatch = Object.keys(AR_TO_ISO).find(key => AR_TO_ISO[key] === iso);
+    if (reverseMatch) displayName = reverseMatch;
+
+    setActiveTooltip({ name: displayName, count });
+  }, []);
+
+  const handleMapLeave = useCallback(() => {
+    setActiveTooltip(null);
+  }, []);
+
+  // Direct DOM manipulation for High-FPS Tooltip Movement
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (tooltipRef.current && activeTooltip) {
+      const x = e.clientX;
+      const y = e.clientY - 10;
+      tooltipRef.current.style.top = `${y}px`;
+      tooltipRef.current.style.left = `${x}px`;
+    }
   };
 
-  // نسب تقدم ذكية للحلقات (يمكن تعديل الأهداف حسب الحاجة)
-  const MAX_COUNTRIES = 195;
   const TARGET_STUDENTS = 5000;
-  const TARGET_COURSES = 200;
-  const TARGET_DIPLOMAS = 60;
-
-  const progressCountries = Math.round(Math.min(100, (distribution.length / MAX_COUNTRIES) * 100));
   const progressStudents = Math.round(Math.min(100, ((generalStats?.total_students ?? 0) / TARGET_STUDENTS) * 100));
-  const progressCourses = Math.round(Math.min(100, ((generalStats?.total_courses ?? 0) / TARGET_COURSES) * 100));
-  const progressDiplomas = Math.round(Math.min(100, (diplomasCount / TARGET_DIPLOMAS) * 100));
 
   return (
-    <section className={styles['world-map-section']}>
-      <div className={styles['world-map-wrapper']}>
+    <section className={styles['world-stats-section']}>
+      <div className={styles['stats-wrapper']}>
+
         <div className={styles['section-header']}>
-          <h2 className={styles['section-title']}>رواد المنصة حول العالم</h2>
-          <p className={styles['section-subtitle']}>مرّر الفأرة على الدول الملوّنة لمعرفة البلد وعدد الطلاب</p>
+          <div className={styles['title-wrapper']}>
+            <HiSparkles className={styles['sparkle-icon']} />
+            <h2 className={styles['section-title']}>رواد المنصة حول العالم</h2>
+            <HiSparkles className={styles['sparkle-icon']} />
+          </div>
+          <p className={styles['section-subtitle']}>
+            <IoRocketSharp className={styles['rocket-icon']} />
+            توزيع الطلاب في جميع أنحاء العالم
+          </p>
         </div>
 
-        <div className={styles['map-container']}>
-          <ComposableMap projectionConfig={{ scale: 160 }}>
-            {/* تعريف التدرجات اللونية للعلامات */}
-            <defs>
-              <radialGradient id="markerGradient" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#4142D0" stopOpacity="0.9" />
-                <stop offset="50%" stopColor="#019EBB" stopOpacity="0.8" />
-                <stop offset="100%" stopColor="#019EBB" stopOpacity="0.6" />
-              </radialGradient>
-              <radialGradient id="markerGradientHover" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#4142D0" stopOpacity="1" />
-                <stop offset="50%" stopColor="#019EBB" stopOpacity="0.9" />
-                <stop offset="100%" stopColor="#019EBB" stopOpacity="0.7" />
-              </radialGradient>
-              {/* تأثير الوهج للعلامات */}
-              <filter id="markerGlow">
-                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                <feMerge>
-                  <feMergeNode in="coloredBlur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
+        <div className={styles['content-grid']}>
 
-            <Geographies geography={geoUrl}>
-              {({ geographies }: { geographies: any[] }) => (
+          <div
+            className={styles['map-container']}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMapLeave}
+          >
+            <MapComponent
+              isoToCount={isoToCount}
+              onHover={handleMapHover}
+              onLeave={handleMapLeave}
+            />
+
+            <div
+              ref={tooltipRef}
+              className={styles['map-tooltip']}
+              style={{
+                opacity: activeTooltip ? 1 : 0,
+                visibility: activeTooltip ? 'visible' : 'hidden',
+                left: 0,
+                top: 0
+              }}
+            >
+              {activeTooltip && (
                 <>
-                  {geographies.map((geo: any) => {
-                    const props = geo?.properties || {};
-                    const candidate = props.name || props.NAME || props.NAME_EN || props.ADMIN || "";
-                    const cNorm = normalizeEnglish(String(candidate));
-
-                    let matched = countryDataMap.get(cNorm);
-                    if (!matched) {
-                      // تجنّب for..of على Map لتفادي شرط downlevelIteration
-                      countryDataMap.forEach((val, key) => {
-                        if (!matched && (key === cNorm || key.includes(cNorm) || cNorm.includes(key))) {
-                          matched = val;
-                        }
-                      });
-                    }
-
-                    const hasStudents = !!matched;
-                    const fillColor = hasStudents ? getCountryFill(matched!.count) : "rgba(100, 116, 139, 0.1)";
-
-                    return (
-                      <Geography
-                        key={geo.rsmKey}
-                        geography={geo}
-                        fill={fillColor}
-                        stroke="rgba(1, 158, 187, 0.2)"
-                        strokeWidth={0.8}
-                        onMouseEnter={() => {
-                          if (!hasStudents) return;
-                          const [lon, lat] = geoCentroid(geo) as [number, number];
-                          setHoverInfo({
-                            nameAr: matched!.nameAr,
-                            count: matched!.count,
-                            offsetX: 0,
-                            offsetY: -80,
-                          });
-                          setHoverKey(matched!.nameAr);
-                          setHoverCoords([lon, lat]);
-                        }}
-                        onMouseLeave={() => {
-                          setHoverInfo(null);
-                          setHoverKey(null);
-                          setHoverCoords(null);
-                        }}
-                        style={{
-                          default: { outline: "none" },
-                          hover: {
-                            fill: hasStudents ? "rgba(1, 158, 187, 0.5)" : "rgba(1, 158, 187, 0.05)",
-                            stroke: "rgba(1, 158, 187, 0.3)",
-                            outline: "none",
-                          },
-                          pressed: { outline: "none" },
-                        }}
-                      />
-                    );
-                  })}
-
-                  {/* Overlay للتولتيب فوق الدولة المفعلة */}
-                  {hoverInfo && hoverCoords && (
-                    <Marker key={`hover-overlay`} coordinates={hoverCoords}>
-                      <g style={{ pointerEvents: 'none' }}>
-                        <g transform={`translate(${hoverInfo.offsetX}, ${hoverInfo.offsetY})`} className={styles['tooltip-group']}>
-                          <rect x="2" y="2" rx={10} ry={10} width={180} height={60} fill="rgba(0, 0, 0, 0.1)" className={styles['tooltip-shadow']} />
-                          <rect rx={10} ry={10} width={180} height={60} fill="white" stroke="#019EBB" strokeWidth="2" className={styles['tooltip-rect']} />
-                          <rect rx={10} ry={10} width={180} height={24} fill="url(#markerGradient)" />
-                          <text x={90} y={16} className={styles['tooltip-country']} textAnchor="middle" dominantBaseline="middle" fontWeight="700" fontSize="13" fill="white">{hoverInfo.nameAr}</text>
-                          <g className={styles['tooltip-body']}>
-                            <text x={90} y={40} className={styles['student-count']} textAnchor="middle" dominantBaseline="middle" fill="#019EBB" fontWeight="700" fontSize="18">{hoverInfo.count.toLocaleString()}</text>
-                            <text x={90} y={54} className={styles['tooltip-label']} textAnchor="middle" dominantBaseline="middle" fill="#64748b" fontWeight="500" fontSize="11">طالب</text>
-                          </g>
-                        </g>
-                      </g>
-                    </Marker>
+                  <div className={styles['tooltip-header']}>
+                    <FaGlobe className={styles['tooltip-icon']} />
+                    <span>{activeTooltip.name}</span>
+                  </div>
+                  {activeTooltip.count > 0 ? (
+                    <div className={styles['tooltip-body']}>
+                      <FaUsers className={styles['tooltip-data-icon']} />
+                      <span className={styles['tooltip-count']}>{activeTooltip.count} طالب</span>
+                    </div>
+                  ) : (
+                    <div className={styles['tooltip-body']}>
+                      <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>لا يوجد طلاب</span>
+                    </div>
                   )}
                 </>
               )}
-            </Geographies>
-          </ComposableMap>
-        </div>
-
-        {/* قسم الإحصائيات بتصميم احترافي عصري */}
-        <div className={styles['stats-grid']}>
-          {/* بطاقة الدول */}
-          <div className={styles['stat-card']} style={{ animationDelay: '0.1s' }}>
-            <div className={styles['stat-header']}>
-              <div className={styles['stat-progress']} style={{ ['--progress' as any]: progressCountries }}>
-                <div className={styles['stat-progress-inner']}>
-                  <FaGlobe className={styles['stat-icon']} />
-                </div>
-              </div>
-              <h3 className={styles['stat-title']}>الدول</h3>
-            </div>
-            <div className={styles['stat-body']}>
-              <div className={styles['stat-number']}><CountUp value={distribution.length} /></div>
-              <div className={styles['stat-label']}>دولة</div>
-              <div className={styles['stat-description']}>عدد الدول المشاركة</div>
             </div>
           </div>
 
-          {/* بطاقة إجمالي الطلاب */}
-          <div className={styles['stat-card']} style={{ animationDelay: '0.2s' }}>
-            <div className={styles['stat-header']}>
-              <div className={styles['stat-progress']} style={{ ['--progress' as any]: progressStudents }}>
-                <div className={styles['stat-progress-inner']}>
-                  <FaUsers className={styles['stat-icon']} />
-                </div>
-              </div>
-              <h3 className={styles['stat-title']}>إجمالي الطلاب</h3>
-            </div>
-            <div className={styles['stat-body']}>
-              <div className={styles['stat-number']}><CountUp value={(generalStats?.total_students ?? 0)} /></div>
-              <div className={styles['stat-label']}>طالب</div>
-              <div className={styles['stat-description']}>إجمالي الطلاب المسجلين</div>
-            </div>
+          <div className={styles['stats-cards']}>
+            <StatCard
+              icon={FaGlobe}
+              title="الدول النشطة"
+              value={distribution.filter(d => {
+                const iso = AR_TO_ISO[d.country_ar] || AR_TO_ISO[d.country_ar.replace('أ', 'ا')];
+                return !!iso;
+              }).length}
+              label="دولة"
+              description="الدول حول العالم"
+              progress={100}
+              delay="0.1s"
+            />
+            <StatCard
+              icon={FaUsers}
+              title="إجمالي الطلاب"
+              value={generalStats?.total_students ?? 0}
+              label="طالب"
+              description="إجمالي طلاب المنصة"
+              progress={progressStudents}
+              delay="0.2s"
+            />
+            <StatCard
+              icon={FaGraduationCap}
+              title="المقررات"
+              value={generalStats?.total_courses ?? 0}
+              label="مقرر"
+              description="المقررات المتاحة"
+              progress={100}
+              delay="0.3s"
+            />
+            <StatCard
+              icon={FaChartLine}
+              title="الدبلومات"
+              value={diplomasCount}
+              label="دبلومة"
+              description="المسارات التعليمية"
+              progress={100}
+              delay="0.4s"
+            />
           </div>
 
-          {/* بطاقة المقررات */}
-          <div className={styles['stat-card']} style={{ animationDelay: '0.3s' }}>
-            <div className={styles['stat-header']}>
-              <div className={styles['stat-progress']} style={{ ['--progress' as any]: progressCourses }}>
-                <div className={styles['stat-progress-inner']}>
-                  <FaGraduationCap className={styles['stat-icon']} />
-                </div>
-              </div>
-              <h3 className={styles['stat-title']}>المقررات</h3>
-            </div>
-            <div className={styles['stat-body']}>
-              <div className={styles['stat-number']}><CountUp value={(generalStats?.total_courses ?? 0)} /></div>
-              <div className={styles['stat-label']}>مقرر</div>
-              <div className={styles['stat-description']}>المقررات المتاحة</div>
-            </div>
-          </div>
-
-          {/* بطاقة الدبلومات */}
-          <div className={styles['stat-card']} style={{ animationDelay: '0.4s' }}>
-            <div className={styles['stat-header']}>
-              <div className={styles['stat-progress']} style={{ ['--progress' as any]: progressDiplomas }}>
-                <div className={styles['stat-progress-inner']}>
-                  <FaChartLine className={styles['stat-icon']} />
-                </div>
-              </div>
-              <h3 className={styles['stat-title']}>الدبلومات</h3>
-            </div>
-            <div className={styles['stat-body']}>
-              <div className={styles['stat-number']}><CountUp value={diplomasCount} /></div>
-              <div className={styles['stat-label']}>دبلومة</div>
-              <div className={styles['stat-description']}>الدبلومات المتاحة للنشر</div>
-            </div>
-          </div>
         </div>
       </div>
     </section>
