@@ -93,10 +93,10 @@
 
 /* Grid Layout */
 .content-grid {
-  display: grid;
-  grid-template-columns: 1fr 280px;
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
-  align-items: start;
+  width: 100%;
 }
 
 /* ===== Map Container ===== */
@@ -170,9 +170,10 @@
 
 /* ===== Stats Cards - Enhanced Dashboard Style ===== */
 .stats-cards {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
+  width: 100%;
 }
 
 .stat-card {
@@ -474,12 +475,10 @@
 /* Responsive */
 @media (max-width: 1024px) {
   .content-grid {
-    grid-template-columns: 1fr;
     gap: 1.5rem;
   }
 
   .stats-cards {
-    display: grid;
     grid-template-columns: repeat(2, 1fr);
   }
 

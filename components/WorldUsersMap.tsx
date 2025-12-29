@@ -256,47 +256,6 @@ export default function WorldUsersMap() {
 
         <div className={styles['content-grid']}>
 
-          <div
-            className={styles['map-container']}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMapLeave}
-          >
-            <MapComponent
-              isoToCount={isoToCount}
-              onHover={handleMapHover}
-              onLeave={handleMapLeave}
-            />
-
-            <div
-              ref={tooltipRef}
-              className={styles['map-tooltip']}
-              style={{
-                opacity: activeTooltip ? 1 : 0,
-                visibility: activeTooltip ? 'visible' : 'hidden',
-                left: 0,
-                top: 0
-              }}
-            >
-              {activeTooltip && (
-                <>
-                  <div className={styles['tooltip-header']}>
-                    <FaGlobe className={styles['tooltip-icon']} />
-                    <span>{activeTooltip.name}</span>
-                  </div>
-                  {activeTooltip.count > 0 ? (
-                    <div className={styles['tooltip-body']}>
-                      <FaUsers className={styles['tooltip-data-icon']} />
-                      <span className={styles['tooltip-count']}>{activeTooltip.count} طالب</span>
-                    </div>
-                  ) : (
-                    <div className={styles['tooltip-body']}>
-                      <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>لا يوجد طلاب</span>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
 
           <div className={styles['stats-cards']}>
             <StatCard
@@ -338,6 +297,48 @@ export default function WorldUsersMap() {
               progress={100}
               delay="0.4s"
             />
+          </div>
+
+          <div
+            className={styles['map-container']}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMapLeave}
+          >
+            <MapComponent
+              isoToCount={isoToCount}
+              onHover={handleMapHover}
+              onLeave={handleMapLeave}
+            />
+
+            <div
+              ref={tooltipRef}
+              className={styles['map-tooltip']}
+              style={{
+                opacity: activeTooltip ? 1 : 0,
+                visibility: activeTooltip ? 'visible' : 'hidden',
+                left: 0,
+                top: 0
+              }}
+            >
+              {activeTooltip && (
+                <>
+                  <div className={styles['tooltip-header']}>
+                    <FaGlobe className={styles['tooltip-icon']} />
+                    <span>{activeTooltip.name}</span>
+                  </div>
+                  {activeTooltip.count > 0 ? (
+                    <div className={styles['tooltip-body']}>
+                      <FaUsers className={styles['tooltip-data-icon']} />
+                      <span className={styles['tooltip-count']}>{activeTooltip.count} طالب</span>
+                    </div>
+                  ) : (
+                    <div className={styles['tooltip-body']}>
+                      <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>لا يوجد طلاب</span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
 
         </div>
