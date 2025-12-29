@@ -24,7 +24,7 @@ import { StatCard } from "./StatCard";
 import styles from "./WorldUsersMap.module.css";
 
 // Reliable CDN for TopoJSON (includes numeric IDs usually)
-const GEO_URL = "/world-topology.json";
+const GEO_URL = `/world-topology.json?v=${new Date().getTime()}`;
 
 // Mapping Numeric ID (from world-atlas) to ISO Alpha-3
 const ID_TO_ISO: Record<string, string> = {
