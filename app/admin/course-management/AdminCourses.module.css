@@ -172,3 +172,77 @@
 .courses-table-container::-webkit-scrollbar-track { background: #f3f4f6; border-radius: 8px; }
 .courses-table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
 .courses-table-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Additional styles for Manage Courses page (cover, actions, search) */
+.coverCell {
+  width: 84px;
+}
+
+.coverThumb {
+  width: 72px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.actionsCell {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btnAction {
+  background: #e5e7eb;
+  color: #111827;
+  border: none;
+  padding: 0.5rem 0.9rem;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.btnAction:hover {
+  background: #d1d5db;
+}
+
+.btnDelete {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  color: #fff;
+}
+.btnDelete:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+}
+
+.searchContainer {
+  position: relative;
+  width: 320px;
+  margin: 0 0 1rem 0;
+}
+.searchInput {
+  width: 100%;
+  padding: 0.65rem 1rem 0.65rem 2.75rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s ease;
+  color: #1f2937;
+  background-color: white;
+}
+.searchInput:hover { border-color: #cbd5e1; }
+.searchInput:focus {
+  border-color: #028FAF;
+  box-shadow: 0 0 0 3px rgba(2, 143, 175, 0.1);
+}
+.clearSearch {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}

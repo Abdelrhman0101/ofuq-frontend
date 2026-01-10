@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -10,8 +10,7 @@ import styles from './NewCourse.module.css';
 import '@/styles/toast.css';
 import { useMemo } from 'react';
 
-// --- Component Wrapper for Suspense ---
-function NewCoursePageComponent() {
+function NewManageCourseComponent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const diplomaId = searchParams.get('diploma_id');
@@ -21,7 +20,6 @@ function NewCoursePageComponent() {
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Form state - Initialize category_id with diplomaId if available
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -36,14 +34,12 @@ function NewCoursePageComponent() {
   });
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
-  // Toast state
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info'>('info');
   const [sections, setSections] = useState<Array<{ label: string; slug: string }>>([]);
   const [selectedSectionSlug, setSelectedSectionSlug] = useState<string>('');
 
-  // Fetch diplomas and instructors on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -52,10 +48,8 @@ function NewCoursePageComponent() {
           getInstructors()
         ]);
         setDiplomas(diplomasData);
-        // Sort instructors by Arabic name
         setInstructors([...instructorsData].sort((a, b) => a.name.localeCompare(b.name, 'ar')));
       } catch (error: any) {
-        console.error('Error fetching data:', error);
         if (error?.message?.includes('401') || error?.message?.includes('403')) {
           showToast('يرجى تسجيل الدخول أولاً', 'error');
         } else {
@@ -84,7 +78,6 @@ function NewCoursePageComponent() {
     } catch {}
   }, []);
 
-  // Effect to update category_id if diplomaId changes
   useEffect(() => {
     if (diplomaId) {
       setFormData(prev => ({ ...prev, category_id: diplomaId }));
@@ -93,7 +86,6 @@ function NewCoursePageComponent() {
 
   const selectedDiploma = diplomaId ? diplomas.find(d => d.id === Number(diplomaId)) : undefined;
 
-  // Instructor dropdown state and helpers (top-level, not inside JSX)
   const [isInstructorMenuOpen, setInstructorMenuOpen] = useState(false);
   const [instructorSearch, setInstructorSearch] = useState('');
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -121,11 +113,6 @@ function NewCoursePageComponent() {
     setInstructorMenuOpen(false);
   }
 
-  const formatInstructorLabel = (instructor: Instructor) => {
-    const full = `${instructor.name} — ${instructor.title || ''}`.trim();
-    return full.length > 40 ? full.slice(0, 37) + '…' : full;
-  };
-
   const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
     setToastMessage(message);
     setToastType(type);
@@ -134,7 +121,6 @@ function NewCoursePageComponent() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-
     if (type === 'checkbox') {
       const { checked } = e.target as HTMLInputElement;
       setFormData(prev => ({
@@ -142,14 +128,8 @@ function NewCoursePageComponent() {
         [name]: checked,
         ...(name === 'is_free' && checked && { price: '0' })
       }));
-      if (name === 'is_free' && (e.target as HTMLInputElement).checked) {
-        // Hide price via conditional render; ensure preview unchanged
-      }
     } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
+      setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
@@ -164,9 +144,7 @@ function NewCoursePageComponent() {
     }
   };
 
-  const triggerFileEdit = () => {
-    fileInputRef.current?.click();
-  };
+  const triggerFileEdit = () => fileInputRef.current?.click();
 
   const clearCoverImage = () => {
     setFormData(prev => ({ ...prev, cover_image: null }));
@@ -197,31 +175,9 @@ function NewCoursePageComponent() {
       if (formData.rank && formData.rank.trim() !== '') {
         formDataToSend.append('rank', formData.rank.trim());
       }
-
-      // Debug: Log cover_image details before appending
-      console.log('📸 Cover image check:', {
-        hasCoverImage: !!formData.cover_image,
-        coverImageName: formData.cover_image?.name,
-        coverImageType: formData.cover_image?.type,
-        coverImageSize: formData.cover_image?.size,
-      });
-
       if (formData.cover_image) {
         formDataToSend.append('cover_image', formData.cover_image);
-        console.log('✅ Cover image appended to FormData');
-      } else {
-        console.warn('⚠️ No cover image to append');
       }
-
-      // Debug: Log all FormData entries
-      console.log('📦 FormData contents before sending:');
-      Array.from(formDataToSend.entries()).forEach(([key, value]) => {
-        if (value instanceof File) {
-          console.log(`  ${key}: [File] ${value.name} (${value.size} bytes, ${value.type})`);
-        } else {
-          console.log(`  ${key}: ${value}`);
-        }
-      });
 
       await createCourse(formDataToSend);
       showToast('تم إنشاء المقرر بنجاح!', 'success');
@@ -230,11 +186,10 @@ function NewCoursePageComponent() {
         if (diplomaId) {
           router.push(`/admin/diplomas/${diplomaId}`);
         } else {
-          router.push('/admin/courses');
+          router.push('/admin/course-management');
         }
-      }, 1500);
+      }, 1200);
     } catch (error: any) {
-      console.error('Error during course creation:', error);
       showToast(error?.message || 'حدث خطأ أثناء إنشاء المقرر', 'error');
     } finally {
       setLoading(false);
@@ -242,43 +197,36 @@ function NewCoursePageComponent() {
   };
 
   const handleBack = () => {
-    if (diplomaId) {
-      router.push(`/admin/diplomas/${diplomaId}`);
-    } else {
-      router.push('/admin/diplomas');
-    }
+    router.push('/admin/course-management');
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>إضافة مقرر جديد</h1>
+          <h1 className={styles.title}>إضافة كورس جديد</h1>
           <p className={styles.subtitle}>
-            {selectedDiploma ? `إضافة مقرر جديد للدبلومة ${selectedDiploma.name}` : 'إنشاء مقرر تعليمي جديد'}
+            {selectedDiploma ? `إضافة كورس جديد للدبلومة ${selectedDiploma.name}` : 'إنشاء كورس تعليمي جديد'}
           </p>
         </div>
         <div className={styles.headerActions}>
-          <button type="button" onClick={handleBack} className={styles.backButton}>الرجوع للدبلومات</button>
+          <button type="button" onClick={handleBack} className={styles.backButton}>الرجوع لإدارة الكورسات</button>
         </div>
       </div>
 
       <div className={styles.formContainer}>
         <form onSubmit={handleSubmit} className={styles.form}>
-          {/* Title */}
           <div className={styles.formGroup}>
-            <label htmlFor="title">عنوان المقرر *</label>
-            <input type="text" id="title" name="title" value={formData.title} onChange={handleInputChange} required placeholder="أدخل عنوان المقرر" className={styles.input} />
+            <label htmlFor="title">عنوان الكورس *</label>
+            <input type="text" id="title" name="title" value={formData.title} onChange={handleInputChange} required placeholder="أدخل عنوان الكورس" className={styles.input} />
           </div>
 
-          {/* Description */}
           <div className={styles.formGroup}>
-            <label htmlFor="description">وصف المقرر *</label>
-            <textarea id="description" name="description" value={formData.description} onChange={handleInputChange} placeholder="أدخل وصفاً مفصلاً للمقرر" className={styles.textarea} rows={4} required />
+            <label htmlFor="description">وصف الكورس *</label>
+            <textarea id="description" name="description" value={formData.description} onChange={handleInputChange} placeholder="أدخل وصفاً مفصلاً للكورس" className={styles.textarea} rows={4} required />
           </div>
 
           <div className={styles.formRow}>
-            {/* Instructor */}
             <div className={styles.formGroup}>
               <label>المحاضر *</label>
               <div className={styles.dropdown} ref={dropdownRef}>
@@ -297,7 +245,6 @@ function NewCoursePageComponent() {
                   </div>
                   <span className={styles.dropdownCaret} aria-hidden="true" />
                 </button>
-
                 {isInstructorMenuOpen && (
                   <div className={styles.dropdownMenu}>
                     <div className={styles.dropdownSearch}>
@@ -319,7 +266,6 @@ function NewCoursePageComponent() {
               </div>
             </div>
 
-            {/* Category (Diploma) */}
             <div className={styles.formGroup}>
               <label htmlFor="category_id">الدبلومة *</label>
               <select id="category_id" name="category_id" value={formData.category_id} onChange={handleInputChange} required className={styles.select} disabled={!!diplomaId}>
@@ -353,13 +299,10 @@ function NewCoursePageComponent() {
           </div>
 
           <div className={styles.formRow}>
-            {/* Duration */}
             <div className={styles.formGroup}>
               <label htmlFor="duration">المدة (بالساعات) *</label>
               <input type="number" id="duration" name="duration" value={formData.duration} onChange={handleInputChange} placeholder="مثال: 20" className={styles.input} min="1" required />
             </div>
-
-            {/* Price (hidden when free) */}
             {!formData.is_free && (
               <div className={styles.formGroup}>
                 <label htmlFor="price">السعر *</label>
@@ -369,7 +312,6 @@ function NewCoursePageComponent() {
           </div>
 
           <div className={styles.formRow}>
-            {/* Status */}
             <div className={styles.formGroup}>
               <label htmlFor="status">الحالة</label>
               <select id="status" name="status" value={formData.status} onChange={handleInputChange} className={styles.select}>
@@ -377,15 +319,13 @@ function NewCoursePageComponent() {
                 <option value="published">منشور</option>
               </select>
             </div>
-            {/* Is Free */}
             <div className={styles.formGroup}>
               <label className={styles.checkbox} style={{ marginTop: '30px' }}>
-                <input type="checkbox" id="is_free" name="is_free" checked={formData.is_free} onChange={handleInputChange} /> مقرر مجاني
+                <input type="checkbox" id="is_free" name="is_free" checked={formData.is_free} onChange={handleInputChange} /> كورس مجاني
               </label>
             </div>
           </div>
 
-          {/* Rank (optional) */}
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
               <label htmlFor="rank">الترتيب (اختياري)</label>
@@ -393,7 +333,6 @@ function NewCoursePageComponent() {
             </div>
           </div>
 
-          {/* Cover Image */}
           <div className={styles.formGroup}>
             <label htmlFor="cover_image">صورة الغلاف</label>
             <input ref={fileInputRef} type="file" id="cover_image" name="cover_image" accept="image/*" onChange={handleFileChange} className={styles.file} />
@@ -411,26 +350,24 @@ function NewCoursePageComponent() {
             )}
           </div>
 
-          {/* Actions */}
           <div className={styles.actions}>
             <button type="button" onClick={handleBack} className={styles.btnSecondary} disabled={loading}>إلغاء</button>
             <button type="submit" className={styles.btnPrimary} disabled={loading}>
-              {loading ? 'جاري الإنشاء...' : 'إنشاء المقرر'}
+              {loading ? 'جاري الإنشاء...' : 'إنشاء الكورس'}
             </button>
           </div>
         </form>
       </div>
 
-      {/* Toast */}
       <Toast message={toastMessage} type={toastType} isVisible={toastVisible} onClose={() => setToastVisible(false)} />
     </div>
   );
 }
 
-export default function NewCoursePageWrapper() {
+export default function NewManageCourseWrapper() {
   return (
     <Suspense fallback={<div>جاري تحميل الصفحة...</div>}>
-      <NewCoursePageComponent />
+      <NewManageCourseComponent />
     </Suspense>
   );
 }

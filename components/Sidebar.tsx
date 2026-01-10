@@ -28,6 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
   // Menu items with their required permissions
   const menuItems: MenuItem[] = [
     { href: '/admin', label: 'لوحة التحكم', icon: '🏠' },
+    { href: '/admin/course-management', label: 'اداره الكورسات', icon: '📚' },
     { href: '/admin/diplomas', label: 'إدارة الدبلومات', icon: '🎓', permission: 'diplomas.view' },
     { href: '/admin/diplomas/question-bank', label: 'بنك الأسئلة', icon: '❓', permission: 'questions.view' },
     { href: '/admin/students', label: 'إدارة الطلاب', icon: '👨‍🎓', permission: 'students.view' },

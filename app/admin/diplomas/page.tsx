@@ -19,6 +19,7 @@ import {
 } from '@/utils/courseService';
 import { getBackendAssetUrl } from '@/utils/url';
 import '@/styles/toast.css';
+import SectionsManager from '@/components/SectionsManager';
 
 // ----- Form Types -----
 interface DiplomaFormData {
@@ -40,6 +41,7 @@ export default function AdminDiplomasPage() {
   const [showDiplomaForm, setShowDiplomaForm] = useState(false);
   const [editingDiploma, setEditingDiploma] = useState<Diploma | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [sectionsOpen, setSectionsOpen] = useState(false);
 
   // Toast state
   const [toastVisible, setToastVisible] = useState(false);
@@ -209,6 +211,9 @@ export default function AdminDiplomasPage() {
       }}
       >
         + إضافة دبلوم جديد
+      </button>
+      <button className={styles.btnSecondary} onClick={() => setSectionsOpen(true)} style={{ marginInlineStart: '0.5rem' }}>
+        ادارة الاقسام
       </button>
       </div>
 
@@ -401,6 +406,7 @@ export default function AdminDiplomasPage() {
         isVisible={toastVisible}
         onClose={() => setToastVisible(false)}
       />
+      <SectionsManager isOpen={sectionsOpen} onClose={() => setSectionsOpen(false)} />
     </div>
   );
 }
